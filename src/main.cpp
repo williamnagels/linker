@@ -1,6 +1,6 @@
 #include <iostream>
-#include "src\core\include\component.h"
+#include "src/core/include/addressable.h"
 int main()
 {
-	Core::Component component;
+	Core::Addressable component;
 }

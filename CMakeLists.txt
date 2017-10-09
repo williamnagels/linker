@@ -22,7 +22,7 @@ if(Boost_FOUND)
 endif() 
 
 add_library(linker_core STATIC
-	src/core/component.cpp
+	src/core/addressable.cpp
 )
 
 add_executable(linker src/main.cpp) 
