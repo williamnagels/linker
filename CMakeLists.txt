@@ -16,13 +16,17 @@ endif()
 find_package(Boost 1.64.0 ) #REQUIRED COMPONENTS serialization
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories("D:/linux/include") # linux source
+
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   add_definitions("-DUSE_BOOST_KARMA")
 endif() 
 
+
 add_library(linker_core STATIC
 	src/core/addressable.cpp
+	src/core/section.cpp
 )
 
 add_executable(linker src/main.cpp) 

@@ -15,16 +15,16 @@ namespace Core
 	* the virtual address.
 	*
 	*/
-	class Addressable
+	class VirtualAddressChangedSignal
 	{
 
 	public:
-		Addressable();
+		VirtualAddressChangedSignal();
 		void connect_slot_virtual_address_changed(std::function<void(int64_t)> const& slot); ///< Connect for updates if the address changes
 		void update_virtual_address(int64_t virtual_address); ///< Change the address; will update connected slots
 
 	private:
 		int64_t _virtual_address; ///< Destination address
-		boost::signals2::signal<void(int64_t)> virtual_address_changed_signal;
+		boost::signals2::signal<void(int64_t)> _virtual_address_changed_signal;
 	};
 }
