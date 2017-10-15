@@ -11,10 +11,10 @@ namespace N_Core
 			switch (_header.size())
 			{
 			case 0x80:
-				_header_parse_strategy = std::make_unique<HeaderParseStrategy64Bit>(header);
+				_header_parse_strategy = std::make_unique<THeaderParseStrategy<Elf64_Shdr>>(header);
 				break;
 			case 0x70:
-				_header_parse_strategy = std::make_unique<HeaderParseStrategy32Bit>(header);
+				_header_parse_strategy = std::make_unique<THeaderParseStrategy<Elf32_Shdr>>(header);
 				break;
 			default:
 				throw std::invalid_argument("Size of header blob is of unexpected size.");
