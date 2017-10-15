@@ -1,5 +1,5 @@
 #pragma once
-#include "src/core/include/section/types.h"
+#include "src/include/core/section/types.h"
 #include <stdint.h>
 namespace N_Core
 {

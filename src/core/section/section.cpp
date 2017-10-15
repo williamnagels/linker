@@ -1,5 +1,5 @@
-#include "src/core/include/section/section.h"
-#include "src/core/include/section/header_parse_strategy.h"
+#include "src/include/core/section/section.h"
+#include "src/include/core/section/header_parse_strategy.h"
 namespace N_Core
 {
 	namespace N_Section

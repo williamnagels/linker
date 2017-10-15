@@ -1,7 +1,7 @@
 #pragma once
-#include "src/core/include/addressable.h"
-#include "src/core/include/general.h"
-#include "src/core/include/section/types.h"
+#include "src/include/core/addressable.h"
+#include "src/include/core/general.h"
+#include "src/include/core/section/types.h"
 #include <variant>
 #include <functional>
 

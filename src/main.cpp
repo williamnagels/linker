@@ -1,5 +1,5 @@
 #include <iostream>
-#include "src/core/include/section/section.h"
+#include "src/include/core/section/section.h"
 int main()
 {
 	N_Core::BinaryBlob b;
