@@ -1,6 +1,6 @@
 #include "src/core/include/addressable.h"
 
-namespace Core
+namespace N_Core
 {
 	VirtualAddressChangedSignal::VirtualAddressChangedSignal():
 		_virtual_address(0)

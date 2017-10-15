@@ -26,7 +26,8 @@ endif()
 
 add_library(linker_core STATIC
 	src/core/addressable.cpp
-	src/core/section.cpp
+	src/core/section/section.cpp
+	src/core/section/header_parse_strategy.cpp
 )
 
 add_executable(linker src/main.cpp) 

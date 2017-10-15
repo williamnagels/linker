@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <boost/signals2/signal.hpp>
-namespace Core
+namespace N_Core
 {
 	/*@brief An addressable entity is an object that will be 
 	* assigned an address at some point to which it will be loaded when
