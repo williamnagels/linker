@@ -1,0 +1,1 @@
+#include "src/include/core/symtab/symbol_table.h"

@@ -1,5 +1,6 @@
 #pragma once
 #include "src/include/core/section/types.h"
+#include "src/include/core/read_write_blob.h"
 #include <memory>
 #include <stdint.h>
 namespace N_Core
@@ -50,36 +51,32 @@ namespace N_Core
 		class THeaderParseStrategy: public HeaderParseStrategy
 		{
 		private:
-			T* _ptr; ///< Memory access ptr
-			std::unique_ptr<T> _allocated_ptr; ///< Allocated memory if writes are required.
-			T* allocate_if_required();
-
+			ReadWriteBlob<T> _read_write_blob;
 		public:
 			THeaderParseStrategy(N_Core::BinaryBlob& header) :
-				_ptr(reinterpret_cast<T*>(&(*header.begin()))){}
+				_read_write_blob(header) {}
 
-			uint64_t get_name() { return _ptr->sh_name; }
-			Type get_type() { return static_cast<Type>(_ptr->sh_type); }
-			Flags get_flags() { return static_cast<Flags>(_ptr->sh_flags); }
-			uint64_t get_address() { return _ptr->sh_addr; }
-			uint64_t get_offset() { return _ptr->sh_offset; }
-			uint64_t get_size() { return _ptr->sh_size; }
-			uint64_t get_link() { return _ptr->sh_link; }
-			uint64_t get_info() { return _ptr->sh_info; }
-			uint64_t get_address_alignment() { return _ptr->sh_addralign; }
-			uint64_t get_entry_size() { return _ptr->sh_entsize; }
+			uint64_t get_name() { return _read_write_blob.get().sh_name; }
+			Type get_type() { return static_cast<Type>(_read_write_blob.get().sh_type); }
+			Flags get_flags() { return static_cast<Flags>(_read_write_blob.get().sh_flags); }
+			uint64_t get_address() { return _read_write_blob.get().sh_addr; }
+			uint64_t get_offset() { return _read_write_blob.get().sh_offset; }
+			uint64_t get_size() { return _read_write_blob.get().sh_size; }
+			uint64_t get_link() { return _read_write_blob.get().sh_link; }
+			uint64_t get_info() { return _read_write_blob.get().sh_info; }
+			uint64_t get_address_alignment() { return _read_write_blob.get().sh_addralign; }
+			uint64_t get_entry_size() { return _read_write_blob.get().sh_entsize; }
 
-
-			void set_name(uint64_t name) { allocate_if_required()->sh_name = name; }
-			void set_type(Type type) { allocate_if_required()->sh_type = type; }
-			void set_flags(Flags flags) { allocate_if_required()->sh_flags = flags; }
-			void set_address(uint64_t address) { allocate_if_required()->sh_addr = address; }
-			void set_offset(uint64_t offset) { allocate_if_required()->sh_offset = offset; }
-			void set_size(uint64_t size) { allocate_if_required()->sh_size = size; }
-			void set_link(uint64_t link) { allocate_if_required()->sh_link = link; }
-			void set_info(uint64_t info) { allocate_if_required()->sh_info = info; }
-			void set_address_alignment(uint64_t alignment) { allocate_if_required()->sh_addralign = alignment; }
-			void set_entry_size(uint64_t size) { allocate_if_required()->sh_entsize = size; }
+			void set_name(uint64_t name) { _read_write_blob.set().sh_name = name; }
+			void set_type(Type type) { _read_write_blob.set().sh_type = type; }
+			void set_flags(Flags flags) { _read_write_blob.set().sh_flags = flags; }
+			void set_address(uint64_t address) { _read_write_blob.set().sh_addr = address; }
+			void set_offset(uint64_t offset) { _read_write_blob.set().sh_offset = offset; }
+			void set_size(uint64_t size) { _read_write_blob.set().sh_size = size; }
+			void set_link(uint64_t link) { _read_write_blob.set().sh_link = link; }
+			void set_info(uint64_t info) { _read_write_blob.set().sh_info = info; }
+			void set_address_alignment(uint64_t alignment) { _read_write_blob.set().sh_addralign = alignment; }
+			void set_entry_size(uint64_t size) { _read_write_blob.set().sh_entsize = size; }
 		};
 	}
 }
