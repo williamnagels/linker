@@ -4,11 +4,14 @@
 #include <memory>
 namespace N_Core
 {
-	class SymbolTable
+	namespace N_SymTab
 	{
-	private:
-		std::vector<std::unique_ptr<Symbol>> _entries; ///< index in the vector is the 'symbol index' as illustrated in elf.
-	public:
+		class SymbolTable
+		{
+		private:
+			std::vector<std::unique_ptr<SymbolParseStrategy>> _entries; ///< index in the vector is the 'symbol index' as illustrated in elf.
+		public:
 
-	};
+		};
+	}
 }

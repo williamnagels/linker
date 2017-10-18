@@ -56,27 +56,28 @@ namespace N_Core
 			THeaderParseStrategy(N_Core::BinaryBlob& header) :
 				_read_write_blob(header) {}
 
-			uint64_t get_name() { return _read_write_blob.get().sh_name; }
-			Type get_type() { return static_cast<Type>(_read_write_blob.get().sh_type); }
-			Flags get_flags() { return static_cast<Flags>(_read_write_blob.get().sh_flags); }
-			uint64_t get_address() { return _read_write_blob.get().sh_addr; }
-			uint64_t get_offset() { return _read_write_blob.get().sh_offset; }
-			uint64_t get_size() { return _read_write_blob.get().sh_size; }
-			uint64_t get_link() { return _read_write_blob.get().sh_link; }
-			uint64_t get_info() { return _read_write_blob.get().sh_info; }
-			uint64_t get_address_alignment() { return _read_write_blob.get().sh_addralign; }
-			uint64_t get_entry_size() { return _read_write_blob.get().sh_entsize; }
+			uint64_t get_name() { return _read_write_blob.get(&T::sh_name); }
+			Type get_type() { return static_cast<Type>(_read_write_blob.get(&T::sh_type)); }
+			Flags get_flags() { return static_cast<Flags>(_read_write_blob.get(&T::sh_flags)); }
+			uint64_t get_address() { return _read_write_blob.get(&T::sh_addr); }
+			uint64_t get_offset() { return _read_write_blob.get(&T::sh_offset); }
+			uint64_t get_size() { return _read_write_blob.get(&T::sh_size); }
+			uint64_t get_link() { return _read_write_blob.get(&T::sh_link); }
+			uint64_t get_info() { return _read_write_blob.get(&T::sh_info); }
+			uint64_t get_address_alignment() { return _read_write_blob.get(&T::sh_addralign); }
+			uint64_t get_entry_size() { return _read_write_blob.get(&T::sh_entsize); }
 
-			void set_name(uint64_t name) { _read_write_blob.set().sh_name = name; }
-			void set_type(Type type) { _read_write_blob.set().sh_type = type; }
-			void set_flags(Flags flags) { _read_write_blob.set().sh_flags = flags; }
-			void set_address(uint64_t address) { _read_write_blob.set().sh_addr = address; }
-			void set_offset(uint64_t offset) { _read_write_blob.set().sh_offset = offset; }
-			void set_size(uint64_t size) { _read_write_blob.set().sh_size = size; }
-			void set_link(uint64_t link) { _read_write_blob.set().sh_link = link; }
-			void set_info(uint64_t info) { _read_write_blob.set().sh_info = info; }
-			void set_address_alignment(uint64_t alignment) { _read_write_blob.set().sh_addralign = alignment; }
-			void set_entry_size(uint64_t size) { _read_write_blob.set().sh_entsize = size; }
+			
+			void set_name(uint64_t name) { _read_write_blob.set(&T::sh_name, name); }
+			void set_type(Type type) { _read_write_blob.set(&T::sh_type, type); }
+			void set_flags(Flags flags) { _read_write_blob.set(&T::sh_flags, flags); }
+			void set_address(uint64_t address) { _read_write_blob.set(&T::sh_addr, address); }
+			void set_offset(uint64_t offset) { _read_write_blob.set(&T::sh_offset, offset); }
+			void set_size(uint64_t size) { _read_write_blob.set(&T::sh_size, size); }
+			void set_link(uint64_t link) { _read_write_blob.set(&T::sh_link, link); }
+			void set_info(uint64_t info) { _read_write_blob.set(&T::sh_info, info); }
+			void set_address_alignment(uint64_t alignment) { _read_write_blob.set(&T::sh_addralign, alignment); }
+			void set_entry_size(uint64_t size) { _read_write_blob.set(&T::sh_entsize, size); }
 		};
 	}
 }

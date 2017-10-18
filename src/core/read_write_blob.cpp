@@ -16,4 +16,6 @@ namespace N_Core
 
 		return _ptr;
 	}
+
+
 }

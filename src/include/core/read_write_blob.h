@@ -14,7 +14,18 @@ namespace N_Core
 		ReadWriteBlob(N_Core::BinaryBlob& header) :
 			_ptr(reinterpret_cast<T*>(&(*header.begin()))) {}
 
-		T const& get() { return *_ptr; }
-		T& set() { return *allocate_if_required(); }
+		template <class MemberType>
+		void set(MemberType T::* _member_ptr, MemberType val)
+		{
+			_ptr->*_member_ptr = val;
+		}
+
+		template <class MemberType>
+		MemberType get(MemberType T::* _member_ptr)
+		{
+		
+			return _ptr->*_member_ptr;
+		}
+		
 	};
 }
