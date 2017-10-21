@@ -1,5 +1,6 @@
 #include "src/include/core/section/section.h"
 #include "src/include/core/section/header_parse_strategy.h"
+#include "src/include/core/symtab/symbol_table.h"
 namespace N_Core
 {
 	namespace N_Section
@@ -15,6 +16,22 @@ namespace N_Core
 				break;
 			case 0x70:
 				_header_parse_strategy = std::make_unique<THeaderParseStrategy<Elf32_Shdr>>(header);
+				break;
+			default:
+				throw std::invalid_argument("Size of header blob is of unexpected size.");
+			}
+
+			switch (_header_parse_strategy->get_type())
+			{
+			case N_Section::SHT_SYMTAB:
+				_parsed_content = N_SymTab::create_symbol_table_from_section(*this);
+				break;
+			
+			case N_Section::SHT_RELA:
+				break;
+
+			case N_Section::SHT_PROGBITS:
+				_parsed_content = header;
 				break;
 			default:
 				throw std::invalid_argument("Size of header blob is of unexpected size.");

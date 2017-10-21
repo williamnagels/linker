@@ -2,6 +2,7 @@
 #include "src/include/core/addressable.h"
 #include "src/include/core/general.h"
 #include "src/include/core/section/types.h"
+#include "src/include/core/symtab/symbol_table.h"
 #include <variant>
 #include <functional>
 
@@ -22,6 +23,9 @@ namespace N_Core
 		public:
 			Section(N_Core::BinaryBlob& header, N_Core::BinaryBlob& content); ///< Construct from 2 binary blobs. One for content another one for header.
 			~Section();
+
+			std::variant<N_Core::BinaryBlob, N_Core::N_SymTab::SymbolTable> _parsed_content;
+
 			uint64_t get_name();
 			Type get_type();
 			Flags get_flags();
@@ -32,6 +36,8 @@ namespace N_Core
 			uint64_t get_info();
 			uint64_t get_address_alignment();
 			uint64_t get_entry_size();
+
+			BinaryBlob get_content() { return _content; }
 		private:
 			BinaryBlob& _header;///< 32 or 64-bit header depending on the elf it is contained in.
 			BinaryBlob& _content; ///< 32 or 64-bit header depending on the elf it is contained in.
