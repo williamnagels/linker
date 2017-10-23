@@ -14,8 +14,8 @@ namespace N_Core
 		ReadWriteBlob(N_Core::BinaryBlob& header) :
 			_ptr(reinterpret_cast<T*>(&(*header.begin()))) {}
 
-		template <class MemberType>
-		void set(MemberType T::* _member_ptr, MemberType val)
+		template <typename MemberType>
+		void set(MemberType T::* _member_ptr, uint64_t val)
 		{
 			_ptr->*_member_ptr = val;
 		}

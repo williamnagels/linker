@@ -18,8 +18,21 @@ namespace N_Core
 		public:
 			SymbolTable() {}
 
-			friend SymbolTable create_symbol_table_from_section(N_Section::Section&); ///< If section is of type symtab will construct a new symboltable.
-			friend void add_symbol_to_existing_symbol_table(SymbolTable& table, Symbol&& symbol); ///< Move some symbol into the table. Original symbol should no longer be used.
+			/*@brief Create new symbol table for some section.
+			*
+			* Will parse content of the section and attempt to create a symboltable from it.
+			* @throws std::invalid_argument if section is not of type SYM_TAB.
+			*
+			*/
+			friend SymbolTable create_symbol_table_from_section(N_Section::Section&); 
+			
+			/*@brief Move an existing symbol into the table.
+			*
+			* Will move an existing symbol into the symbol table. Adding the symbol to the symbol table.
+			* The original symbol is no longer usable but not defunct.
+			* 
+			*/
+			friend void add_symbol_to_existing_symbol_table(SymbolTable& table, Symbol&& symbol); 
 		};
 
 	}

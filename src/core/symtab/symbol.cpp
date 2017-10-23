@@ -4,6 +4,31 @@ namespace N_Core
 {
 	namespace N_SymTab
 	{
+		Symbol::Symbol()
+		{
+
+		}
+
+		Symbol::~Symbol()
+		{
+
+		}
+
+		Symbol::Symbol(Symbol&& rhs)
+		{
+			_content = rhs._content;
+			_symbol_parse_strategy.reset(rhs._symbol_parse_strategy.get());
+			rhs._symbol_parse_strategy.reset();
+		}
+
+		Symbol& Symbol::operator=(Symbol&& rhs)
+		{
+			_content = rhs._content;
+			_symbol_parse_strategy.reset(rhs._symbol_parse_strategy.get());
+			rhs._symbol_parse_strategy.reset();
+			return *this;
+		}
+
 		Symbol::Symbol(N_Core::BinaryBlob& content) :
 			_content(content)
 		{
@@ -20,9 +45,5 @@ namespace N_Core
 			}
 		}
 
-		Symbol::~Symbol()
-		{
-
-		}
 	}
 }

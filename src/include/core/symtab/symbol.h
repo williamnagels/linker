@@ -7,20 +7,29 @@ namespace N_Core
 		class Symbol
 		{
 		public:
-			Symbol() {}
-			Symbol(Symbol&& rhs)
-			{
-				_content = rhs._content;
-				_symbol_parse_strategy.reset();
-				_symbol_parse_strategy.swap(rhs._symbol_parse_strategy);
-			}
-
-			Symbol(N_Core::BinaryBlob& content); ///< Construct from 2 binary blobs. 
+			Symbol();
 			~Symbol();
+			Symbol(N_Core::BinaryBlob& content); ///< Construct from a binary blob.
+
+			Symbol(Symbol&& rhs);
+			Symbol& operator=(Symbol&& rhs);
+			Symbol(Symbol const& rhs) = delete; ///< No deep copy of the parse strat exists.
+			Symbol& operator=(Symbol const& rhs) = delete;
+
+			
+			template <typename T>
+			friend Symbol create_new()
+			{
+				Symbol symbol;
+				symbol._symbol_parse_strategy = std::make_unique<T>();
+				symbol._symbol_parse_strategy->set_info(0); // Force allocation.
+				return symbol;
+			}
 
 		private:
 			BinaryBlob _content; ///< Memory where symbol is stored.
 			std::unique_ptr<N_SymTab::SymbolParseStrategy> _symbol_parse_strategy; ///< Will be 64-bit or 32-bit variant.
+		
 		};
 	}
 }

@@ -1,27 +1,16 @@
 project (Linker)
+include( CTest )
 set(CMAKE_VERBOSE_MAKEFILE ON)
-cmake_minimum_required (VERSION 2.6)
-
+cmake_minimum_required (VERSION 3.9.2)
 
 if (WIN32)
-set(BOOST_ROOT "C:/program files/boost_1_64_0")
-set(BOOST_LIBRARYDIR ${BOOST_ROOT}/stage/lib/)
-set (CMAKE_CXX_FLAGS "/std:c++latest /EHsc /D_SCL_SECURE_NO_WARNINGS")
-set(Boost_DEBUG ON)
-set(Boost_USE_STATIC_LIBS OFF)
-add_definitions( -DBOOST_ALL_NO_LIB ) 
+	set (CMAKE_CXX_FLAGS "/std:c++latest /EHsc /D_SCL_SECURE_NO_WARNINGS")
 endif()
 
-
-find_package(Boost 1.64.0 ) #REQUIRED COMPONENTS serialization
-
+set(Boost_DEBUG ON)
+find_package(Boost 1.65.0 REQUIRED unit_test_framework) 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  add_definitions("-DUSE_BOOST_KARMA")
-endif() 
-
+include_directories(${Boost_INCLUDE_DIRS})
 
 add_library(linker_core STATIC
 	src/core/addressable.cpp
@@ -31,9 +20,11 @@ add_library(linker_core STATIC
 
 	src/core/symtab/symbol.cpp
 	src/core/symtab/symbol_table.cpp
-	
+	src/core/symtab/symbol_parse_strategy.cpp
 )
 
 add_executable(linker src/main.cpp) 
-
+add_executable(linker_unit_tests src/unittest_main.cpp) 
+target_link_libraries(linker_unit_tests ${Boost_LIBRARIES})
 target_link_libraries(linker linker_core)
+add_test( testname linker_unit_tests)
