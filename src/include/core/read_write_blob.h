@@ -14,9 +14,10 @@ namespace N_Core
 		ReadWriteBlob(N_Core::BinaryBlob& header) :
 			_ptr(reinterpret_cast<T*>(&(*header.begin()))) {}
 
-		template <typename MemberType>
-		void set(MemberType T::* _member_ptr, uint64_t val)
+		template <typename MemberType, typename ParamType>
+		void set(MemberType T::* _member_ptr, ParamType val)
 		{
+			static_assert(sizeof(T) >= sizeof(ParamType), "Value to set may be bigger than target variable can hold.");
 			_ptr->*_member_ptr = val;
 		}
 
