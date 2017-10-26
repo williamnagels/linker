@@ -9,7 +9,7 @@ endif()
 
 set(Boost_DEBUG ON)
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.65.0 REQUIRED unit_test_framework) 
+find_package(Boost 1.65.0 REQUIRED unit_test_framework date_time) 
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -34,5 +34,5 @@ add_executable(linker_unit_tests
 ) 
 
 target_link_libraries(linker_unit_tests ${Boost_LIBRARIES})
-target_link_libraries(linker linker_core)
+target_link_libraries(linker linker_core ${Boost_LIBRARIES})
 add_test( linker linker_unit_tests)

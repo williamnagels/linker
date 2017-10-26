@@ -3,6 +3,7 @@
 #include "src/include/core/general.h"
 #include "src/include/core/section/types.h"
 #include "src/include/core/symtab/symbol_table.h"
+#include "src/include/core/node.h"
 #include <variant>
 #include <functional>
 
@@ -12,13 +13,14 @@ namespace N_Core
 	{
 
 		class HeaderParseStrategy;
+		
 		/*@brief ELF Section representation.
 		*
 		* Contains section header and reference to the content of the section.
 		*
 		*
 		*/
-		class Section
+		class Section: public Node
 		{
 		public:
 			Section(N_Core::BinaryBlob& header, N_Core::BinaryBlob& content); ///< Construct from 2 binary blobs. One for content another one for header.
