@@ -14,6 +14,7 @@ namespace N_Core
 			~Header();
 			std::unique_ptr<N_Core::N_Header::HeaderParseStrategy> _header_parse_strategy; ///< Will be 64-bit or 32-bit variant.
 
+
 		};
 
 	}

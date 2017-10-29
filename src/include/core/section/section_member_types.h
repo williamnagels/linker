@@ -4,7 +4,7 @@ namespace N_Core
 {
 	namespace N_Section
 	{
-		enum Flags: uint64_t
+		enum Flags : uint64_t
 		{
 			SHF_WRITE = 0x1,
 			SHF_ALLOC = 0x2,
@@ -22,7 +22,7 @@ namespace N_Core
 			SHF_MASKPROC = 0xf0000000
 		};
 
-		enum Type: uint64_t
+		enum Type : uint64_t
 		{
 			SHT_NULL = 0,
 			SHT_PROGBITS = 1,

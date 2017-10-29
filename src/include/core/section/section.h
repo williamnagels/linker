@@ -1,9 +1,10 @@
 #pragma once
 #include "src/include/core/addressable.h"
 #include "src/include/core/general.h"
-#include "src/include/core/section/types.h"
 #include "src/include/core/symtab/symbol_table.h"
 #include "src/include/core/node.h"
+#include "src/include/core/section/section_member_types.h"
+
 #include <variant>
 #include <functional>
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "src/include/core/section/types.h"
+#include "src/include/core/section/section_member_types.h"
 #include "src/include/core/read_write_blob.h"
 #include <memory>
 #include <stdint.h>

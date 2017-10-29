@@ -1,5 +1,6 @@
 #pragma once
 #include "src/include/core/header/header_parse_strategy.h"
+#include "src/include/core/header/header_member_types.h"
 #include "src/include/core/read_write_blob.h"
 #include <memory>
 #include <stdint.h>
@@ -7,8 +8,6 @@ namespace N_Core
 {
 	namespace N_Header
 	{
-		///using EI_NIDENT = (uint8_t)16;
-
 		struct Elf32_Ehdr
 		{
 			uint8_t			e_ident[16];
@@ -47,7 +46,8 @@ namespace N_Core
 		class HeaderParseStrategy
 		{
 		public:
-			virtual uint64_t get_name() = 0;
+			virtual Type get_type() = 0;
+			virtual void set_type(Type type) = 0;
 		};
 
 		template<class T>
@@ -56,11 +56,13 @@ namespace N_Core
 		private:
 			ReadWriteBlob<T> _read_write_blob;
 		public:
+			using InnerType = T;
+
 			THeaderParseStrategy(N_Core::BinaryBlob& header) :
 				_read_write_blob(header) {}
 
-			uint64_t get_name() { return _read_write_blob.get(&T::sh_name); }
-			void set_name(uint64_t name) { _read_write_blob.set(&T::sh_name, name); }
+			Type get_type() { return static_cast<Type>(_read_write_blob.get(&T::e_type)); }
+			void set_type(Type type) { _read_write_blob.set(&T::e_type, type); }
 		};
 	}
 }
