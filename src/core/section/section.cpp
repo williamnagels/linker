@@ -1,5 +1,5 @@
 #include "src/include/core/section/section.h"
-#include "src/include/core/section/header_parse_strategy.h"
+#include "src/include/core/section/section_parse_strategy.h"
 #include "src/include/core/symtab/symbol_table.h"
 namespace N_Core
 {

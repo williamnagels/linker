@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 namespace N_Core
 {
 	namespace N_Section

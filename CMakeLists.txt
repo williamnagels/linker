@@ -18,12 +18,19 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_library(linker_core STATIC
 	src/core/addressable.cpp
 	src/core/read_write_blob.cpp
-	src/core/section/section.cpp
-	src/core/section/header_parse_strategy.cpp
 
+	# section
+	src/core/section/section.cpp
+	src/core/section/section_parse_strategy.cpp
+
+	# symbol table
 	src/core/symtab/symbol.cpp
 	src/core/symtab/symbol_table.cpp
 	src/core/symtab/symbol_parse_strategy.cpp
+
+	# header
+	src/core/header/header.cpp
+	src/core/header/header_parse_strategy.cpp
 )
 
 add_executable(linker src/main.cpp) 

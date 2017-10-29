@@ -11,10 +11,12 @@ namespace N_Core
 		std::string _file_name;
 		tree<N_Core::Node> _tree;
 		
-		template<typename T>
-		Elf(T&& mapped_region):
-			_region(std::forward<T>(mapped_region))
-		{}
+		
+		Elf(boost::interprocess::mapped_region&& mapped_region):
+			_region(std::move(mapped_region))
+		{
+		
+		}
 		boost::interprocess::mapped_region _region;
 
 		friend void create_elf_from_memory_map(std::string const& path_to_elf);

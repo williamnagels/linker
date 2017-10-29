@@ -50,6 +50,7 @@ namespace N_Core
 		private:
 			ReadWriteBlob<T> _read_write_blob;
 		public:
+			using InnerType = T;
 			TSymbolParseStrategy(N_Core::BinaryBlob& header) :
 				_read_write_blob(header) {}
 
