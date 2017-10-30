@@ -5,7 +5,7 @@ namespace N_Core
 	namespace N_Header
 	{
 
-		enum Identification :uint8_t
+		enum Identification:uint8_t
 		{
 			EI_MAG0=0,
 			EI_MAG1=1,
@@ -41,6 +41,13 @@ namespace N_Core
 		{
 			EV_NONE=0,
 			EV_CURRENT=1
+		};
+
+		enum Class :uint8_t
+		{
+			ELFCLASSNONE=0,
+			ELFCLASS32=1,
+			ELFCLASS64=2
 		};
 	}
 }

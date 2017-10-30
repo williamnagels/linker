@@ -38,8 +38,13 @@ add_executable(linker src/main.cpp)
 add_executable(linker_unit_tests 
 	src/unittest_main.cpp
 	src/core/symtab/symbol_table_unittest.cpp	
+	src/core/header/header_unittest.cpp
 ) 
 
-target_link_libraries(linker_unit_tests ${Boost_LIBRARIES})
+add_custom_command(TARGET linker_unit_tests
+                   POST_BUILD
+                   COMMAND ctest -C $<CONFIGURATION> -VV --output-on-failure)
+
+target_link_libraries(linker_unit_tests linker_core ${Boost_LIBRARIES})
 target_link_libraries(linker linker_core ${Boost_LIBRARIES})
 add_test( linker linker_unit_tests)

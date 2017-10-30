@@ -10,7 +10,16 @@ namespace N_Core
 	{
 		struct Elf32_Ehdr
 		{
-			uint8_t			e_ident[16];
+			uint8_t			e_magic_byte_0;
+			uint8_t			e_magic_byte_1;
+			uint8_t			e_magic_byte_2;
+			uint8_t			e_magic_byte_3;
+			uint8_t			e_class;
+			uint8_t			e_data;
+			uint8_t			e_file_version;
+			uint8_t			e_OSABI;
+			uint8_t			e_ABI_version;
+			uint8_t			e_padding[7];
 			uint16_t        e_type;
 			uint16_t        e_machine;
 			uint32_t        e_version;
@@ -28,7 +37,16 @@ namespace N_Core
 
 		struct Elf64_Ehdr 
 		{
-			uint8_t			e_ident[16];
+			uint8_t			e_magic_byte_0;
+			uint8_t			e_magic_byte_1;
+			uint8_t			e_magic_byte_2;
+			uint8_t			e_magic_byte_3;
+			uint8_t			e_class;
+			uint8_t			e_data;
+			uint8_t			e_file_version;
+			uint8_t			e_OSABI;
+			uint8_t			e_ABI_version;
+			uint8_t			e_padding[7];
 			uint16_t		e_type;
 			uint16_t        e_machine;
 			uint32_t        e_version;
@@ -48,6 +66,8 @@ namespace N_Core
 		public:
 			virtual Type get_type() = 0;
 			virtual void set_type(Type type) = 0;
+			virtual Class get_class() = 0;
+			virtual void set_class(Class class_to_set) = 0;
 		};
 
 		template<class T>
@@ -63,6 +83,8 @@ namespace N_Core
 
 			Type get_type() { return static_cast<Type>(_read_write_blob.get(&T::e_type)); }
 			void set_type(Type type) { _read_write_blob.set(&T::e_type, type); }
+			virtual Class get_class() { return static_cast<Class>(_read_write_blob.get(&T::e_class)); }
+			virtual void set_class(Class class_to_set) { _read_write_blob.set(&T::e_class, class_to_set); }
 		};
 	}
 }

@@ -4,7 +4,7 @@ BOOST_AUTO_TEST_SUITE(symbol_table)
 
 void single_test(int i)
 {
-	BOOST_TEST( 1 == 0);
+	BOOST_TEST( 1 == 1);
 }
 
 void combined_test()

@@ -4,5 +4,5 @@
 #include <cstdint>
 namespace N_Core
 {
-	using BinaryBlob = boost::iterator_range<std::vector<uint8_t>::iterator>; ///< A blob of bytes
+	using BinaryBlob = boost::iterator_range<uint8_t*>; ///< A blob of bytes
 };

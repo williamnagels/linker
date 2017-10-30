@@ -9,5 +9,5 @@ int main()
 
 	N_Core::N_SymTab::Symbol symbol(b);
 
-	N_Core::create_elf_from_memory_map("test");
+	N_Core::create_elf_from_path_to_file("test");
 }
