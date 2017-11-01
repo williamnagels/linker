@@ -8,6 +8,11 @@ namespace N_Core
 		Header::Header(N_Core::BinaryBlob& header)
 		{
 			_header_parse_strategy = create_strategy_from_size(PossibleGeneratorTypes<HeaderParseStrategy, THeaderParseStrategy<Elf32_Ehdr>, THeaderParseStrategy<Elf64_Ehdr>>(), header);
+		
+			if (!_header_parse_strategy->are_magic_bytes_correct())
+			{
+				throw std::invalid_argument(wrong_magic_bytes_message);
+			}
 		}
 
 		Header::~Header()

@@ -68,6 +68,8 @@ namespace N_Core
 			virtual void set_type(Type type) = 0;
 			virtual Class get_class() = 0;
 			virtual void set_class(Class class_to_set) = 0;
+
+			virtual bool are_magic_bytes_correct() = 0;
 		};
 
 		template<class T>
@@ -85,6 +87,13 @@ namespace N_Core
 			void set_type(Type type) { _read_write_blob.set(&T::e_type, type); }
 			virtual Class get_class() { return static_cast<Class>(_read_write_blob.get(&T::e_class)); }
 			virtual void set_class(Class class_to_set) { _read_write_blob.set(&T::e_class, class_to_set); }
+			bool are_magic_bytes_correct() 
+			{
+				return _read_write_blob.get(&T::e_magic_byte_0) == 0x7F &&
+					_read_write_blob.get(&T::e_magic_byte_1) == 'E' &&
+					_read_write_blob.get(&T::e_magic_byte_2) == 'L' &&
+					_read_write_blob.get(&T::e_magic_byte_3) == 'F';
+			}
 		};
 	}
 }

@@ -7,6 +7,9 @@ namespace N_Core
 {
 	namespace N_Header
 	{
+
+		const std::string wrong_magic_bytes_message = "Wrong magic bytes at front elf. Did not find /7FELF.";
+
 		class HeaderParseStrategy;
 		class Header
 		{
