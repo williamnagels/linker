@@ -49,4 +49,7 @@ target_link_libraries(linker_unit_tests linker_core ${Boost_LIBRARIES})
 target_link_libraries(linker linker_core ${Boost_LIBRARIES})
 add_test( linker linker_unit_tests)
 
-configure_file(testfiles/wrong_magic_bytes testfiles/wrong_magic_bytes COPYONLY)
+set(directory ${CMAKE_BINARY_DIR}/testfiles)
+file(MAKE_DIRECTORY  ${directory})
+execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${directory})
+configure_file(testfiles/wrong_magic_bytes testfiles/ COPYONLY)
