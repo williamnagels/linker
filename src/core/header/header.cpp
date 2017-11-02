@@ -1,5 +1,5 @@
 #include "src/include/core/header/header.h"
-#include "src/include/core/header/header_parse_strategy.h"
+
 #include "src/include/core/strategy_generator.h"
 namespace N_Core
 {
@@ -15,9 +15,6 @@ namespace N_Core
 			}
 		}
 
-		Header::~Header()
-		{
-		}
 
 		Header::Header(Header&& header)
 		{

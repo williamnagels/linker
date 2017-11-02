@@ -33,8 +33,14 @@ namespace N_Core
 			EM_NONE=0,
 			EM_SPARC=2,
 			EM_386=3,
+			EM_68K=4,
+			EM_88K=5,
+			EM_IAMCU=6,
+			EM_860=7,
 			EM_SPARC32PLUS=18,
-			EM_SPARCV9=43
+			EM_SPARCV9=43,
+			EM_IA_64=50,
+			EM_X86_64=62
 		};
 
 		enum Version :uint8_t

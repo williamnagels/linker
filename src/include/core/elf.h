@@ -10,8 +10,10 @@ namespace N_Core
 {
 	class Elf
 	{
+	public:
 		std::string _file_name;
 		boost::interprocess::mapped_region _region;
+		
 		N_Header::Header _header;
 		
 		

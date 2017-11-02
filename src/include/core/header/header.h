@@ -2,21 +2,20 @@
 #include <memory>
 #include "src/include/core/general.h"
 #include "src/include/core/header/header_member_types.h"
-
+#include "src/include/core/header/header_parse_strategy.h"
 namespace N_Core
 {
 	namespace N_Header
 	{
 
-		const std::string wrong_magic_bytes_message = "Wrong magic bytes at front elf. Did not find /7FELF.";
+		const std::string wrong_magic_bytes_message = "Wrong magic bytes in elf header. Did not find /7FELF. Is the file an elf?";
 
-		class HeaderParseStrategy;
+		//class HeaderParseStrategy;
 		class Header
 		{
 		public:
 			Header(N_Core::BinaryBlob& header);
 			Header(Header&&);
-			~Header();
 			std::unique_ptr<N_Core::N_Header::HeaderParseStrategy> _header_parse_strategy; ///< Will be 64-bit or 32-bit variant.
 
 			/*@brief From some blob of memory create a header object
