@@ -35,6 +35,7 @@ namespace N_Core
 		class HeaderParseStrategy
 		{
 		public:
+			virtual ~HeaderParseStrategy() {}
 			virtual uint64_t get_name() = 0;
 			virtual Type get_type() = 0;
 			virtual Flags get_flags() = 0;

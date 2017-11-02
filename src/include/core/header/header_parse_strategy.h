@@ -65,7 +65,6 @@ namespace N_Core
 		{
 		public:
 			virtual ~HeaderParseStrategy() { }
-
 			virtual Type get_type() = 0;
 			virtual void set_type(Type type) = 0;
 			virtual Class get_class() = 0;

@@ -30,6 +30,7 @@ namespace N_Core
 		class SymbolParseStrategy
 		{
 		public:
+			virtual ~SymbolParseStrategy() {}
 			virtual uint64_t get_name() = 0;
 			virtual uint64_t get_info() = 0;
 			virtual uint64_t get_other() = 0;
