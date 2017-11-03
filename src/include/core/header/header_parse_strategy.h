@@ -85,6 +85,8 @@ namespace N_Core
 			virtual void set_header_size(uint64_t header_size) = 0;
 			virtual uint64_t get_size_of_program_header_table() = 0;
 			virtual void set_size_of_program_header_table(uint64_t size) = 0;
+			virtual uint64_t get_size_of_section_header_table() = 0;
+			virtual void set_size_of_section_header_table(uint64_t size) = 0;
 
 			virtual uint64_t get_number_of_entries_in_program_header_table() = 0;
 			virtual void set_number_of_entries_in_program_header_table(uint64_t) = 0;
@@ -133,6 +135,8 @@ namespace N_Core
 
 			uint64_t get_size_of_program_header_table() { return _read_write_blob.get(&T::e_phentsize); }
 			void set_size_of_program_header_table(uint64_t size) { _read_write_blob.set(&T::e_phentsize, size); }
+			uint64_t get_size_of_section_header_table() { return _read_write_blob.get(&T::e_shentsize); }
+			void set_size_of_section_header_table(uint64_t size) { _read_write_blob.set(&T::e_shentsize, size); }
 
 
 			uint64_t get_number_of_entries_in_program_header_table() { return _read_write_blob.get(&T::e_phnum); }
