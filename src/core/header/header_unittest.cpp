@@ -32,6 +32,8 @@ BOOST_AUTO_TEST_CASE(parse_64bit_sleep)
 	BOOST_CHECK_EQUAL(elf._header._header_parse_strategy->get_flags(), 0);
 	BOOST_CHECK_EQUAL(elf._header._header_parse_strategy->get_section_header_offset(), 29480);
 	BOOST_CHECK_EQUAL(elf._header._header_parse_strategy->get_entry(), 0x4017b9);
+	BOOST_CHECK_EQUAL(elf._header._header_parse_strategy->get_OS_ABI(), N_Core::N_Header::OS_ABI::ELFOSABI_NONE);
+	BOOST_CHECK_EQUAL(elf._header._header_parse_strategy->get_ABI_version(), 0);
 }
 
 
@@ -39,9 +41,9 @@ BOOST_AUTO_TEST_CASE(COW_header)
 {
 	N_Core::Elf elf = N_Core::create_elf_from_path_to_file("testfiles/sleep");
 
-	BOOST_CHECK(elf._header._header_parse_strategy->get_type() == N_Core::N_Header::Type::ET_EXEC);
+	BOOST_CHECK_EQUAL(elf._header._header_parse_strategy->get_type(), N_Core::N_Header::Type::ET_EXEC);
 	elf._header._header_parse_strategy->set_type(N_Core::N_Header::Type::ET_DYN);
-	BOOST_CHECK(elf._header._header_parse_strategy->get_type() == N_Core::N_Header::Type::ET_DYN);
+	BOOST_CHECK_EQUAL(elf._header._header_parse_strategy->get_type(), N_Core::N_Header::Type::ET_DYN);
 }
 
 

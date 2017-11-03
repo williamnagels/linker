@@ -17,7 +17,7 @@ namespace N_Core
 			uint8_t			e_class;
 			uint8_t			e_data;
 			uint8_t			e_file_version;
-			uint8_t			e_OSABI;
+			uint8_t			e_OS_ABI;
 			uint8_t			e_ABI_version;
 			uint8_t			e_padding[7];
 			uint16_t        e_type;
@@ -44,7 +44,7 @@ namespace N_Core
 			uint8_t			e_class;
 			uint8_t			e_data;
 			uint8_t			e_file_version;
-			uint8_t			e_OSABI;
+			uint8_t			e_OS_ABI;
 			uint8_t			e_ABI_version;
 			uint8_t			e_padding[7];
 			uint16_t		e_type;
@@ -73,6 +73,11 @@ namespace N_Core
 			virtual void set_machine(Machine machine) = 0;
 			virtual Version get_version() = 0;
 			virtual void set_version(Version version) = 0;
+			virtual OS_ABI get_OS_ABI() = 0;
+			virtual void set_OS_ABI(OS_ABI ABI) = 0;
+			virtual uint64_t get_ABI_version() = 0;
+			virtual void set_ABI_version(uint64_t ABI_version) = 0;
+
 			virtual uint64_t get_entry() = 0;
 			virtual void set_entry(uint64_t entry) = 0;
 			virtual uint64_t get_program_header_offset() = 0;
@@ -122,6 +127,13 @@ namespace N_Core
 			void set_machine(Machine machine) { _read_write_blob.set(&T::e_machine, machine); }
 			Version get_version() { return static_cast<Version>(_read_write_blob.get(&T::e_version)); }
 			void set_version(Version version) { _read_write_blob.set(&T::e_version, version); }
+
+			OS_ABI get_OS_ABI() { return static_cast<OS_ABI>(_read_write_blob.get(&T::e_OS_ABI)); }
+			void set_OS_ABI(OS_ABI ABI) { _read_write_blob.set(&T::e_OS_ABI, ABI); }
+
+			uint64_t get_ABI_version() { return static_cast<OS_ABI>(_read_write_blob.get(&T::e_ABI_version)); }
+			void set_ABI_version(uint64_t ABI_version) { _read_write_blob.set(&T::e_ABI_version, ABI_version); }
+
 			uint64_t get_entry() { return _read_write_blob.get(&T::e_entry); }
 			void set_entry(uint64_t entry) { _read_write_blob.set(&T::e_entry, entry); }
 			uint64_t get_program_header_offset() { return _read_write_blob.get(&T::e_phoff); }
