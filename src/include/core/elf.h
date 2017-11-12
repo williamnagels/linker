@@ -8,6 +8,23 @@
 #include <string>
 #include <optional>
 #include <memory>
+#include <boost/mpl/vector.hpp>
+#include <boost/type_erasure/any.hpp>
+#include <boost/type_erasure/iterator.hpp>
+#include <boost/type_erasure/operators.hpp>
+#include <boost/type_erasure/tuple.hpp>
+#include <boost/type_erasure/same_type.hpp>
+#include <boost/type_erasure/member.hpp>
+namespace te = boost::type_erasure;
+
+BOOST_TYPE_ERASURE_MEMBER((has_member_store), store, 1)
+
+using Linkable = te::any<boost::mpl::vector<
+	te::copy_constructible<>,
+	has_member_store<void(int)>,
+	te::relaxed
+>>;
+
 namespace N_Core
 {
 	class Elf
@@ -27,11 +44,19 @@ namespace N_Core
 		{
 		}
 
+		void store(int) {}
+
 		template<typename T>
 		Elf(T&& t):
 			Elf(std::forward<std::shared_ptr<boost::interprocess::mapped_region>>(t._region))
 		{
 			_file_name = std::forward<std::string>(t._file_name);
+		}
+
+		Elf(Elf const&):
+			_header(N_Header::create_header_from_memory_blob(BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size())))
+		{
+
 		}
 
 		friend Elf create_elf_from_existing_elf(Elf, std::string const& path_to_elf);

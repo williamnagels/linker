@@ -4,5 +4,8 @@
 #include "src/include/core/elf.h"
 int main()
 {
-	N_Core::create_elf_from_path_to_file("testfiles/sleep");
+	
+
+	std::vector<Linkable> SomeVector;
+	SomeVector.push_back(N_Core::create_elf_from_path_to_file("testfiles/sleep"));
 }
