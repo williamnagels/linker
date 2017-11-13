@@ -11,8 +11,13 @@ namespace N_Core
 		std::unique_ptr<T> _allocated_ptr; ///< Allocated memory if writes are required.
 		T* allocate_if_required();
 	public:
-		ReadWriteBlob(N_Core::BinaryBlob& header) :
+		ReadWriteBlob(N_Core::BinaryBlob const& header) :
 			_ptr(reinterpret_cast<T*>(&(*header.begin()))) {}
+
+		ReadWriteBlob(ReadWriteBlob const& blob)
+		{
+
+		}
 
  		~ReadWriteBlob(){ }
 

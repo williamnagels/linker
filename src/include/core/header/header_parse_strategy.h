@@ -8,59 +8,7 @@ namespace N_Core
 {
 	namespace N_Header
 	{
-		struct Elf32_Ehdr
-		{
-			uint8_t			e_magic_byte_0;
-			uint8_t			e_magic_byte_1;
-			uint8_t			e_magic_byte_2;
-			uint8_t			e_magic_byte_3;
-			uint8_t			e_class;
-			uint8_t			e_data;
-			uint8_t			e_file_version;
-			uint8_t			e_OS_ABI;
-			uint8_t			e_ABI_version;
-			uint8_t			e_padding[7];
-			uint16_t        e_type;
-			uint16_t        e_machine;
-			uint32_t        e_version;
-			uint32_t        e_entry;
-			uint32_t        e_phoff;
-			uint32_t        e_shoff;
-			uint32_t        e_flags;
-			uint16_t        e_ehsize;
-			uint16_t        e_phentsize;
-			uint16_t        e_phnum;
-			uint16_t        e_shentsize;
-			uint16_t        e_shnum;
-			uint16_t        e_shstrndx;
-		};
 
-		struct Elf64_Ehdr 
-		{
-			uint8_t			e_magic_byte_0;
-			uint8_t			e_magic_byte_1;
-			uint8_t			e_magic_byte_2;
-			uint8_t			e_magic_byte_3;
-			uint8_t			e_class;
-			uint8_t			e_data;
-			uint8_t			e_file_version;
-			uint8_t			e_OS_ABI;
-			uint8_t			e_ABI_version;
-			uint8_t			e_padding[7];
-			uint16_t		e_type;
-			uint16_t        e_machine;
-			uint32_t        e_version;
-			uint64_t        e_entry;
-			uint64_t        e_phoff;
-			uint64_t        e_shoff;
-			uint32_t        e_flags;
-			uint16_t        e_ehsize;
-			uint16_t        e_phentsize;
-			uint16_t        e_phnum;
-			uint16_t        e_shentsize;
-			uint16_t        e_shnum;
-			uint16_t        e_shstrndx;
-		};
 		class HeaderParseStrategy
 		{
 		public:
