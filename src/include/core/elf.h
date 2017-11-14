@@ -79,7 +79,6 @@ namespace N_Core
 		return Elf<N_Core::Bit64>(std::forward<std::shared_ptr<boost::interprocess::mapped_region>>(memory_region)); //Mapped file will be closed when the Elf obj is destructed.*/
 
 	}
-
 	/*
 	Linkable create_elf_from_existing_elf(Linkable existing_elf, std::string const& path_to_elf)
 	{

@@ -1,6 +1,5 @@
 #include <boost/test/unit_test.hpp> 
 #include "src/include/core/header/header.h"
-#include "src/include/core/header/header_parse_strategy.h"
 #include "src/include/core/elf.h"
 #define HAS_MESSAGE(message_to_verify) [](auto& exception) { return !std::string(exception.what()).compare(message_to_verify); }
 

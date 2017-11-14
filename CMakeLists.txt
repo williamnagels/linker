@@ -30,7 +30,6 @@ add_library(linker_core STATIC
 
 	# header
 	src/core/header/header.cpp
-	src/core/header/header_parse_strategy.cpp
 )
 
 add_executable(linker src/main.cpp) 
