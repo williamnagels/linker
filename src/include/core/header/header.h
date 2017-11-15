@@ -1,19 +1,52 @@
 #pragma once
-#include <memory>
-#include <type_traits>
 #include "src/include/core/general.h"
 #include "src/include/core/header/header_member_types.h"
 #include "src/include/core/read_write_blob.h"
+
+#include <memory>
+#include <type_traits>
+#include <boost/mpl/vector.hpp>
+#include <boost/type_erasure/any.hpp>
+#include <boost/type_erasure/iterator.hpp>
+#include <boost/type_erasure/operators.hpp>
+#include <boost/type_erasure/tuple.hpp>
+#include <boost/type_erasure/same_type.hpp>
+#include <boost/type_erasure/member.hpp>
+BOOST_TYPE_ERASURE_MEMBER((has_member_xoxo), xoxo, 0)
+
+using HeaderConcept =
+boost::type_erasure::any<
+	boost::mpl::vector<
+	boost::type_erasure::copy_constructible<>
+	, boost::type_erasure::relaxed
+	>
+>;
+
+
 namespace N_Core
 {
 	namespace N_Header
 	{
+
+
+
 		const std::string wrong_magic_bytes_message = "Wrong magic bytes in elf header. Did not find /7FELF. Is the file an elf?";
 
 		template <typename T>
 		class Header
 		{
-			using MemoryMap = std::conditional_t <std::is_same_v<Bit32, T>, Elf32_Ehdr, Elf64_Ehdr>;
+		public:
+			struct UnknownHeaderMapping {};
+			using MemoryMap = std::conditional_t <
+				std::is_same_v<Bit32, T>, 
+				Elf32_Ehdr, 
+				std::conditional_t <
+					std::is_same_v<Bit32, T>,
+					Elf64_Ehdr,
+					UnknownHeaderMapping
+				>
+			>;
+
 			ReadWriteBlob<MemoryMap> _header_content; ///< Memory blob with some map applied to it.
 			bool are_magic_bytes_correct()
 			{
@@ -22,12 +55,16 @@ namespace N_Core
 					_header_content.get(&MemoryMap::e_magic_byte_2) == 'L' &&
 					_header_content.get(&MemoryMap::e_magic_byte_3) == 'F';
 			}
+
 		public:		
+
 
 			template <typename = typename std::enable_if_t<std::is_same_v<T, Bit32> || std::is_same_v<T, Bit64>> >
 			Header(N_Core::BinaryBlob const& header_memory_blob) :
 				_header_content(header_memory_blob)
 			{
+
+				//BOOST_CONCEPT_ASSERT((EqualityComparable<T>));
 				if (!are_magic_bytes_correct())
 				{
 					throw std::invalid_argument(wrong_magic_bytes_message);
@@ -40,7 +77,11 @@ namespace N_Core
 
 			}
 			
-
+			BOOST_CONCEPT_USAGE(Header)
+			{
+				MemoryMap map;
+				auto a = map.e_magic_byte_0;
+			};
 		};
 	}
 }
