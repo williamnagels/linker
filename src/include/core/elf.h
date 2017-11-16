@@ -33,6 +33,8 @@ namespace N_Core
 		// Name of source elf or elf to create.
 		std::string _file_name;
 
+		// The header is templated because based on type type of elf(64 bit vs 32bit) another memory map (different 
+		// member variables) is selected.
 		N_Header::Header<T> _header;
 
 		// Shared ptr because an output elf containing sections of this elf will need
@@ -52,23 +54,6 @@ namespace N_Core
 
 		}
 		
-
-		/*
-		template<typename T>
-		Elf(T&& t):
-			Elf(std::forward<std::shared_ptr<boost::interprocess::mapped_region>>(t._region))
-		{
-			_file_name = std::forward<std::string>(t._file_name);
-		}
-
-		Elf(Elf const&):
-			_header(N_Header::create_header_from_memory_blob(BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size())))
-		{
-
-		}*/
-
-		//friend Elf create_elf_from_existing_elf(Elf, std::string const& path_to_elf);
-		//friend Elf create_elf_from_path_to_file(std::string const& path_to_elf);
 	};
 
 	Linkable create_elf_from_path_to_file(std::string const& path_to_elf)

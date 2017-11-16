@@ -35,13 +35,13 @@ namespace N_Core
 		template <typename T>
 		class Header
 		{
-		public:
+		private:
 			struct UnknownHeaderMapping {};
 			using MemoryMap = std::conditional_t <
 				std::is_same_v<Bit32, T>, 
 				Elf32_Ehdr, 
 				std::conditional_t <
-					std::is_same_v<Bit32, T>,
+					std::is_same_v<Bit64, T>,
 					Elf64_Ehdr,
 					UnknownHeaderMapping
 				>
@@ -63,8 +63,6 @@ namespace N_Core
 			Header(N_Core::BinaryBlob const& header_memory_blob) :
 				_header_content(header_memory_blob)
 			{
-
-				//BOOST_CONCEPT_ASSERT((EqualityComparable<T>));
 				if (!are_magic_bytes_correct())
 				{
 					throw std::invalid_argument(wrong_magic_bytes_message);
