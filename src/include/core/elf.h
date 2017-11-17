@@ -47,29 +47,32 @@ namespace N_Core
 		{
 		}
 
-		Elf(Elf const& elf) :
+		//Create new elf from existing elf. elf will be stored under file_name.
+		Elf(Elf const& elf, std::string file_name) :
 			_region(elf._region)
 			, _header(_header)
+			, _file_name(file_name)
 		{
 
 		}
 		
 	};
 
-	Linkable create_elf_from_path_to_file(std::string const& path_to_elf)
+	// Build elf from path. Will map file into memory.
+	Linkable create_elf(std::string const& path_to_elf)
 	{
 		boost::interprocess::file_mapping m_file(path_to_elf.c_str(), boost::interprocess::read_only);
 		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
 
-		return Elf<N_Core::Bit64>(std::forward<std::shared_ptr<boost::interprocess::mapped_region>>(memory_region)); //Mapped file will be closed when the Elf obj is destructed.*/
-
+		return Elf<N_Core::Bit64>(std::move(memory_region)); //Mapped file will be closed when the Elf obj is destructed.*/
 	}
-	/*
-	Linkable create_elf_from_existing_elf(Linkable existing_elf, std::string const& path_to_elf)
-	{
-		auto& elf = Elf(std::forward<Elf>(existing_elf));
-		elf._file_name = path_to_elf;
 
-		return elf;
-	}*/
+	// Build elf from path. Will map file into memory.
+	Linkable create_elf(std::string const& path_to_elf)
+	{
+		boost::interprocess::file_mapping m_file(path_to_elf.c_str(), boost::interprocess::read_only);
+		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
+
+		return Elf<N_Core::Bit64>(std::move(memory_region)); //Mapped file will be closed when the Elf obj is destructed.*/
+	}
 }
