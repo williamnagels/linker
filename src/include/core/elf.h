@@ -1,13 +1,13 @@
 #pragma once
-#include "src/include/core/tree.hh"
-#include "src/include/core/node.h"
 #include "src/include/core/header/header.h"
 #include "src/include/core/general.h"
-#include <boost/interprocess/file_mapping.hpp>
-#include <boost/interprocess/mapped_region.hpp>
+
 #include <string>
 #include <optional>
 #include <memory>
+
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/type_erasure/any.hpp>
 #include <boost/type_erasure/iterator.hpp>
@@ -47,7 +47,7 @@ namespace N_Core
 		{
 		}
 
-		//Create new elf from existing elf. elf will be stored under file_name.
+		// Create new elf from existing elf. elf will be stored under file_name.
 		Elf(Elf const& elf, std::string file_name) :
 			_region(elf._region)
 			, _header(_header)
@@ -59,20 +59,19 @@ namespace N_Core
 	};
 
 	// Build elf from path. Will map file into memory.
+	template <typename T>
 	Linkable create_elf(std::string const& path_to_elf)
 	{
 		boost::interprocess::file_mapping m_file(path_to_elf.c_str(), boost::interprocess::read_only);
 		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
 
-		return Elf<N_Core::Bit64>(std::move(memory_region)); //Mapped file will be closed when the Elf obj is destructed.*/
+		return Elf<T>(std::move(memory_region)); //Mapped file will be closed when the Elf obj is destructed.*/
 	}
 
-	// Build elf from path. Will map file into memory.
-	Linkable create_elf(std::string const& path_to_elf)
+	// Create elf from another elf
+	template <typename T>
+	Linkable create_elf(N_Core::Elf<T> elf, std::string const& path_to_elf)
 	{
-		boost::interprocess::file_mapping m_file(path_to_elf.c_str(), boost::interprocess::read_only);
-		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
-
-		return Elf<N_Core::Bit64>(std::move(memory_region)); //Mapped file will be closed when the Elf obj is destructed.*/
+		return N_Core::Elf<T>(elf, path_to_elf);
 	}
 }

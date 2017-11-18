@@ -2,7 +2,6 @@
 #include "src/include/core/addressable.h"
 #include "src/include/core/general.h"
 #include "src/include/core/symtab/symbol_table.h"
-#include "src/include/core/node.h"
 #include "src/include/core/section/section_member_types.h"
 
 #include <variant>
@@ -21,7 +20,7 @@ namespace N_Core
 		*
 		*
 		*/
-		class Section: public Node
+		class Section
 		{
 		public:
 			Section(N_Core::BinaryBlob& header, N_Core::BinaryBlob& content); ///< Construct from 2 binary blobs. One for content another one for header.
