@@ -65,9 +65,11 @@ namespace N_Core
 		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
 
 		uint8_t* base_address = static_cast<uint8_t*>((*memory_region).get_address());
-		N_Core::N_Header::Header<N_Core::Bit32>* some_header = reinterpret_cast<N_Core::N_Header::Header<N_Core::Bit32>*>(base_address);
-
-		if (some_header->is_64bit_header())
+		
+		// Doesn't matter if Bit32 or Bit64 is chosen here as we are only interested in wether or not the file
+		// is a 64-bit or 32-bit elf. Note that in both cases the indicating variable is at the same offset
+		// thus both memory maps can be applied.
+		if (reinterpret_cast<N_Core::N_Header::Header<N_Core::Bit32>*>(base_address)->is_64bit_header())
 		{
 			return Elf<N_Core::Bit64>(std::move(memory_region));
 		}
