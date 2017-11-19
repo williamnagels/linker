@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <ostream>
 #include "src/include/core/general.h"
 namespace N_Core
 {
@@ -43,6 +44,11 @@ namespace N_Core
 		
 			return _ptr->*_member_ptr;
 		}
-		
+		friend void dump(std::ostream& stream, ReadWriteBlob<T> const& header);
 	};
+	template <class T>
+	void dump(std::ostream& stream, ReadWriteBlob<T>const& header)
+	{
+		stream.write(reinterpret_cast<uint8_t*>(header._ptr), sizeof(T));
+	}
 }

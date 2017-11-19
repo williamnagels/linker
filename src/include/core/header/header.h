@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <type_traits>
+#include <ostream>
 #include <boost/mpl/vector.hpp>
 #include <boost/type_erasure/any.hpp>
 #include <boost/type_erasure/iterator.hpp>
@@ -85,6 +86,17 @@ namespace N_Core
 				MemoryMap map;
 				auto a = map.e_magic_byte_0;
 			};
+
+			friend void dump(std::ostream& stream, N_Header::Header<T> header);
 		};
+
+		//@brief dump header to stream
+		//
+		//
+		template <typename T>
+		void dump(std::ostream& stream, N_Header::Header<T> header)
+		{
+			dump(stream, header._header_content);
+		}
 	}
 }

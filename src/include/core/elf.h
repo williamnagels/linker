@@ -87,4 +87,12 @@ namespace N_Core
 	{
 		return N_Core::Elf<T>(elf, path_to_elf);
 	}
+
+	template <typename T>
+	void dump(std::ostream& stream, Elf<T> elf)
+	{
+		dump(elf._header);
+	}
+
+
 }
