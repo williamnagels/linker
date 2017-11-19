@@ -59,16 +59,27 @@ namespace N_Core
 	};
 
 	// Build elf from path. Will map file into memory.
-	template <typename T>
 	Linkable create_elf(std::string const& path_to_elf)
 	{
 		boost::interprocess::file_mapping m_file(path_to_elf.c_str(), boost::interprocess::read_only);
 		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
 
-		return Elf<T>(std::move(memory_region)); //Mapped file will be closed when the Elf obj is destructed.*/
+		uint8_t* base_address = static_cast<uint8_t*>((*memory_region).get_address());
+		N_Core::N_Header::Header<N_Core::Bit32>* some_header = reinterpret_cast<N_Core::N_Header::Header<N_Core::Bit32>*>(base_address);
+
+		if (some_header->is_64bit_header())
+		{
+			return Elf<N_Core::Bit64>(std::move(memory_region));
+		}
+		else
+		{
+			return Elf<N_Core::Bit32>(std::move(memory_region));
+		}
+
 	}
 
-	// Create elf from another elf
+	// @brief create elf from an existing elf.
+	// 
 	template <typename T>
 	Linkable create_elf(N_Core::Elf<T> elf, std::string const& path_to_elf)
 	{

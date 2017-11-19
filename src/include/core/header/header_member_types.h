@@ -4,13 +4,19 @@ namespace N_Core
 {
 	namespace N_Header
 	{
+		enum class Class :uint8_t
+		{
+			ELFCLASSNONE = 0,
+			ELFCLASS32 = 1,
+			ELFCLASS64 = 2
+		};
 		struct Elf32_Ehdr
 		{
 			uint8_t			e_magic_byte_0;
 			uint8_t			e_magic_byte_1;
 			uint8_t			e_magic_byte_2;
 			uint8_t			e_magic_byte_3;
-			uint8_t			e_class;
+			Class			e_class;
 			uint8_t			e_data;
 			uint8_t			e_file_version;
 			uint8_t			e_OS_ABI;
@@ -38,7 +44,7 @@ namespace N_Core
 			uint8_t			e_magic_byte_1;
 			uint8_t			e_magic_byte_2;
 			uint8_t			e_magic_byte_3;
-			uint8_t			e_class;
+			Class			e_class;
 			uint8_t			e_data;
 			uint8_t			e_file_version;
 			uint8_t			e_OS_ABI;
@@ -102,12 +108,7 @@ namespace N_Core
 			EV_CURRENT=1
 		};
 
-		enum Class :uint8_t
-		{
-			ELFCLASSNONE=0,
-			ELFCLASS32=1,
-			ELFCLASS64=2
-		};
+
 
 		enum OS_ABI : uint8_t
 		{

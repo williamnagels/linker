@@ -5,6 +5,5 @@
 int main()
 {
 	std::vector<Linkable> SomeVector;
-	SomeVector.push_back(N_Core::create_elf<N_Core::Bit64>("testfiles/sleep"));
-
+	SomeVector.push_back(N_Core::create_elf("testfiles/sleep"));
 }

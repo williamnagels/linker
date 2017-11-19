@@ -56,6 +56,8 @@ namespace N_Core
 					_header_content.get(&MemoryMap::e_magic_byte_3) == 'F';
 			}
 
+
+
 		public:		
 
 
@@ -74,7 +76,10 @@ namespace N_Core
 			{
 
 			}
-			
+			bool is_64bit_header()
+			{
+				return _header_content.get(&MemoryMap::e_class) == Class::ELFCLASS64;
+			}
 			BOOST_CONCEPT_USAGE(Header)
 			{
 				MemoryMap map;
