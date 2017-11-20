@@ -26,7 +26,7 @@ namespace N_Core
  		~ReadWriteBlob(){ }
 
 		T const& get_content() { return *ptr; }
-		template <typename MemberType, typename ParamType>
+		template <typename MemberType, typename ParamType, std::enable_if_t<sizeof(T) <= sizeof(ParamType), int> = 0 >
 		void set(MemberType T::* _member_ptr, ParamType val)
 		{
 			static_assert(sizeof(T) >= sizeof(ParamType), "Value to set may be bigger than target variable can hold.");

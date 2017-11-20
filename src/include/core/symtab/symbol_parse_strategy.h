@@ -37,12 +37,6 @@ namespace N_Core
 			virtual uint64_t get_value() = 0;
 			virtual uint64_t get_size() = 0;
 			virtual uint64_t get_section_index() = 0;
-			virtual void set_name(uint64_t) = 0;
-			virtual void set_info(uint64_t) = 0;
-			virtual void set_other(uint64_t) = 0;
-			virtual void set_value(uint64_t) = 0;
-			virtual void set_size(uint64_t) = 0;
-			virtual void set_section_index(uint64_t) =0;
 		};
 
 		template<class T>
@@ -62,14 +56,6 @@ namespace N_Core
 			uint64_t get_size() { return _read_write_blob.get(&T::st_size); }
 			uint64_t get_section_index() { return _read_write_blob.get(&T::st_shndx); }
 			uint64_t get_total_size_in_bytes() { return T::SIZE_IN_BYTES; }
-
-
-			void set_name(uint64_t name) { _read_write_blob.set(&T::st_name, name); }
-			void set_value(uint64_t value) { _read_write_blob.set(&T::st_value, value); }
-			void set_size(uint64_t size) { _read_write_blob.set(&T::st_size, size); }
-			void set_info(uint64_t info) { _read_write_blob.set(&T::st_info, info); }
-			void set_other(uint64_t other) { _read_write_blob.set(&T::st_other, other); }
-			void set_section_index(uint64_t section_index) { _read_write_blob.set(&T::st_shndx, section_index); }
 		};
 	}
 }
