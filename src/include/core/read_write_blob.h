@@ -12,7 +12,10 @@ namespace N_Core
 		std::unique_ptr<T> _allocated_ptr; ///< Allocated memory if writes are required.
 		T* allocate_if_required();
 	public:
-		ReadWriteBlob(N_Core::BinaryBlob const& header) :
+		
+		ReadWriteBlob(
+			N_Core::BinaryBlob const& header, 
+			std::add_pointer_t<std::enable_if_t<std::is_pod_v<T>>> = 0 ) :
 			_ptr(reinterpret_cast<T*>(&(*header.begin()))) {}
 
 		ReadWriteBlob(ReadWriteBlob const& blob)
@@ -41,9 +44,11 @@ namespace N_Core
 		template <class MemberType>
 		MemberType get(MemberType T::* _member_ptr)
 		{
-		
 			return _ptr->*_member_ptr;
 		}
+
+
+
 		friend void dump(std::ostream& stream, ReadWriteBlob<T> const& header);
 	};
 	template <class T>
