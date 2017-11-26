@@ -8,11 +8,11 @@ BOOST_AUTO_TEST_SUITE(elf_header)
 // Not being able to parse elf header (magic byte = wrong)
 BOOST_AUTO_TEST_CASE(not_an_elf)
 {
-
-	//BOOST_CHECK_EXCEPTION(
-	//	N_Core::create_elf_from_path_to_file("testfiles/wrong_magic_bytes"), 
-	//	std::invalid_argument, 
-	//	HAS_MESSAGE(N_Core::N_Header::wrong_magic_bytes_message));
+	
+	BOOST_CHECK_EXCEPTION(
+	N_Core::create_elf("testfiles/wrong_magic_bytes");, 
+	std::invalid_argument, 
+	HAS_MESSAGE(N_Core::N_Header::wrong_magic_bytes_message));
 }
 
 BOOST_AUTO_TEST_CASE(parse_64bit_sleep)
