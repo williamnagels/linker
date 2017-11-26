@@ -5,6 +5,7 @@ cmake_minimum_required (VERSION 3.9.2)
 
 if (WIN32)
 	set (CMAKE_CXX_FLAGS "/std:c++latest /EHsc")
+
 endif()
 
 set(Boost_DEBUG ON)

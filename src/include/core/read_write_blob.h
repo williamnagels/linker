@@ -16,7 +16,7 @@ namespace N_Core
 		ReadWriteBlob(
 			N_Core::BinaryBlob const& header, 
 			std::add_pointer_t<std::enable_if_t<std::is_pod_v<T>>> = 0 ) :
-			_ptr(reinterpret_cast<T*>(&(*header.begin()))) {}
+			_ptr(reinterpret_cast<T*>(header.begin())) {}
 
 		ReadWriteBlob(ReadWriteBlob const& blob)
 		{

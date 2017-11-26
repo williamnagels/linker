@@ -83,8 +83,8 @@ namespace N_Core
 			}
 			BOOST_CONCEPT_USAGE(Header)
 			{
-				MemoryMap map;
-				auto a = map.e_magic_byte_0;
+				MemoryMap*  map = reinterpret_cast<MemoryMap*>(this);
+				auto a = map->e_magic_byte_0;
 			};
 
 			friend void dump(std::ostream& stream, N_Header::Header<T> header);
