@@ -59,9 +59,17 @@ namespace N_Core
 
 
 
+
 		public:		
 
-
+			MemoryMap const& get()
+			{
+				return _header_content.get();
+			}
+			void set(MemoryMap const&  map_to_set)
+			{
+				_header_content.set(map_to_set);
+			}
 			template <typename = typename std::enable_if_t<std::is_same_v<T, Bit32> || std::is_same_v<T, Bit64>> >
 			Header(N_Core::BinaryBlob const& header_memory_blob) :
 				_header_content(header_memory_blob)

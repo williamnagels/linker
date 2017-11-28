@@ -71,8 +71,6 @@ namespace N_Core
 		// Doesn't matter if Bit32 or Bit64 is chosen here as we are only interested in wether or not the file
 		// is a 64-bit or 32-bit elf. Note that in both cases the indicating variable is at the same offset
 		// thus both memory maps can be applied.
-
-		//N_Core::N_Header::Header<N_Core::Bit32>(BinaryBlob(base_address, reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size()))
 		if (N_Core::N_Header::Header<N_Core::Bit32>(BinaryBlob(base_address,end_address)).is_64bit_header())
 		{
 			return Elf<N_Core::Bit64>(std::move(memory_region));

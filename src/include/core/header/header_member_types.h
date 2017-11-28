@@ -63,7 +63,9 @@ namespace N_Core
 			uint16_t        e_shentsize;
 			uint16_t        e_shnum;
 			uint16_t        e_shstrndx;
+
 		};
+
 		enum Identification:uint8_t
 		{
 			EI_MAG0=0,

@@ -10,7 +10,18 @@ namespace N_Core
 	private:
 		T* _ptr; ///< Memory access ptr
 		std::unique_ptr<T> _allocated_ptr; ///< Allocated memory if writes are required.
-		T* allocate_if_required();
+
+		void allocate_if_required()
+		{
+			if (_allocated_ptr)
+			{
+				return;
+			}
+
+			_allocated_ptr = std::make_unique<T>();
+			*_allocated_ptr = *_ptr;
+			_ptr = _allocated_ptr.get();
+		}
 	public:
 		
 		ReadWriteBlob(
@@ -26,17 +37,27 @@ namespace N_Core
  		~ReadWriteBlob(){ }
 
 		T const& get_content() { return *ptr; }
+
+		void set(T const& t)
+		{
+
+			allocate_if_required();
+
+			*_ptr = t;
+
+		}
+
+		T const& get()
+		{
+			return *_ptr;
+		}
+
 		template <typename MemberType, typename ParamType, std::enable_if_t<sizeof(T) <= sizeof(ParamType), int> = 0 >
 		void set(MemberType T::* _member_ptr, ParamType val)
 		{
 			static_assert(sizeof(T) >= sizeof(ParamType), "Value to set may be bigger than target variable can hold.");
 
-			if (!_allocated_ptr)
-			{
-				_allocated_ptr = std::make_unique<T>();
-				*_allocated_ptr = *_ptr;
-				_ptr = _allocated_ptr.get();
-			}
+			allocate_if_required();
 
 			_ptr->*_member_ptr = val;
 		}
