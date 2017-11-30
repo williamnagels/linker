@@ -13,13 +13,67 @@
 #include <boost/type_erasure/tuple.hpp>
 #include <boost/type_erasure/same_type.hpp>
 #include <boost/type_erasure/member.hpp>
-BOOST_TYPE_ERASURE_MEMBER((has_member_xoxo), xoxo, 0)
+#include <boost/type_erasure/any.hpp>
+#include <boost/type_erasure/concept_interface.hpp>
+#include <boost/type_erasure/rebind_any.hpp>
+#include <boost/type_erasure/any.hpp>
+#include <boost/type_erasure/concept_interface.hpp>
+#include <boost/type_erasure/rebind_any.hpp>
+template<class C>
+struct is_valid_header_description
+{
+	static void apply(C& cont) 
+	{
+		cont.e_magic_byte_0 = 0;
+		cont.e_magic_byte_1 = 0;
+		cont.e_magic_byte_2 = 0;
+		cont.e_magic_byte_3 = 0;
+		cont.e_class = N_Core::N_Header::Class::ELFCLASSNONE;
+		cont.e_data = 0;
+		cont.e_file_version = 0;
+		cont.e_OS_ABI = 0;
+		cont.e_ABI_version = 0;
+		cont.e_padding[0] = 0;
+		cont.e_padding[1] = 0;
+		cont.e_padding[2] = 0;
+		cont.e_padding[3] = 0;
+		cont.e_padding[4] = 0;
+		cont.e_padding[5] = 0;
+		cont.e_padding[6] = 0;
+		cont.e_type = 0;
+		cont.e_machine = 0;
+		cont.e_version = 0;
+		cont.e_entry = 0;
+		cont.e_phoff = 0;
+		cont.e_shoff = 0;
+		cont.e_flags = 0;
+		cont.e_ehsize = 0;
+		cont.e_phentsize = 0;
+		cont.e_phnum = 0;
+		cont.e_shentsize = 0;
+		cont.e_shnum = 0;
+		cont.e_shstrndx = 0;
+	}
+};
+namespace boost {
+	namespace type_erasure {
+		template<class C, class Base>
+		struct concept_interface<is_valid_header_description<C>, Base, C> : Base
+		{
+			void is_valid_header_description()
+			{
+				call(is_valid_header_description<C>(), *this, arg);
+			}
+		};
+	}
+}
 
-using HeaderConcept =
+using HeaderImpl =
 boost::type_erasure::any<
 	boost::mpl::vector<
 	boost::type_erasure::copy_constructible<>
 	, boost::type_erasure::relaxed
+	, is_valid_header_description<boost::type_erasure::_self>
 	>
 >;
 
@@ -28,9 +82,6 @@ namespace N_Core
 {
 	namespace N_Header
 	{
-
-
-
 		const std::string wrong_magic_bytes_message = "Wrong magic bytes in elf header. Did not find /7FELF. Is the file an elf?";
 
 		template <typename T>
@@ -47,7 +98,7 @@ namespace N_Core
 					UnknownHeaderMapping
 				>
 			>;
-
+			HeaderImpl _header;
 			ReadWriteBlob<MemoryMap> _header_content; ///< Memory blob with some map applied to it.
 			bool are_magic_bytes_correct()
 			{
@@ -73,6 +124,7 @@ namespace N_Core
 			template <typename = typename std::enable_if_t<std::is_same_v<T, Bit32> || std::is_same_v<T, Bit64>> >
 			Header(N_Core::BinaryBlob const& header_memory_blob) :
 				_header_content(header_memory_blob)
+				, _header(Elf64_Ehdr())
 			{
 				if (!are_magic_bytes_correct())
 				{
