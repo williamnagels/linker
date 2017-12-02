@@ -8,21 +8,7 @@
 
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
-#include <boost/mpl/vector.hpp>
-#include <boost/type_erasure/any.hpp>
-#include <boost/type_erasure/iterator.hpp>
-#include <boost/type_erasure/operators.hpp>
-#include <boost/type_erasure/tuple.hpp>
-#include <boost/type_erasure/same_type.hpp>
-#include <boost/type_erasure/member.hpp>
-namespace te = boost::type_erasure;
 
-BOOST_TYPE_ERASURE_MEMBER((has_member_store), store, 1)
-
-using Linkable = te::any<boost::mpl::vector<
-	te::copy_constructible<>,
-	te::relaxed
->>;
 
 namespace N_Core
 {
@@ -40,8 +26,10 @@ namespace N_Core
 		// member variables) is selected.
 		std::unique_ptr<N_Header::HeaderA> _header;
 
+		// Construct an elf from memory mapped region and a file name.
+		// You probably do not want to use directly but instead use the free functions: create_elf
 		template <typename T, typename T2>
-		Elf(T&& mapped_region, T2&& file_name, std::enable_if_t<std::is_same_v<std::shared_ptr<boost::interprocess::mapped_region>, std::decay_t<T>>, int> a = 0):
+		explicit Elf(T&& mapped_region, T2&& file_name, std::enable_if_t<std::is_same_v<std::shared_ptr<boost::interprocess::mapped_region>, std::decay_t<T>>, int> a = 0):
 			_file_name(std::forward<T2>(file_name))
 			,_region(std::forward<T>(mapped_region))
 			,_header(nullptr)
@@ -58,10 +46,12 @@ namespace N_Core
 			}
 		}
 
-		// Create new elf from existing elf. elf will be stored under file_name.
+		// Construct an elf from an existing elf and write to file on disk.
 		template<typename T, typename T2>
-		Elf(T&& elf, T2&& file_name, std::enable_if_t<std::is_same_v<Elf, std::decay_t<T>>, int> a = 0) :
-			Elf(std::forward<T>(elf)._region, std::forward<T2>(file_name))
+		explicit Elf(T&& elf, T2&& file_name, std::enable_if_t<std::is_same_v<Elf, std::decay_t<T>>, int> a = 0) noexcept :
+			_file_name(std::forward<T2>(file_name))
+			,_region(std::forward<T>(elf)._region)
+			,_header(std::forward<T>(elf)._header->deep_copy())
 		{
 		}
 		
@@ -77,7 +67,7 @@ namespace N_Core
 		return Elf(std::move(memory_region), path_to_elf);
 	}
 
-	// @brief create elf from an existing elf.
+	// @brief create elf from an existing elf
 	// 
 	N_Core::Elf create_elf(N_Core::Elf elf, std::string const& path_to_elf)
 	{

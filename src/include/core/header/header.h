@@ -77,6 +77,8 @@ namespace N_Core
 			virtual void set_section_header_number_of_entries(uint16_t) = 0;
 			virtual uint16_t get_section_index_that_contains_strings() = 0;
 			virtual void set_section_index_that_contains_strings(uint16_t) = 0;
+			virtual std::unique_ptr<HeaderA> deep_copy() const& = 0;
+			virtual std::unique_ptr<HeaderA> deep_copy() && = 0;
 		};
 
 
@@ -157,7 +159,9 @@ namespace N_Core
 			uint16_t get_section_index_that_contains_strings() override { return _header_content.get(&T::e_shstrndx); };
 			void set_section_index_that_contains_strings(uint16_t index)   override { _header_content.set(&T::e_shstrndx, index); };
 
-			//template <typename = typename std::enable_if_t<std::is_same_v<T, Bit32> || std::is_same_v<T, Bit64>> >
+			std::unique_ptr<HeaderA> deep_copy() const& override  { return std::make_unique<Header<T>>(*this);}
+			std::unique_ptr<HeaderA> deep_copy() && override { return std::make_unique<Header<T>>(std::move(*this)); }
+
 			Header(N_Core::BinaryBlob const& header_memory_blob) :
 				_header_content(header_memory_blob)
 			{
@@ -167,11 +171,14 @@ namespace N_Core
 				}
 			}
 
-			Header(Header const& header) :
-				_header_content(header._header_content)
+
+			template <typename T>
+			Header(T&& header, std::enable_if_t<std::is_same_v<std::decay_t<T>, Header>, int> = 0) :
+				_header_content(std::forward<T>(header)._header_content)
 			{
 
 			}
+
 			bool is_64bit_header()
 			{
 				return get_class() == Class::ELFCLASS64;
