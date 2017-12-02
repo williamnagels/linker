@@ -18,6 +18,7 @@ namespace N_Core
 		class HeaderA
 		{
 		public:
+			virtual ~HeaderA() {}
 			virtual uint8_t get_magic_byte_0() = 0;
 			virtual void set_magic_byte_0(uint8_t byte) =0;
 			virtual uint8_t get_magic_byte_1() =0;
