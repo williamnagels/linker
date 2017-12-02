@@ -4,6 +4,7 @@
 #include "src/include/core/general.h"
 namespace N_Core
 {
+
 	template<class T>
 	class ReadWriteBlob
 	{
@@ -38,21 +39,8 @@ namespace N_Core
 
 		T const& get_content() { return *ptr; }
 
-		void set(T const& t)
-		{
 
-			allocate_if_required();
-
-			*_ptr = t;
-
-		}
-
-		T const& get()
-		{
-			return *_ptr;
-		}
-
-		template <typename MemberType, typename ParamType, std::enable_if_t<sizeof(T) <= sizeof(ParamType), int> = 0 >
+		template <typename MemberType, typename ParamType> //, std::enable_if_t<sizeof(T) <= sizeof(ParamType), int> = 0 
 		void set(MemberType T::* _member_ptr, ParamType val)
 		{
 			static_assert(sizeof(T) >= sizeof(ParamType), "Value to set may be bigger than target variable can hold.");
