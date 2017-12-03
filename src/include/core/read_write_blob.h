@@ -5,6 +5,7 @@
 namespace N_Core
 {
 
+
 	template<class T>
 	class ReadWriteBlob
 	{
@@ -25,14 +26,27 @@ namespace N_Core
 		}
 	public:
 		
-		ReadWriteBlob(
-			N_Core::BinaryBlob const& header, 
-			std::add_pointer_t<std::enable_if_t<std::is_pod_v<T>>> = 0 ) :
+		ReadWriteBlob(N_Core::BinaryBlob const& header, std::add_pointer_t<std::enable_if_t<std::is_pod_v<T>>> = 0 ) :
 			_ptr(reinterpret_cast<T*>(header.begin())) {}
 
-		ReadWriteBlob(ReadWriteBlob const& blob)
+		ReadWriteBlob(ReadWriteBlob const& blob) :
+			_ptr(blob._ptr)
 		{
+			if (blob._allocated_ptr)
+			{
+				_allocated_ptr = std::make_unique<T>(*blob._allocated_ptr);
+				_ptr = _allocated_ptr.get();
+			}
+		}
 
+		ReadWriteBlob(ReadWriteBlob&& blob) :
+			_ptr(blob._ptr)
+		{
+			if (blob._allocated_ptr)
+			{
+				_allocated_ptr = std::move(blob)._allocated_ptr;
+				_ptr = _allocated_ptr.get();
+			}
 		}
 
  		~ReadWriteBlob(){ }

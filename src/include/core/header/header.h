@@ -159,8 +159,14 @@ namespace N_Core
 			uint16_t get_section_index_that_contains_strings() override { return _header_content.get(&T::e_shstrndx); };
 			void set_section_index_that_contains_strings(uint16_t index)   override { _header_content.set(&T::e_shstrndx, index); };
 
-			std::unique_ptr<HeaderA> deep_copy() const& override  { return std::make_unique<Header<T>>(*this);}
-			std::unique_ptr<HeaderA> deep_copy() && override { return std::make_unique<Header<T>>(std::move(*this)); }
+			std::unique_ptr<HeaderA> deep_copy() const& override 
+			{
+				return std::make_unique<Header<T>>(*this);
+			}
+			std::unique_ptr<HeaderA> deep_copy() && override 
+			{ 
+				return std::make_unique<Header<T>>(std::move(*this)); 
+			}
 
 			Header(N_Core::BinaryBlob const& header_memory_blob) :
 				_header_content(header_memory_blob)

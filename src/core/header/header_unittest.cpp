@@ -44,6 +44,17 @@ BOOST_AUTO_TEST_CASE(COW_header)
 	BOOST_CHECK_EQUAL(elf._header->get_type(), N_Core::N_Header::Type::ET_DYN);
 }
 
+BOOST_AUTO_TEST_CASE(deep_copy)
+{
+	auto elf = N_Core::create_elf("testfiles/sleep");
+	BOOST_CHECK_EQUAL(elf._header->get_type(), N_Core::N_Header::Type::ET_EXEC);
+
+	auto elf2 = N_Core::create_elf(elf, "testfiles/some_random_path");
+	BOOST_CHECK_EQUAL(elf2._header->get_type(), N_Core::N_Header::Type::ET_EXEC);
+	elf2._header->set_type(N_Core::N_Header::Type::ET_DYN);
+	BOOST_CHECK_EQUAL(elf._header->get_type(), N_Core::N_Header::Type::ET_EXEC);
+	BOOST_CHECK_EQUAL(elf2._header->get_type(), N_Core::N_Header::Type::ET_DYN);
+}
 
 
 BOOST_AUTO_TEST_SUITE_END()

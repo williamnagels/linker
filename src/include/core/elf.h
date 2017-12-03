@@ -69,7 +69,7 @@ namespace N_Core
 
 	// @brief create elf from an existing elf
 	// 
-	N_Core::Elf create_elf(N_Core::Elf elf, std::string const& path_to_elf)
+	N_Core::Elf create_elf(N_Core::Elf const& elf, std::string const& path_to_elf)
 	{
 		return N_Core::Elf(elf, path_to_elf);
 	}
