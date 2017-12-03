@@ -1,17 +1,22 @@
 #pragma once
 #include <cstdint>
+#include <ostream>
 namespace N_Core
 {
 	namespace N_Header
 	{
-		enum class Class :uint8_t
+		enum class Class : uint8_t
 		{
 			ELFCLASSNONE = 0,
 			ELFCLASS32 = 1,
 			ELFCLASS64 = 2
 		};
 
-
+		std::ostream& operator<<(std::ostream& os, Class const& class_to_print)
+		{
+			os << class_to_print;
+			return os;
+		}
 		enum Type : uint16_t
 		{
 			ET_NONE = 0,

@@ -94,7 +94,22 @@ namespace N_Core
 				_header_content.get(&T::e_magic_byte_3) == 'F';
 			}
 
-
+			void make_compliant()
+			{
+				
+				if constexpr (std::is_same_v<T, Elf64_Ehdr>)
+				{
+					set_class(Class::ELFCLASS64);
+				}
+				else
+				{
+					set_class(Class::ELFCLASS32);
+				}
+				set_magic_byte_0(0x7F);
+				set_magic_byte_1('E');
+				set_magic_byte_2('L');
+				set_magic_byte_3('F');
+			}
 
 		public:		
 			ReadWriteBlob<T> _header_content; ///< Memory blob with some map applied to it.
@@ -167,6 +182,12 @@ namespace N_Core
 			std::unique_ptr<HeaderA> deep_copy() && override 
 			{ 
 				return std::make_unique<Header<T>>(std::move(*this)); 
+			}
+
+			explicit Header():
+				_header_content()
+			{
+				make_compliant();
 			}
 
 			Header(N_Core::BinaryBlob const& header_memory_blob) :

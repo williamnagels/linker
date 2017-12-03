@@ -24,6 +24,21 @@ namespace N_Core
 		// member variables) is selected.
 		std::unique_ptr<N_Header::HeaderA> _header;
 
+		// Construct a new elf.
+		explicit Elf(N_Core::N_Header::Class class_of_elf= N_Core::N_Header::Class::ELFCLASS64):
+			_region(nullptr)
+			,_header()
+		{
+			if (class_of_elf== N_Core::N_Header::Class::ELFCLASS64)
+			{
+				_header = std::make_unique<N_Header::Header<N_Header::Elf64_Ehdr>>();
+			}
+			else
+			{
+				_header = std::make_unique<N_Header::Header<N_Header::Elf32_Ehdr>>();
+			}
+		}
+
 		// Construct an elf from memory mapped region and a file name.
 		// You probably do not want to use directly but instead use the free functions: create_elf
 		template <typename T>
@@ -44,7 +59,7 @@ namespace N_Core
 		}
 
 		// Construct an elf from an existing elf and write to file on disk.
-		template<typename T, std::enable_if_t<std::is_same_v<Elf, std::remove_const_t<std::remove_reference_t<T>>>, int> a = 0>
+		template<typename T, std::enable_if_t<std::is_same_v<Elf, std::decay_t<T>>, int> a = 0>
 		explicit Elf(T&& elf) :
 			_region(std::forward<T>(elf)._region)
 			,_header(std::forward<T>(elf)._header->deep_copy())
@@ -71,6 +86,12 @@ namespace N_Core
 		return N_Core::Elf(std::forward<T>(existing_elf));
 	}
 
+	// @brief create elf from an existing elf
+	// 
+	N_Core::Elf create_elf(N_Core::N_Header::Class class_to_use)
+	{
+		return N_Core::Elf(class_to_use);
+	}
 	
 	void dump(std::ostream& stream, Elf const& elf)
 	{
@@ -83,7 +104,7 @@ namespace N_Core
 	void dump_to_file(T&& path, Elf const& elf)
 	{
 		std::ofstream output_file;
-		output_file.open(std::forward<T>(path));
+		output_file.open(std::forward<T>(path), std::ios::out | std::ios::binary);
 		dump(output_file, elf);
 		output_file.close();
 	}

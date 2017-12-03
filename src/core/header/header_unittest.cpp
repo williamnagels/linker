@@ -12,7 +12,7 @@ BOOST_AUTO_TEST_SUITE(elf_header)
 BOOST_AUTO_TEST_CASE(not_an_elf)
 {
 	BOOST_CHECK_EXCEPTION(
-	N_Core::create_elf("testfiles/wrong_magic_bytes");, 
+	N_Core::create_elf("testfiles/wrong_magic_bytes"), 
 	std::invalid_argument, 
 	HAS_MESSAGE(N_Core::N_Header::wrong_magic_bytes_message));
 }
@@ -61,10 +61,6 @@ BOOST_AUTO_TEST_CASE(deep_copy)
 
 BOOST_AUTO_TEST_CASE(dump)
 {
-	const void * address = static_cast<const void*>(this); // cast to void* to avoid operator<<(T const* const) overload kicking in
-	std::stringstream ss;
-	ss << "testfiles/"<< address;
-
 	auto elf = N_Core::create_elf("testfiles/sleep");
 	BOOST_CHECK_EQUAL(elf._header->get_type(), N_Core::N_Header::Type::ET_EXEC);
 
@@ -77,9 +73,9 @@ BOOST_AUTO_TEST_CASE(dump)
 	elf2._header->set_padding_byte_5('a');
 	elf2._header->set_padding_byte_6('m');
 
-	N_Core::dump_to_file(ss.str(), elf2);
+	N_Core::dump_to_file("testfiles/dump", elf2);
 
-	auto elf3 = N_Core::create_elf(ss.str());
+	auto elf3 = N_Core::create_elf("testfiles/dump");
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_0(), 'w');
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_1(), 'i');
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_2(), 'l');
@@ -89,5 +85,30 @@ BOOST_AUTO_TEST_CASE(dump)
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_6(), 'm');
 }
 
+BOOST_AUTO_TEST_CASE(non_existing_file)
+{
+	BOOST_CHECK_EXCEPTION(
+		N_Core::create_elf("testfiles/non_existing_file"),
+		boost::interprocess::interprocess_exception,
+		HAS_MESSAGE("The system cannot find the file specified."));
+}
+
+BOOST_AUTO_TEST_CASE(new_elf)
+{
+	// There have been issues in the past where there was a bug in 
+	// dump_to_file leading bytes to be interepreted as characters i.s.o. actually binary data
+	// this would only be an issue on certain numbers. That's why checking a certain range of numbers.
+	for (auto i = 0; i < 1000; i++)
+	{
+		auto elf = N_Core::create_elf(N_Core::N_Header::Class::ELFCLASS64);
+		elf._header->set_entry(i);
+		N_Core::dump_to_file("testfiles/new_elf", elf);
+		auto elf2 = N_Core::create_elf("testfiles/new_elf");
+
+		BOOST_CHECK_EQUAL(elf2._header->get_class(), N_Core::N_Header::Class::ELFCLASS64);
+		BOOST_CHECK_EQUAL(elf2._header->get_entry(), i);
+	}
+
+}
 
 BOOST_AUTO_TEST_SUITE_END()
