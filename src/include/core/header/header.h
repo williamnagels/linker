@@ -94,10 +94,11 @@ namespace N_Core
 				_header_content.get(&T::e_magic_byte_3) == 'F';
 			}
 
-			ReadWriteBlob<T> _header_content; ///< Memory blob with some map applied to it.
 
 
 		public:		
+			ReadWriteBlob<T> _header_content; ///< Memory blob with some map applied to it.
+
 			uint8_t get_magic_byte_0() override { return _header_content.get(&T::e_magic_byte_0); }
 			void set_magic_byte_0(uint8_t byte) override { _header_content.set(&T::e_magic_byte_0, byte); }
 			uint8_t get_magic_byte_1() override { return _header_content.get(&T::e_magic_byte_1); }
@@ -195,11 +196,18 @@ namespace N_Core
 
 		//@brief dump header to stream
 		//
-		//
-		template <typename T>
-		void dump(std::ostream& stream, N_Header::Header<T> header)
+		void dump(std::ostream& stream, HeaderA const& header)
 		{
-			dump(stream, header._header_content);
+			auto ptr32 = dynamic_cast<Header<Elf32_Ehdr> const*>(&header);
+			if (ptr32)
+			{
+				return dump(stream, ptr32->_header_content);
+			}
+			auto ptr64 = dynamic_cast<Header<Elf64_Ehdr> const*>(&header);
+			if (ptr64)
+			{
+				return dump(stream, ptr64->_header_content);
+			}
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace N_Core
 	class ReadWriteBlob
 	{
 	private:
-		T* _ptr; ///< Memory access ptr
+
 		std::unique_ptr<T> _allocated_ptr; ///< Allocated memory if writes are required.
 
 		void allocate_if_required()
@@ -25,7 +25,7 @@ namespace N_Core
 			_ptr = _allocated_ptr.get();
 		}
 	public:
-		
+		T * _ptr; ///< Memory access ptr
 		ReadWriteBlob(N_Core::BinaryBlob const& header, std::add_pointer_t<std::enable_if_t<std::is_pod_v<T>>> = 0 ) :
 			_ptr(reinterpret_cast<T*>(header.begin())) {}
 
@@ -72,11 +72,11 @@ namespace N_Core
 
 
 
-		friend void dump(std::ostream& stream, ReadWriteBlob<T> const& header);
+		//friend void dump(std::ostream& stream, ReadWriteBlob<T> const& header);
 	};
-	template <class T>
+	template <typename T>
 	void dump(std::ostream& stream, ReadWriteBlob<T>const& header)
 	{
-		stream.write(reinterpret_cast<uint8_t*>(header._ptr), sizeof(T));
+		stream.write(reinterpret_cast<char const*>(header._ptr), sizeof(T));
 	}
 }

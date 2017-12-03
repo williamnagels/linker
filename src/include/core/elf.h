@@ -5,6 +5,7 @@
 #include <string>
 #include <optional>
 #include <memory>
+#include <fstream>
 
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
@@ -15,9 +16,6 @@ namespace N_Core
 	class Elf
 	{
 	public:
-		// Name of source elf or elf to create.
-		std::string _file_name;
-
 		// Shared ptr because an output elf containing sections of this elf will need
 		// to extend the lifetime of the memory mapped region.
 		std::shared_ptr<boost::interprocess::mapped_region> _region;
@@ -28,10 +26,9 @@ namespace N_Core
 
 		// Construct an elf from memory mapped region and a file name.
 		// You probably do not want to use directly but instead use the free functions: create_elf
-		template <typename T, typename T2>
-		explicit Elf(T&& mapped_region, T2&& file_name, std::enable_if_t<std::is_same_v<std::shared_ptr<boost::interprocess::mapped_region>, std::decay_t<T>>, int> a = 0):
-			_file_name(std::forward<T2>(file_name))
-			,_region(std::forward<T>(mapped_region))
+		template <typename T>
+		explicit Elf(T&& mapped_region, std::enable_if_t<std::is_same_v<std::shared_ptr<boost::interprocess::mapped_region>, std::decay_t<T>>, int> a = 0):
+			_region(std::forward<T>(mapped_region))
 			,_header(nullptr)
 		{
 			BinaryBlob blob = BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size());
@@ -47,10 +44,9 @@ namespace N_Core
 		}
 
 		// Construct an elf from an existing elf and write to file on disk.
-		template<typename T, typename T2>
-		explicit Elf(T&& elf, T2&& file_name, std::enable_if_t<std::is_same_v<Elf, std::decay_t<T>>, int> a = 0) noexcept :
-			_file_name(std::forward<T2>(file_name))
-			,_region(std::forward<T>(elf)._region)
+		template<typename T, std::enable_if_t<std::is_same_v<Elf, std::remove_const_t<std::remove_reference_t<T>>>, int> a = 0>
+		explicit Elf(T&& elf) :
+			_region(std::forward<T>(elf)._region)
 			,_header(std::forward<T>(elf)._header->deep_copy())
 		{
 		}
@@ -64,22 +60,32 @@ namespace N_Core
 		boost::interprocess::file_mapping m_file(path_to_elf.c_str(), boost::interprocess::read_only);
 		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
 		
-		return Elf(std::move(memory_region), path_to_elf);
+		return Elf(std::move(memory_region));
 	}
 
 	// @brief create elf from an existing elf
 	// 
-	N_Core::Elf create_elf(N_Core::Elf const& elf, std::string const& path_to_elf)
+	template <typename T, std::enable_if_t<std::is_same_v<Elf, std::decay_t<T>>, int> a = 0>
+	N_Core::Elf create_elf(T&& existing_elf)
 	{
-		return N_Core::Elf(elf, path_to_elf);
+		return N_Core::Elf(std::forward<T>(existing_elf));
 	}
 
-	/*
-	template <typename T>
-	void dump(std::ostream& stream, Elf<T> elf)
+	
+	void dump(std::ostream& stream, Elf const& elf)
 	{
-		dump(elf._header);
-	}*/
+		dump(stream, *elf._header);
+	}
 
+	// @brief create elf from an existing elf
+	// 
+	template <typename T>
+	void dump_to_file(T&& path, Elf const& elf)
+	{
+		std::ofstream output_file;
+		output_file.open(std::forward<T>(path));
+		dump(output_file, elf);
+		output_file.close();
+	}
 
 }
