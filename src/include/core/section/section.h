@@ -9,8 +9,20 @@
 
 namespace N_Core
 {
+
+
 	namespace N_Section
 	{
+		template <typename T>
+		class Table
+		{
+		public:
+		};
+
+		void create_section_table(N_Core::BinaryBlob blob)
+		{
+
+		}
 
 		class HeaderParseStrategy;
 		
