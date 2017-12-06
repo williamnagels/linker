@@ -4,7 +4,8 @@ namespace N_Core
 {
 	namespace N_Section
 	{
-		enum Flags : uint64_t
+
+		enum Flags: uint64_t
 		{
 			SHF_WRITE = 0x1,
 			SHF_ALLOC = 0x2,
@@ -22,7 +23,9 @@ namespace N_Core
 			SHF_MASKPROC = 0xf0000000
 		};
 
-		enum Type : uint64_t
+
+
+		enum Type : uint32_t
 		{
 			SHT_NULL = 0,
 			SHT_PROGBITS = 1,
@@ -59,6 +62,33 @@ namespace N_Core
 			SHT_HIPROC = 0x7fffffff,
 			SHT_LOUSER = 0x80000000,
 			SHT_HIUSER = 0xffffffff,
+		};
+
+		struct Elf64_Shdr 
+		{
+			uint32_t        sh_name;
+			Type		    sh_type;
+			uint64_t        sh_flags;
+			uint64_t        sh_addr;
+			uint64_t        sh_offset;
+			uint64_t        sh_size;
+			uint32_t        sh_link;
+			uint32_t        sh_info;
+			uint64_t        sh_addralign;
+			uint64_t        sh_entsize;
+		};
+		struct Elf32_Shdr 
+		{
+			uint32_t        sh_name;
+			Type			sh_type;
+			uint32_t		sh_flags;
+			uint32_t		sh_addr;
+			uint32_t        sh_offset;
+			uint32_t	    sh_size;
+			uint32_t		sh_link;
+			uint32_t		sh_info;
+			uint32_t        sh_addralign;
+			uint32_t        sh_entsize;
 		};
 	}
 }

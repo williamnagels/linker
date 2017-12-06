@@ -77,7 +77,7 @@ namespace N_Core
 		}
 
 		template <class MemberType>
-		MemberType get(MemberType T::* _member_ptr)
+		MemberType get(MemberType T::* _member_ptr) const
 		{
 			return _ptr->*_member_ptr;
 		}

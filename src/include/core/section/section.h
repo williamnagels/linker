@@ -9,20 +9,49 @@
 
 namespace N_Core
 {
-
+	class Elf;
 
 	namespace N_Section
 	{
-		template <typename T>
-		class Table
+		class ASection
 		{
-		public:
+			virtual uint64_t get_name() = 0;
+			virtual Type get_type() = 0;
+			virtual Flags get_flags() = 0;
+			virtual uint64_t get_address() = 0;
+			virtual uint64_t get_offset() = 0;
+			virtual uint64_t get_size() = 0;
+			virtual uint64_t get_link() = 0;
+			virtual uint64_t get_info() = 0;
+			virtual uint64_t get_address_alignment() = 0;
+			virtual uint64_t get_entry_size() = 0;
 		};
 
-		void create_section_table(N_Core::BinaryBlob blob)
+		
+		class Table
 		{
 
-		}
+		public:
+			ASection const& get_section(uint16_t index) { return *_sections.at(index); }
+			void add_section(N_Core::BinaryBlob blob) {}
+			std::vector<std::unique_ptr<ASection>> _sections;
+			
+			//template <typename T>
+			explicit Table(Table&& other_table)
+			{
+				_sections = std::move(other_table._sections);
+			}
+
+			explicit Table(Table const& other_table)
+			{
+
+			}
+			explicit Table() {}
+		};
+		
+
+		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob blob);
+		Table&& create_section_table(N_Core::Elf const& elf);
 
 		class HeaderParseStrategy;
 		
@@ -52,6 +81,7 @@ namespace N_Core
 			uint64_t get_entry_size();
 
 			BinaryBlob get_content() { return _content; }
+
 		private:
 			BinaryBlob& _header;///< 32 or 64-bit header depending on the elf it is contained in.
 			BinaryBlob& _content; ///< 32 or 64-bit header depending on the elf it is contained in.

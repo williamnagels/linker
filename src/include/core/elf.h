@@ -1,6 +1,8 @@
 #pragma once
+#include "src/include/core/section/section.h"
 #include "src/include/core/header/header.h"
 #include "src/include/core/general.h"
+
 
 #include <string>
 #include <optional>
@@ -24,10 +26,13 @@ namespace N_Core
 		// member variables) is selected.
 		std::unique_ptr<N_Header::HeaderA> _header;
 
+		N_Section::Table _section_table;
+
 		// Construct a new elf.
 		explicit Elf(N_Core::N_Header::Class class_of_elf= N_Core::N_Header::Class::ELFCLASS64):
 			_region(nullptr)
 			,_header()
+			,_section_table()
 		{
 			if (class_of_elf== N_Core::N_Header::Class::ELFCLASS64)
 			{
@@ -44,18 +49,9 @@ namespace N_Core
 		template <typename T>
 		explicit Elf(T&& mapped_region, std::enable_if_t<std::is_same_v<std::shared_ptr<boost::interprocess::mapped_region>, std::decay_t<T>>, int> a = 0):
 			_region(std::forward<T>(mapped_region))
-			,_header(nullptr)
+			,_header(N_Header::create_header(BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size())))
+			,_section_table(std::move(N_Section::create_section_table(*this)))
 		{
-			BinaryBlob blob = BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size());
-
-			if (N_Core::N_Header::Header<N_Core::N_Header::Elf32_Ehdr>(blob).is_64bit_header())
-			{
-				_header = std::make_unique<N_Header::Header<N_Header::Elf64_Ehdr>>(blob);
-			}
-			else
-			{
-				_header = std::make_unique<N_Header::Header<N_Header::Elf32_Ehdr>>(blob);
-			}
 		}
 
 		// Construct an elf from an existing elf and write to file on disk.
@@ -63,20 +59,13 @@ namespace N_Core
 		explicit Elf(T&& elf) :
 			_region(std::forward<T>(elf)._region)
 			,_header(std::forward<T>(elf)._header->deep_copy())
+			,_section_table(std::forward<T>(elf)._section_table)
 		{
 		}
 		
 	};
 	
-	// @brief create elf from a file on disk.
-	// 
-	Elf create_elf(std::string const& path_to_elf)
-	{
-		boost::interprocess::file_mapping m_file(path_to_elf.c_str(), boost::interprocess::read_only);
-		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
-		
-		return Elf(std::move(memory_region));
-	}
+
 
 	// @brief create elf from an existing elf
 	// 
@@ -88,15 +77,11 @@ namespace N_Core
 
 	// @brief create elf from an existing elf
 	// 
-	N_Core::Elf create_elf(N_Core::N_Header::Class class_to_use)
-	{
-		return N_Core::Elf(class_to_use);
-	}
-	
-	void dump(std::ostream& stream, Elf const& elf)
-	{
-		dump(stream, *elf._header);
-	}
+	N_Core::Elf create_elf(N_Core::N_Header::Class class_to_use);
+
+	// @brief create elf from a file on disk.
+	// 
+	Elf create_elf(std::string const& path_to_elf);
 
 	// @brief create elf from an existing elf
 	// 
@@ -108,5 +93,5 @@ namespace N_Core
 		dump(output_file, elf);
 		output_file.close();
 	}
-
+	void dump(std::ostream& stream, Elf const& elf);
 }

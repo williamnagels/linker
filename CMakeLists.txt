@@ -19,7 +19,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_library(linker_core STATIC
 	src/core/addressable.cpp
 	src/core/read_write_blob.cpp
-
+	src/core/elf.cpp
 	# section
 	src/core/section/section.cpp
 	src/core/section/section_parse_strategy.cpp
@@ -39,6 +39,7 @@ add_executable(linker_unit_tests
 	src/unittest_main.cpp
 	src/core/symtab/symbol_table_unittest.cpp	
 	src/core/header/header_unittest.cpp
+	src/core/section/section_unittest.cpp
 ) 
 
 add_custom_command(TARGET linker_unit_tests

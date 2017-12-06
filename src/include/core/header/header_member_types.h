@@ -12,7 +12,7 @@ namespace N_Core
 			ELFCLASS64 = 2
 		};
 
-		std::ostream& operator<<(std::ostream& os, Class const& class_to_print)
+		inline std::ostream& operator<<(std::ostream& os, Class const& class_to_print)
 		{
 			os << class_to_print;
 			return os;

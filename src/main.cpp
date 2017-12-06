@@ -1,5 +1,4 @@
 #include <iostream>
-#include "src/include/core/section/section.h"
 #include "src/include/core/symtab/symbol.h"
 #include "src/include/core/elf.h"
 int main()
