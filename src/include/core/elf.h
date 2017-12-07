@@ -49,7 +49,7 @@ namespace N_Core
 		template <typename T>
 		explicit Elf(T&& mapped_region, std::enable_if_t<std::is_same_v<std::shared_ptr<boost::interprocess::mapped_region>, std::decay_t<T>>, int> a = 0):
 			_region(std::forward<T>(mapped_region))
-			,_header(N_Header::create_header(BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size())))
+			,_header(std::move(N_Header::create_header(BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size()))))
 			,_section_table(std::move(N_Section::create_section_table(*this)))
 		{
 		}

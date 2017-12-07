@@ -217,6 +217,6 @@ namespace N_Core
 		//
 		void dump(std::ostream& stream, HeaderA const& header);
 
-		std::unique_ptr<N_Header::HeaderA>&& create_header(BinaryBlob blob);
+		std::unique_ptr<N_Header::HeaderA> create_header(BinaryBlob blob);
 	}
 }

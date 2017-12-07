@@ -72,7 +72,7 @@ namespace N_Core
 			}
 
 		}
-		Table&& create_section_table(N_Core::Elf const& elf)
+		Table create_section_table(N_Core::Elf const& elf)
 		{
 			Table table;
 			auto number_of_entries = elf._header->get_section_header_number_of_entries();
@@ -88,7 +88,7 @@ namespace N_Core
 				table.add_section(boost::make_iterator_range(begin, end));
 			}
 
-			return std::move(table);
+			return table;
 		}
 
 	}

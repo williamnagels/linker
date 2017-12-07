@@ -22,7 +22,7 @@ namespace N_Core
 			}
 		}
 
-		std::unique_ptr<N_Header::HeaderA>&& create_header(BinaryBlob blob)
+		std::unique_ptr<N_Header::HeaderA> create_header(BinaryBlob blob)
 		{
 			std::unique_ptr<N_Header::HeaderA> header;
 
@@ -35,7 +35,7 @@ namespace N_Core
 				header = std::make_unique<N_Header::Header<N_Header::Elf32_Ehdr>>(blob);
 			}
 
-			return std::move(header);
+			return header;
 		}
 
 		/*

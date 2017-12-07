@@ -15,6 +15,8 @@ namespace N_Core
 	{
 		class ASection
 		{
+		public:
+			virtual ~ASection() {}
 			virtual uint64_t get_name() = 0;
 			virtual Type get_type() = 0;
 			virtual Flags get_flags() = 0;
@@ -25,6 +27,9 @@ namespace N_Core
 			virtual uint64_t get_info() = 0;
 			virtual uint64_t get_address_alignment() = 0;
 			virtual uint64_t get_entry_size() = 0;
+
+			virtual std::unique_ptr<ASection> deep_copy() const& = 0;
+			virtual std::unique_ptr<ASection> deep_copy() && = 0;
 		};
 
 		
@@ -37,21 +42,21 @@ namespace N_Core
 			std::vector<std::unique_ptr<ASection>> _sections;
 			
 			//template <typename T>
-			explicit Table(Table&& other_table)
+			Table(Table&& other_table)
 			{
-				_sections = std::move(other_table._sections);
+				_sections = std::move(other_table)._sections;
 			}
 
-			explicit Table(Table const& other_table)
+			Table(Table const& other_table)
 			{
-
+				auto a = 0;
 			}
 			explicit Table() {}
 		};
 		
 
 		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob blob);
-		Table&& create_section_table(N_Core::Elf const& elf);
+		Table create_section_table(N_Core::Elf const& elf);
 
 		class HeaderParseStrategy;
 		
@@ -61,7 +66,7 @@ namespace N_Core
 		*
 		*
 		*/
-		class Section
+		class Section: public ASection
 		{
 		public:
 			Section(N_Core::BinaryBlob& header, N_Core::BinaryBlob& content); ///< Construct from 2 binary blobs. One for content another one for header.
@@ -81,10 +86,19 @@ namespace N_Core
 			uint64_t get_entry_size();
 
 			BinaryBlob get_content() { return _content; }
+			std::unique_ptr<ASection> deep_copy() const& override
+			{
+				return std::make_unique<Section>(*this);
+			}
+			std::unique_ptr<ASection> deep_copy() && override
+			{
+				return std::make_unique<Section>(std::move(*this));
+			}
 
+			Section(Section const& v) {}
 		private:
-			BinaryBlob& _header;///< 32 or 64-bit header depending on the elf it is contained in.
-			BinaryBlob& _content; ///< 32 or 64-bit header depending on the elf it is contained in.
+			BinaryBlob _header;///< 32 or 64-bit header depending on the elf it is contained in.
+			BinaryBlob _content; ///< 32 or 64-bit header depending on the elf it is contained in.
 			std::unique_ptr<HeaderParseStrategy> _header_parse_strategy; ///Will be 64-bit or 32-bit variant.
 			N_Core::VirtualAddressChangedSignal _virtual_address_changed_signal; ///< Connect slot to this signal to receive updates about VMA changes.
 
