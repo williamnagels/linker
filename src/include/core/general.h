@@ -8,6 +8,8 @@ namespace N_Core
 	struct Bit64 {};
 	using BinaryBlob = boost::iterator_range<uint8_t*>; ///< A blob of bytes
 
+	void dump(std::ostream&, BinaryBlob blob);
+
 
 	struct Math {};
 	struct Regular {};

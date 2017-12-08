@@ -4,7 +4,40 @@
 namespace N_Core
 {
 	namespace N_Section
-	{/*
+	{
+		
+	//@brief dump header to stream
+	//
+	void dump(std::ostream& stream, Table const& table, N_Core::N_Header::HeaderA const& header)
+	{
+		auto i = 0;
+		for (auto const& section : table._sections)
+		{
+			stream.seekp(header.get_section_header_offset() + i*header.get_section_header_entry_size());
+			auto ptr32 = dynamic_cast<Section<Elf32_Shdr> const*>(section.get());
+			auto content_offset = 0;
+			if (ptr32)
+			{
+				dump(stream, ptr32->_content);
+				stream.seekp(content_offset);
+				N_Core::dump(stream, ptr32->_content_blob);
+			}
+			auto ptr64 = dynamic_cast<Section<Elf64_Shdr> const*>(section.get());
+			if (ptr64)
+			{
+
+				dump(stream, ptr64->_content);
+				stream.seekp(content_offset);
+				N_Core::dump(stream, ptr64->_content_blob);
+			}
+
+			
+
+			i++;
+			//throw std::invalid_argument("Cannot deduce section type in table");
+		}
+	}
+		/*
 		Section::Section(N_Core::BinaryBlob& header, N_Core::BinaryBlob& content):
 			_header(header),
 			_content(content)
@@ -40,22 +73,30 @@ namespace N_Core
 		}*/
 
 
-		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob content_blob, N_Core::BinaryBlob header_blob)
+		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob)
 		{
 			switch (header_blob.size())
 			{
 			case sizeof(Elf32_Shdr) :
-				return std::make_unique<Section<Elf32_Shdr>>(header_blob, content_blob);
+				return std::make_unique<Section<Elf32_Shdr>>(header_blob, elf_blob);
 			case sizeof(Elf64_Shdr) :
-				return std::make_unique<Section<Elf32_Shdr>>(header_blob, content_blob);
+				return std::make_unique<Section<Elf32_Shdr>>(header_blob, elf_blob);
 			default:
 				throw std::invalid_argument("Blob is of unexpected size");
 			}
 
 		}
+
+
+
 		Table create_section_table(N_Core::Elf const& elf)
 		{
 			Table table;
+			 
+			if (elf._header->get_section_header_number_of_entries() == 0)
+			{
+				return table;
+			}
 			auto number_of_entries = elf._header->get_section_header_number_of_entries();
 
 			auto offset = 0;
@@ -64,9 +105,13 @@ namespace N_Core
 			for (auto i = 0; i < number_of_entries; i++)
 			{
 				auto header_of_section_entry = start_of_table + size_of_entry * i;
-				auto begin = reinterpret_cast<uint8_t*>(elf._region->get_address()) + header_of_section_entry;
-				auto end = begin + size_of_entry;
-				table.add_section(boost::make_iterator_range(begin, end));
+				auto begin_header = reinterpret_cast<uint8_t*>(elf._region->get_address()) + header_of_section_entry;
+				auto end_header = begin_header + size_of_entry;
+
+				auto header_range = boost::make_iterator_range(begin_header, end_header);
+				auto content_range = boost::make_iterator_range(begin_header, end_header);
+
+				table.add_section(BinaryBlob(reinterpret_cast<uint8_t*>(elf._region->get_address()), reinterpret_cast<uint8_t*>(elf._region->get_address()) + elf._region->get_size()), header_range);
 			}
 
 			return table;

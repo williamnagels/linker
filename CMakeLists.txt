@@ -19,6 +19,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 add_library(linker_core STATIC
 	src/core/addressable.cpp
 	src/core/read_write_blob.cpp
+	src/core/general.cpp
 	src/core/elf.cpp
 	src/core/section/section.cpp
 

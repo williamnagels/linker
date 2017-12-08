@@ -74,8 +74,9 @@ BOOST_AUTO_TEST_CASE(dump)
 	elf2._header->set_padding_byte_6('m');
 
 	N_Core::dump_to_file("testfiles/dump", elf2);
-
+	
 	auto elf3 = N_Core::create_elf("testfiles/dump");
+
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_0(), 'w');
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_1(), 'i');
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_2(), 'l');

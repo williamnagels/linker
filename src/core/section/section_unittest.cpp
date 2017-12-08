@@ -11,9 +11,6 @@ BOOST_AUTO_TEST_CASE(correct_amount_of_sections)
 	auto elf = N_Core::create_elf("testfiles/sleep");
 
 
-//	BOOST_CHECK_EQUAL(elf._section_table._sections.size(), 0);
-	
-
 }
 
 BOOST_AUTO_TEST_SUITE_END()

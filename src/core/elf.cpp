@@ -10,6 +10,7 @@ namespace N_Core
 	void dump(std::ostream& stream, N_Core::Elf const& elf)
 	{
 		dump(stream, *elf._header);
+		dump(stream, elf._section_table, *elf._header);
 	}
 
 	// @brief create elf from a file on disk.
