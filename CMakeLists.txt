@@ -20,9 +20,7 @@ add_library(linker_core STATIC
 	src/core/addressable.cpp
 	src/core/read_write_blob.cpp
 	src/core/elf.cpp
-	# section
 	src/core/section/section.cpp
-	src/core/section/section_parse_strategy.cpp
 
 	# symbol table
 	src/core/symtab/symbol.cpp

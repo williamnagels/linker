@@ -1,15 +1,15 @@
 #include "src/include/core/section/section.h"
-#include "src/include/core/section/section_parse_strategy.h"
 #include "src/include/core/symtab/symbol_table.h"
 #include "src/include/core/elf.h"
 namespace N_Core
 {
 	namespace N_Section
-	{
+	{/*
 		Section::Section(N_Core::BinaryBlob& header, N_Core::BinaryBlob& content):
 			_header(header),
 			_content(content)
 		{
+			
 			switch (_header.size())
 			{
 			case 0x80:
@@ -37,36 +37,17 @@ namespace N_Core
 			default:
 				throw std::invalid_argument("Size of header blob is of unexpected size.");
 			}
-		}
+		}*/
 
-		Section::~Section()
+
+		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob content_blob, N_Core::BinaryBlob header_blob)
 		{
-
-		}
-
-		uint64_t Section::get_name() { return _header_parse_strategy->get_name(); }
-		Type Section::get_type() { return _header_parse_strategy->get_type(); }
-		Flags Section::get_flags() { return _header_parse_strategy->get_flags(); }
-		uint64_t Section::get_address() { return _header_parse_strategy->get_address(); }
-		uint64_t Section::get_offset() { return _header_parse_strategy->get_offset(); }
-		uint64_t Section::get_size() { return _header_parse_strategy->get_size(); }
-		uint64_t Section::get_link() { return _header_parse_strategy->get_link(); }
-		uint64_t Section::get_info() { return _header_parse_strategy->get_info(); }
-		uint64_t Section::get_address_alignment() { return _header_parse_strategy->get_address_alignment(); }
-		uint64_t Section::get_entry_size() { return _header_parse_strategy->get_entry_size(); }
-
-
-		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob blob)
-		{
-			switch (blob.size())
+			switch (header_blob.size())
 			{
 			case sizeof(Elf32_Shdr) :
-				return std::unique_ptr<ASection>(nullptr);
-				break;
-
+				return std::make_unique<Section<Elf32_Shdr>>(header_blob, content_blob);
 			case sizeof(Elf64_Shdr) :
-				return std::unique_ptr<ASection>(nullptr);
-				break;
+				return std::make_unique<Section<Elf32_Shdr>>(header_blob, content_blob);
 			default:
 				throw std::invalid_argument("Blob is of unexpected size");
 			}

@@ -55,35 +55,47 @@ namespace N_Core
 		};
 		
 
-		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob blob);
+		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob header_blob, N_Core::BinaryBlob content_blob);
 		Table create_section_table(N_Core::Elf const& elf);
 
-		class HeaderParseStrategy;
-		
+
 		/*@brief ELF Section representation.
 		*
 		* Contains section header and reference to the content of the section.
 		*
 		*
 		*/
+		template <typename T>
 		class Section: public ASection
 		{
+		private:
+			BinaryBlob _header_blob;///< 32 or 64-bit header depending on the elf it is contained in.
+			BinaryBlob _content_blob; ///< 32 or 64-bit header depending on the elf it is contained in.
+
 		public:
-			Section(N_Core::BinaryBlob& header, N_Core::BinaryBlob& content); ///< Construct from 2 binary blobs. One for content another one for header.
-			~Section();
+			ReadWriteBlob<T> _content; ///< Memory blob with some map applied to it.
+
+			Section(Section const& v) {}
+
+			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob content) :
+				_header_blob(header),
+				_content_blob(content)
+			{
+			}
+
 
 			std::variant<N_Core::BinaryBlob, N_Core::N_SymTab::SymbolTable> _parsed_content;
 
-			uint64_t get_name();
-			Type get_type();
-			Flags get_flags();
-			uint64_t get_address();
-			uint64_t get_offset();
-			uint64_t get_size();
-			uint64_t get_link();
-			uint64_t get_info();
-			uint64_t get_address_alignment();
-			uint64_t get_entry_size();
+			uint64_t Section::get_name() { return _content.get(&T::sh_name); }
+			Type Section::get_type() { return _content.get(&T::sh_type); }
+			Flags Section::get_flags() { return static_cast<Flags>(_content.get(&T::sh_flags)); }
+			uint64_t Section::get_address() { return _content.get(&T::sh_addr); }
+			uint64_t Section::get_offset() { return _content.get(&T::sh_offset); }
+			uint64_t Section::get_size() { return _content.get(&T::sh_size); }
+			uint64_t Section::get_link() { return _content.get(&T::sh_link); }
+			uint64_t Section::get_info() { return _content.get(&T::sh_info); }
+			uint64_t Section::get_address_alignment() { return _content.get(&T::sh_addralign); }
+			uint64_t Section::get_entry_size() { return _content.get(&T::sh_entsize); }
 
 			BinaryBlob get_content() { return _content; }
 			std::unique_ptr<ASection> deep_copy() const& override
@@ -95,12 +107,8 @@ namespace N_Core
 				return std::make_unique<Section>(std::move(*this));
 			}
 
-			Section(Section const& v) {}
-		private:
-			BinaryBlob _header;///< 32 or 64-bit header depending on the elf it is contained in.
-			BinaryBlob _content; ///< 32 or 64-bit header depending on the elf it is contained in.
-			std::unique_ptr<HeaderParseStrategy> _header_parse_strategy; ///Will be 64-bit or 32-bit variant.
-			N_Core::VirtualAddressChangedSignal _virtual_address_changed_signal; ///< Connect slot to this signal to receive updates about VMA changes.
+
+			//N_Core::VirtualAddressChangedSignal _virtual_address_changed_signal; ///< Connect slot to this signal to receive updates about VMA changes.
 
 		
 		};

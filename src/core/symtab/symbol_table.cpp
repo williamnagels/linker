@@ -6,7 +6,7 @@ namespace N_Core
 {
 	namespace N_SymTab
 	{
-
+		/*
 		SymbolTable create_symbol_table_from_section(N_Section::Section& section)
 		{
 
@@ -35,6 +35,6 @@ namespace N_Core
 		void add_symbol_to_existing_symbol_table(SymbolTable& table, Symbol&& symbol)
 		{
 			table._entries.push_back(std::move(symbol));
-		}
+		}*/
 	}
 }

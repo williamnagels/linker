@@ -4,10 +4,10 @@
 #include <memory>
 namespace N_Core
 {
-	namespace N_Section
+	/*namespace N_Section
 	{
 		class Section;
-	}
+	}*/
 
 	namespace N_SymTab
 	{
@@ -24,7 +24,7 @@ namespace N_Core
 			* @throws std::invalid_argument if section is not of type SYM_TAB.
 			*
 			*/
-			friend SymbolTable create_symbol_table_from_section(N_Section::Section&); 
+		//	friend SymbolTable create_symbol_table_from_section(N_Section::Section&); 
 			
 			/*@brief Move an existing symbol into the table.
 			*
@@ -32,7 +32,7 @@ namespace N_Core
 			* The original symbol is no longer usable but not defunct.
 			* 
 			*/
-			friend void add_symbol_to_existing_symbol_table(SymbolTable& table, Symbol&& symbol); 
+			//friend void add_symbol_to_existing_symbol_table(SymbolTable& table, Symbol&& symbol); 
 		};
 
 	}
