@@ -15,6 +15,31 @@
 
 namespace N_Core
 {
+	// @brief Class representing an elf loaded from file or a custom created elf.
+	//
+	// 0. Creating an elf.
+	// ================================================================================================
+	// The 'create_elf(...)' free functions are prefered instead of using the ctors directly.
+	// Following overloads are available to create elfs:
+	//  1. file path
+	//  2. class type (create elf without existing file. class=32-bit or 64-bit)
+	//  3. elf instance (duplicate functionality).
+	//
+	// 2. 32-bit vs 64-bit.
+	// ================================================================================================
+	// This class can be used to represent 32-bit and 64-bit elfs. The difference
+	// is detected when the header object is created in the elf constructor.
+	// At that point using pimpl different parsing implementations are initialized.
+	// The memory layout for most entities (section,segment, symbol....) differs between 32-bit and 
+	// 64-bit elfs.
+	//
+	// 2. R-value support
+	// ===============================================================================================
+	// If copying of an elf is required try using move semantics. Because of the
+	// nature of the pimpl idiom, elfs are more efficiently moved instead of copied.
+	// Copying requires a deep copy of the allocated pointer while
+	// moving can move the allocated implementation pointer from one elf to another.
+	//
 	class Elf
 	{
 	public:
