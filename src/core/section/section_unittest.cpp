@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE(correct_amount_of_sections)
 	BOOST_CHECK_EQUAL(elf3._section_table._sections.size(), 27);
 
 }
-BOOST_AUTO_TEST_CASE(correct_header_after_dump)
+BOOST_AUTO_TEST_CASE(correct_section_header_after_dump)
 {
 	auto elf = N_Core::create_elf("testfiles/sleep");
 	N_Core::dump_to_file("testfiles/correct_header_after_dump", elf);
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(correct_header_after_dump)
 
 }
 
-BOOST_AUTO_TEST_CASE(correct_content_when_dumping_table)
+BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 {
 	auto elf = N_Core::create_elf("testfiles/sleep");
 	N_Core::dump_to_file("testfiles/correct_content_when_dumping_table", N_Core::create_elf(elf));
