@@ -25,7 +25,7 @@ namespace N_Core
 	//  2. class type (create elf without existing file. class=32-bit or 64-bit)
 	//  3. elf instance (duplicate functionality).
 	//
-	// 2. 32-bit vs 64-bit.
+	// 1. 32-bit vs 64-bit.
 	// ================================================================================================
 	// This class can be used to represent 32-bit and 64-bit elfs. The difference
 	// is detected when the header object is created in the elf constructor.
@@ -54,20 +54,7 @@ namespace N_Core
 		N_Section::Table _section_table;
 
 		// Construct a new elf.
-		explicit Elf(N_Core::N_Header::Class class_of_elf= N_Core::N_Header::Class::ELFCLASS64):
-			_region(nullptr)
-			,_header()
-			,_section_table()
-		{
-			if (class_of_elf== N_Core::N_Header::Class::ELFCLASS64)
-			{
-				_header = std::make_unique<N_Header::Header<N_Header::Elf64_Ehdr>>();
-			}
-			else
-			{
-				_header = std::make_unique<N_Header::Header<N_Header::Elf32_Ehdr>>();
-			}
-		}
+		explicit Elf(N_Core::N_Header::Class class_of_elf = N_Core::N_Header::Class::ELFCLASS64);
 
 		// Construct an elf from memory mapped region and a file name.
 		// You probably do not want to use directly but instead use the free functions: create_elf
@@ -90,27 +77,44 @@ namespace N_Core
 		
 	};
 	
-
-
 	// @brief create elf from an existing elf
 	// 
+	// @param existing_elf	Elf to use as blueprint for new elf.
+	//
 	template <typename T, std::enable_if_t<std::is_same_v<Elf, std::decay_t<T>>, int> a = 0>
 	N_Core::Elf create_elf(T&& existing_elf)
 	{
 		return N_Core::Elf(std::forward<T>(existing_elf));
 	}
 
-	// @brief create elf from an existing elf
+	// @brief create a new elf without blueprint
 	// 
+	// @param class_to_use	Is the elf to create 2-bit or 64-bit elf?
+	//
 	N_Core::Elf create_elf(N_Core::N_Header::Class class_to_use);
 
 	// @brief create elf from a file on disk.
 	// 
-	Elf create_elf(std::string const& path_to_elf);
+	// @param path	Location of the elf on disk.
+	//
+	// @throws boost::interprocess::interprocess_exception if file not found
+	//
+	template <typename T, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0 >
+	N_Core::Elf create_elf(T&& path)
+	{
+		boost::interprocess::file_mapping m_file(path, boost::interprocess::read_only);
+		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
 
-	// @brief create elf from an existing elf
+		return N_Core::Elf(std::move(memory_region));
+	}
+
+	// @brief write an elf to a file.
 	// 
-	template <typename T>
+	// @param path	Destination location of the elf.
+	// @param elf	The elf to write to disk.
+	// 
+	// Will overwrite existing file if present.
+	template <typename T, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0>
 	void dump_to_file(T&& path, Elf const& elf)
 	{
 		std::ofstream output_file;
@@ -118,5 +122,11 @@ namespace N_Core
 		dump(output_file, elf);
 		output_file.close();
 	}
+
+	// @brief Helper function to dump elfs to an output stream.
+	// 
+	// @param stream	Output stream to dump elf to.
+	// @param elf		The elf to write to disk.
+	// 
 	void dump(std::ostream& stream, Elf const& elf);
 }

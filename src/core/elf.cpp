@@ -13,13 +13,21 @@ namespace N_Core
 		dump(stream, elf._section_table, *elf._header);
 	}
 
-	// @brief create elf from a file on disk.
-	// 
-	N_Core::Elf create_elf(std::string const& path_to_elf)
-	{
-		boost::interprocess::file_mapping m_file(path_to_elf.c_str(), boost::interprocess::read_only);
-		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
 
-		return N_Core::Elf(std::move(memory_region));
+	// Construct a new elf.
+	N_Core::Elf::Elf(N_Core::N_Header::Class class_of_elf) :
+		_region(nullptr)
+		, _header()
+		, _section_table()
+	{
+		if (class_of_elf == N_Core::N_Header::Class::ELFCLASS64)
+		{
+			_header = std::make_unique<N_Header::Header<N_Header::Elf64_Ehdr>>();
+		}
+		else
+		{
+			_header = std::make_unique<N_Header::Header<N_Header::Elf32_Ehdr>>();
+		}
 	}
+
 }
