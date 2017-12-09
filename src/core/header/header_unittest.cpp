@@ -8,6 +8,7 @@
 
 BOOST_AUTO_TEST_SUITE(elf_header)
 
+
 // Not being able to parse elf header (magic byte = wrong)
 BOOST_AUTO_TEST_CASE(not_an_elf)
 {

@@ -46,8 +46,45 @@ namespace N_Core
 		return true_branch_val | false_branch_val;
 	};
 
+	struct VoidConsumer
+	{
+		template <typename T>
+		T& operator=(T t)
+		{
+			return *this;
+		}
 
+	};
 
+	template <typename T= VoidConsumer>
+	struct VoidStorage: public std::iterator<
+		std::random_access_iterator_tag,
+		T,
+		ptrdiff_t,
+		T*,
+		T&>
+	{
+		using Type = T;
 
+		VoidStorage() :
+			t(nullptr) {}
+
+		T* t;
+		VoidStorage<T> operator+(const ptrdiff_t& movement) { return *this; }
+
+		template<typename T>
+		VoidStorage const& operator=(T const& t)
+		{
+			return *this;
+		}
+		VoidStorage operator++()
+		{
+			return *this;
+		}
+		T& operator*()
+		{
+			return *t;
+		}
+	};
 
 };

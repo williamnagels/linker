@@ -19,7 +19,7 @@ namespace N_Core
 			if (ptr32)
 			{
 				dump(stream, ptr32->_content);
-				stream.seekp(content_offset);
+				stream.seekp(ptr32->get_offset());
 				N_Core::dump(stream, ptr32->_content_blob);
 			}
 			auto ptr64 = dynamic_cast<Section<Elf64_Shdr> const*>(section.get());
@@ -27,7 +27,7 @@ namespace N_Core
 			{
 
 				dump(stream, ptr64->_content);
-				stream.seekp(content_offset);
+				stream.seekp(ptr64->get_offset());
 				N_Core::dump(stream, ptr64->_content_blob);
 			}
 
@@ -80,7 +80,7 @@ namespace N_Core
 			case sizeof(Elf32_Shdr) :
 				return std::make_unique<Section<Elf32_Shdr>>(header_blob, elf_blob);
 			case sizeof(Elf64_Shdr) :
-				return std::make_unique<Section<Elf32_Shdr>>(header_blob, elf_blob);
+				return std::make_unique<Section<Elf64_Shdr>>(header_blob, elf_blob);
 			default:
 				throw std::invalid_argument("Blob is of unexpected size");
 			}
@@ -99,7 +99,6 @@ namespace N_Core
 			}
 			auto number_of_entries = elf._header->get_section_header_number_of_entries();
 
-			auto offset = 0;
 			auto start_of_table = elf._header->get_section_header_offset();
 			auto size_of_entry = elf._header->get_section_header_entry_size();
 			for (auto i = 0; i < number_of_entries; i++)
@@ -109,8 +108,6 @@ namespace N_Core
 				auto end_header = begin_header + size_of_entry;
 
 				auto header_range = boost::make_iterator_range(begin_header, end_header);
-				auto content_range = boost::make_iterator_range(begin_header, end_header);
-
 				table.add_section(BinaryBlob(reinterpret_cast<uint8_t*>(elf._region->get_address()), reinterpret_cast<uint8_t*>(elf._region->get_address()) + elf._region->get_size()), header_range);
 			}
 

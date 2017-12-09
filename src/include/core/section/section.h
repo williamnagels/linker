@@ -17,6 +17,7 @@ namespace N_Core
 		{
 		public:
 			virtual ~ASection() {}
+			virtual BinaryBlob get_content() const = 0;
 			virtual uint64_t get_name() const = 0;
 			virtual Type get_type() const = 0;
 			virtual Flags get_flags() const = 0;
@@ -84,21 +85,25 @@ namespace N_Core
 
 			BinaryBlob get_content_from_header(N_Core::BinaryBlob content)
 			{
+				auto a = get_offset();
+				auto b = get_size();
 				return BinaryBlob(reinterpret_cast<uint8_t*>(content.begin()+get_offset()), reinterpret_cast<uint8_t*>(content.begin()+get_offset() + get_size()));
 			}
 
-
-			Section(Section const& v) {}
-
-			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob content) :
-				_content(header)
-				,_header_blob(header)
-				,_content_blob(get_content_from_header(content))
+			template <typename T>
+			explicit Section(T&& section, std::enable_if_t<std::is_same_v<std::decay_t<T>, Section>, int> = 0) :
+				_content(std::forward<T>(section)._content)
+				,_header_blob(section._header_blob)
+				,_content_blob(section._content_blob)
 			{
 			}
 
-
-			std::variant<N_Core::BinaryBlob, N_Core::N_SymTab::SymbolTable> _parsed_content;
+			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
+				_content(header)
+				,_header_blob(header)
+				,_content_blob(get_content_from_header(elf_blob))
+			{
+			}
 
 			uint64_t Section::get_name()const override { return _content.get(&T::sh_name); }
 			Type Section::get_type() const override { return _content.get(&T::sh_type); }
@@ -110,8 +115,7 @@ namespace N_Core
 			uint64_t Section::get_info()const override { return _content.get(&T::sh_info); }
 			uint64_t Section::get_address_alignment()const override { return _content.get(&T::sh_addralign); }
 			uint64_t Section::get_entry_size()const override { return _content.get(&T::sh_entsize); }
-
-			BinaryBlob get_content() { return _content; }
+			BinaryBlob get_content() const override { return _content_blob; }
 			std::unique_ptr<ASection> deep_copy() const& override
 			{
 				return std::make_unique<Section>(*this);
