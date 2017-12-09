@@ -104,11 +104,11 @@ namespace N_Core
 			for (auto i = 0; i < number_of_entries; i++)
 			{
 				auto header_of_section_entry = start_of_table + size_of_entry * i;
-				auto begin_header = reinterpret_cast<uint8_t*>(elf._region->get_address()) + header_of_section_entry;
+				auto begin_header = elf.get_memory_mapped_region().begin() + header_of_section_entry;
 				auto end_header = begin_header + size_of_entry;
 
 				auto header_range = boost::make_iterator_range(begin_header, end_header);
-				table.add_section(BinaryBlob(reinterpret_cast<uint8_t*>(elf._region->get_address()), reinterpret_cast<uint8_t*>(elf._region->get_address()) + elf._region->get_size()), header_range);
+				table.add_section(elf.get_memory_mapped_region(), header_range);
 			}
 
 			return table;

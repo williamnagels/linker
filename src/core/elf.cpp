@@ -13,6 +13,17 @@ namespace N_Core
 		dump(stream, elf._section_table, *elf._header);
 	}
 
+	bool N_Core::Elf::is_memory_mapped() const noexcept { return _region.get(); };
+
+	BinaryBlob N_Core::Elf::get_memory_mapped_region() const
+	{
+		if (!is_memory_mapped())
+		{
+			throw std::exception("Cannot");
+		}
+
+		return BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size());
+	}
 
 	// Construct a new elf.
 	N_Core::Elf::Elf(N_Core::N_Header::Class class_of_elf) :
