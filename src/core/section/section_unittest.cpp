@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(correct_section_header_after_dump)
 		elf._section_table._sections.begin(),
 		elf._section_table._sections.end(),
 		elf2._section_table._sections.begin(),
-		N_Core::VoidStorage<>(),
+		N_Core::VoidIterator<>(),
 		[](auto const& section_elf_1, auto const& section_elf_2)
 		{
 			BOOST_CHECK_EQUAL(section_elf_1->get_name(), section_elf_2->get_name());
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(correct_section_header_after_dump)
 			BOOST_CHECK_EQUAL(section_elf_1->get_address_alignment(), section_elf_2->get_address_alignment());
 			BOOST_CHECK_EQUAL(section_elf_1->get_entry_size(), section_elf_2->get_entry_size());
 
-			return N_Core::VoidStorage<>::Type();
+			return N_Core::VoidIterator<>::value_type();
 		}
 	);
 
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 		elf._section_table._sections.begin(),
 		elf._section_table._sections.end(), 
 		elf2._section_table._sections.begin(), 
-		N_Core::VoidStorage<>(),
+		N_Core::VoidIterator<>(),
 		[](auto const& section_elf_1, auto const& section_elf_2)
 		{
 			N_Core::BinaryBlob binary_blob_elf_1 = section_elf_1->get_content();
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 			std::ptrdiff_t diff2 = binary_blob_elf_2.end() - binary_blob_elf_2.begin();
 			BOOST_CHECK_EQUAL(diff, diff2);
 			BOOST_CHECK_EQUAL(std::memcmp(binary_blob_elf_1.begin(), binary_blob_elf_2.begin(), diff), 0);
-			return N_Core::VoidStorage<>::Type();
+			return N_Core::VoidIterator<>::value_type();
 		}
 	);
 }

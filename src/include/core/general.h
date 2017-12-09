@@ -4,40 +4,43 @@
 #include <cstdint>
 namespace N_Core
 {
-	struct Bit32 {};
-	struct Bit64 {};
-	using BinaryBlob = boost::iterator_range<uint8_t*>; ///< A blob of bytes
+	// Region of memory. Start and end-address range.
+	using BinaryBlob = boost::iterator_range<uint8_t*>;
 
-	void dump(std::ostream&, BinaryBlob blob);
+	// @brief Helper function to dump a region of memory to an output stream
+	// 
+	// @param stream	Output stream to write memory region to.
+	// @param blob		The memory region to write to the stream.
+	// 
+	void dump(std::ostream& stream, BinaryBlob blob);
 
+	struct Math {}; ///< Tag to dispatch math branch overload.
+	struct Regular {}; ///< Tag to dispatch regular branch overload.
 
-	struct Math {};
-	struct Regular {};
-
-	/* @brief Regular branch implementation.
-	*   Same as: auto value = (condition)?true_branch:false_branch;
-	*
-	*/
+	// @brief Regular branch implementation.
+	// 
+	// @param condition		statement expected to be true or false
+	// @param true_branch	value to return if condition is true
+	// @param false_branch	value to return if condition is false
+	//
+	// @returns true_branch if condition is true else returns false.
+	//
 	template <typename RV1, typename RV2>
 	inline auto branch(bool condition, RV1 true_branch, RV2  false_branch, Regular)
 	{
-		if (condition)
-		{
-			return true_branch;
-		}
-		else
-		{
-			return false_branch;
-		}
+		return condition ? true_branch:false_branch;
 	}
 
-	/* @brief Mathematical branch
-	*	avoid jumps if not reqired. Problem is that pipeline may still get messed up because
-	*	the result depends on both input params.
-	*
-	*   Same as: auto value = (condition)?true_branch:false_branch;
-	*   Basically returns value without the jump statement in there.
-	*/
+	// @brief Mathematical branch
+	//
+	// Avoid jumps if not reqired and thus avoids bubbles in the CPU pipeline.
+	//
+	// @param condition		statement expected to be true or false
+	// @param true_branch	value to return if condition is true
+	// @param false_branch	value to return if condition is false
+	//
+	// @returns true_branch if condition is true else returns false.
+	//
 	template <typename RV1, typename RV2>
 	inline auto branch(bool condition, RV1 true_branch, RV2  false_branch, Math)
 	{
@@ -46,45 +49,35 @@ namespace N_Core
 		return true_branch_val | false_branch_val;
 	};
 
-	struct VoidConsumer
+	namespace
 	{
-		template <typename T>
-		T& operator=(T t)
-		{
-			return *this;
-		}
+		// @brief Used as storage type used by the void iterator.
+		//
+		struct VoidConsumer {};
+	}
 
-	};
-
+	// @brief Void iterator
+	//
+	// Used in std::transform to create a zip iterator.
+	//
 	template <typename T= VoidConsumer>
-	struct VoidStorage: public std::iterator<
-		std::random_access_iterator_tag,
-		T,
-		ptrdiff_t,
-		T*,
-		T&>
+	struct VoidIterator
 	{
-		using Type = T;
+		using iterator_category = std::random_access_iterator_tag;
+		using value_type = T;
+		using difference_type = ptrdiff_t;
+		using pointer = std::add_pointer_t<T>;
+		using reference = std::add_lvalue_reference<T>;
 
-		VoidStorage() :
+		VoidIterator() :
 			t(nullptr) {}
 
-		T* t;
-		VoidStorage<T> operator+(const ptrdiff_t& movement) { return *this; }
+		VoidIterator<T> operator+(const ptrdiff_t& movement) { return *this; }
+		VoidIterator<T> operator++() { return *this; }
+		T& operator*() { return *t; }
 
-		template<typename T>
-		VoidStorage const& operator=(T const& t)
-		{
-			return *this;
-		}
-		VoidStorage operator++()
-		{
-			return *this;
-		}
-		T& operator*()
-		{
-			return *t;
-		}
+	private:
+		T * t;
 	};
 
 };
