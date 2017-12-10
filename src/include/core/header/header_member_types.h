@@ -132,7 +132,6 @@ namespace N_Core
 			uint16_t        e_shentsize;
 			uint16_t        e_shnum;
 			uint16_t        e_shstrndx;
-
 		};
 	}
 }

@@ -1,6 +1,6 @@
 #include "src/include/core/header/header.h"
 
-#include "src/include/core/strategy_generator.h"
+#include "src/include/core/pimpl_deducer.h"
 namespace N_Core
 {
 	namespace N_Header
@@ -20,20 +20,28 @@ namespace N_Core
 			}
 		}
 
-		std::unique_ptr<N_Header::HeaderA> create_header(BinaryBlob blob)
+		std::unique_ptr<N_Header::HeaderA> create_header(BinaryBlob memory_mapped_elf)
 		{
-			std::unique_ptr<N_Header::HeaderA> header;
-
-			if (N_Core::N_Header::Header<N_Core::N_Header::Elf32_Ehdr>(blob).is_64bit_header())
+			if (N_Core::N_Header::Header<N_Core::N_Header::Elf32_Ehdr>(memory_mapped_elf).get_class() == N_Core::N_Header::Class::ELFCLASS64)
 			{
-				header = std::make_unique<N_Header::Header<N_Header::Elf64_Ehdr>>(blob);
+				return std::make_unique<N_Header::Header<N_Header::Elf64_Ehdr>>(memory_mapped_elf);
 			}
 			else
 			{
-				header = std::make_unique<N_Header::Header<N_Header::Elf32_Ehdr>>(blob);
+				return std::make_unique<N_Header::Header<N_Header::Elf32_Ehdr>>(memory_mapped_elf);
 			}
+		}
 
-			return header;
+		std::unique_ptr<N_Header::HeaderA> create_header(Class class_to_create_header)
+		{
+			if (class_to_create_header == N_Core::N_Header::Class::ELFCLASS64)
+			{
+				return std::make_unique<N_Header::Header<N_Header::Elf64_Ehdr>>();
+			}
+			else
+			{
+				return std::make_unique<N_Header::Header<N_Header::Elf32_Ehdr>>();
+			}
 		}
 	}
 }

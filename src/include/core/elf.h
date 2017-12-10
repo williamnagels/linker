@@ -71,11 +71,11 @@ namespace N_Core
 		BinaryBlob get_memory_mapped_region() const;
 
 
-		// Construct a new elf.
+		// @brief Construct a new elf.
 		//
 		explicit Elf(N_Core::N_Header::Class class_of_elf = N_Core::N_Header::Class::ELFCLASS64);
 
-		// Construct an elf from memory mapped region and a file name.
+		// @brief Construct an elf from memory mapped region and a file name.
 		// You probably do not want to use directly but instead use the free functions: create_elf
 		//
 		template <typename T, std::enable_if_t<std::is_same_v<std::shared_ptr<boost::interprocess::mapped_region>, std::decay_t<T>>, int> a = 0>
@@ -86,13 +86,13 @@ namespace N_Core
 		{
 		}
 
-		// Construct an elf from an existing elf and write to file on disk.
+		// @brief Construct an elf from an existing elf and write to file on disk.
 		//
 		template<typename T, std::enable_if_t<std::is_same_v<Elf, std::decay_t<T>>, int> a = 0>
 		explicit Elf(T&& elf) :
 			_region(std::forward<T>(elf)._region)
-			,_header(std::forward<T>(elf)._header->deep_copy())
-			,_section_table(std::forward<T>(elf)._section_table)
+			,_header(N_Header::create_header(std::forward<T>(elf)._header))
+			,_section_table(N_Section::create_section_table(std::forward<T>(elf)._section_table))
 		{
 		}
 		

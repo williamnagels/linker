@@ -1,7 +1,7 @@
 #pragma once
 #include "src/include/core/general.h"
 #include "src/include/core/header/header_member_types.h"
-#include "src/include/core/read_write_blob.h"
+#include "src/include/core/COW_memory_blob.h"
 
 #include <memory>
 #include <type_traits>
@@ -12,9 +12,20 @@ namespace N_Core
 {
 	namespace N_Header
 	{
+		// Error message thrown when parsing an header which does not start with the correct magic bytes.
 		const std::string wrong_magic_bytes_message = "Wrong magic bytes in elf header. Did not find /7FELF. Is the file an elf?";
 
-
+		// @brief Public API of a header.
+		// 
+		// This class exposes many setters & getters that can be used to change
+		// the value of basically all members as described by the ELF standard.
+		//
+		// 0. Headers are created automatically
+		// ================================================================================================
+		// Headers are created automatically when loading an elf from disk or creating a custom elf.
+		// A free function exists create_header(BinaryBlob) which will create a header for a memory mapped elf
+		// which is called when loading an elf from disk. 
+		//
 		class HeaderA
 		{
 		public:
@@ -81,11 +92,23 @@ namespace N_Core
 			virtual std::unique_ptr<HeaderA> deep_copy() && = 0;
 		};
 
-
+		// @brief Implementation of the header API
+		// 
+		// This class exposes many setters & getters that can be used to change
+		// the value of basically all members as described by the ELF standard.
+		//
+		// Template parameter 'T' identifies if it is a 32-bit or 64-bit header.
+		// Expecting Elf64_Ehdr or Elf32_Ehdr
+		//
 		template <typename T>
 		class Header: public HeaderA
 		{
-		private:			
+		private:	
+
+			// @brief Checks if first 4 bytes of an elf are set to 0x7F, 'E', 'L' and 'F'
+			// 
+			// @returns true if magic bytes are correct.
+			//
 			bool are_magic_bytes_correct() const
 			{
 				return _header_content.get(&T::e_magic_byte_0) == 0x7F &&
@@ -94,10 +117,12 @@ namespace N_Core
 				_header_content.get(&T::e_magic_byte_3) == 'F';
 			}
 
+			// @brief Set the magic bytes to the correct values also set class byte(32-bit or 64-bit elf) correct.
+			// 
 			void make_compliant()
 			{
 				
-				if constexpr (std::is_same_v<T, Elf64_Ehdr>)
+				if (is_64bit_header())
 				{
 					set_class(Class::ELFCLASS64);
 				}
@@ -112,7 +137,7 @@ namespace N_Core
 			}
 
 		public:		
-			ReadWriteBlob<T> _header_content; ///< Memory blob with some map applied to it.
+			COW_MemoryBlob<T> _header_content; ///< Memory blob with some map applied to it.
 
 			uint8_t get_magic_byte_0() const override { return _header_content.get(&T::e_magic_byte_0); }
 			void set_magic_byte_0(uint8_t byte) override { _header_content.set(&T::e_magic_byte_0, byte); }
@@ -175,22 +200,25 @@ namespace N_Core
 			uint16_t get_section_index_that_contains_strings()const override { return _header_content.get(&T::e_shstrndx); };
 			void set_section_index_that_contains_strings(uint16_t index)   override { _header_content.set(&T::e_shstrndx, index); };
 
-			std::unique_ptr<HeaderA> deep_copy() const& override 
-			{
-				return std::make_unique<Header<T>>(*this);
-			}
-			std::unique_ptr<HeaderA> deep_copy() && override 
-			{ 
-				return std::make_unique<Header<T>>(std::move(*this)); 
-			}
+			std::unique_ptr<HeaderA> deep_copy() const& override { return std::make_unique<Header<T>>(*this);}
+			std::unique_ptr<HeaderA> deep_copy() && override { return std::make_unique<Header<T>>(std::move(*this));}
 
+
+			// @brief Create new header.
+			// 
+			// Will update magic bytes and class (see description template param 'T').
+			//
 			explicit Header():
 				_header_content()
 			{
 				make_compliant();
 			}
 
-			Header(N_Core::BinaryBlob const& header_memory_blob) :
+			// @brief Create a new header from a memory mapped elf.
+			// 
+			// @throws std::invalid_argument if the magic bytes are not set.
+			//
+			explicit Header(N_Core::BinaryBlob header_memory_blob) :
 				_header_content(header_memory_blob)
 			{
 				if (!are_magic_bytes_correct())
@@ -199,24 +227,51 @@ namespace N_Core
 				}
 			}
 
-
-			template <typename T>
-			Header(T&& header, std::enable_if_t<std::is_same_v<std::decay_t<T>, Header>, int> = 0) :
-				_header_content(std::forward<T>(header)._header_content)
+			// @brief Based on type deduces if the elf is 64-bit.
+			//
+			// @returns true if 64-bit header
+			//
+			constexpr inline bool is_64bit_header()
 			{
-
-			}
-
-			bool is_64bit_header()
-			{
-				return get_class() == Class::ELFCLASS64;
+				return std::is_same_v<T, Elf64_Ehdr>;
 			}
 		};
 
-		//@brief dump header to stream
+		// @brief Dump a header to an ostream.
+		// 
+		// @param	stream	ostream to dump the header to.
+		// @param	header	header to dump.
 		//
 		void dump(std::ostream& stream, HeaderA const& header);
 
-		std::unique_ptr<N_Header::HeaderA> create_header(BinaryBlob blob);
+		// @brief Create header from some elf mapped to memory.
+		// 
+		// @param memory_mapped_elf	Memory region which contains memory mapped elf.
+		//
+		// It is assumed that the header of the elf STARTS at byte 0 of the BinaryBlob region.
+		//
+		// @returns pimpl to parse the header and get/set members.
+		//
+		std::unique_ptr<N_Header::HeaderA> create_header(BinaryBlob memory_mapped_elf);
+
+		// @brief Create a new 32-bit or 64-bit header.
+		// 
+		// @param class_to_create_header	Indicates if a 32-bit or 64-bit header has to be created.
+		//
+		// @returns pimpl to parse the header and get/set members.
+		//
+		std::unique_ptr<N_Header::HeaderA> create_header(Class class_to_create_header);
+
+		// @brief Create a new header based and use existing header instance as blueprint.
+		// 
+		// @param existing_header	Blueprint for new header
+		//
+		// @returns pimpl to parse the header and get/set members.
+		//
+		template <typename T, std::enable_if_t<std::is_same_v<std::decay_t<T>, std::unique_ptr<N_Header::HeaderA>>, int> = 0>
+		std::unique_ptr<N_Header::HeaderA> create_header(T&& existing_header)
+		{
+			return existing_header->deep_copy();
+		}
 	}
 }

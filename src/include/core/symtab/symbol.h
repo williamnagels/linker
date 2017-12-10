@@ -27,7 +27,7 @@ namespace N_Core
 			}
 
 		private:
-			BinaryBlob _content; ///< Memory where symbol is stored.
+			BinaryBlob _header_entry; ///< Memory where symbol is stored.
 			std::unique_ptr<N_SymTab::SymbolParseStrategy> _symbol_parse_strategy; ///< Will be 64-bit or 32-bit variant.
 		
 		};

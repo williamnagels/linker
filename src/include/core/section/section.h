@@ -10,9 +10,16 @@
 namespace N_Core
 {
 	class Elf;
-	namespace N_Header { class HeaderA; }
+	namespace N_Header { class HeaderA;}
+
+
 	namespace N_Section
 	{
+		// @brief Public API of a section.
+		// 
+		// This class exposes many setters & getters that can be used to change
+		// the value of basically all members of a section as described by the ELF standard.
+		//
 		class ASection
 		{
 		public:
@@ -34,40 +41,92 @@ namespace N_Core
 		};
 
 		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob content_blob, N_Core::BinaryBlob header_blob);
+		std::unique_ptr<ASection> create_section(bool is_64_bit);
+
+		// @brief Collection of sections forms the section table.
+		// 
+		// This class is essentially a wrapper around std::vector
+		// to store a variable amount of sections.
+		//
+		// Note: since sections are stored in a std::vector addresses
+		// of section objects may change if the capacity of the
+		// vector changes. Do not store references/pointers to sections objects.
+		//
 		class Table
 		{
 
 		public:
-
-			ASection const& get_section(uint16_t index) { return *_sections.at(index); }
-			void add_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob) 
+			// @brief Add section to the section table.
+			// 
+			// @param section	section to add to the table
+			//
+			// Create the section using one of the create_section(...) free functions.
+			//
+			template <typename T>
+			void add_section(T&& section)
 			{
-				_sections.push_back(create_section(elf_blob, header_blob));
+				_sections.push_back(std::forward<T>(section));
 			}
-			std::vector<std::unique_ptr<ASection>> _sections;
+
+			std::vector<std::unique_ptr<ASection>> _sections; ///< list of sections assigned to this table.
 			
-			//template <typename T>
-			Table(Table&& other_table)
-			{
-				_sections = std::move(other_table)._sections;
-			}
+			// @brief Create a section table based on an existing section table.
+			// 
+			// @param existing_table	blueprint for the new table.
+			//
+			// Will move sections from existing_table to the newly created table.
+			//
+			Table(Table&& existing_table);
+			
+			// @brief Create a section table based on an existing section table.
+			// 
+			// @param existing_table	blueprint for the new table.
+			//
+			// Will deep copy sections from existing_table to the newly created table.
+			//
+			Table(Table const& existing_table);
 
-			Table(Table const& other_table)
-			{
-
-				for (auto const& section : other_table._sections)
-				{
-					_sections.emplace_back(section->deep_copy());
-				}
-			}
+			// @brief Create a new table to store sections in.
+			// 
 			explicit Table() {}
 		};
 		
 
+		// @brief Dump a section table to a ostream.
+		// 
+		// @param stream	Stream to dump table to.
+		//
+		// @precondition	The cursor of the stream should already be correct for the section table
+		//					entry. This means that the cursor is supposed to be pointing at position 
+		//					'section table offset' as defined in the elf header. This function
+		//					will modify the cursor to write section content.
+		//
+		// @precondition	The cursor may be anywhere. Do not assume anything about its position.
+		//					
+		void dump(std::ostream& stream, Table const& table);
 
-		void dump(std::ostream& stream, Table const& table, N_Core::N_Header::HeaderA const&);
+		// @brief Create section table
+		// 
+		// @param elf		Elf that defines what the table will look like.
+		//
+		// Method works both for memory mapped elfs and customly created elfs. 
+		// The amount of sections as defined in the header will be created.
+		//
+		// @returns created table.
+		//
 		Table create_section_table(N_Core::Elf const& elf);
-
+		
+		// @brief Create section table from existing section table
+		// 
+		// @param existing_table	
+		//
+		// @returns table with same sections as existing_table
+		//
+		template <typename T, std::add_pointer_t<std::enable_if_t<std::is_same_v<std::decay_t<T>, Table>>> =0>
+		Table create_section_table(T&& existing_table)
+		{
+			return Table(std::forward<T>(existing_table));
+		}
 
 		/*@brief ELF Section representation.
 		*
@@ -78,57 +137,78 @@ namespace N_Core
 		template <typename T>
 		class Section: public ASection
 		{
-		public:
-			ReadWriteBlob<T> _content; ///< Memory blob with some map applied to it.
-			BinaryBlob _header_blob;///< 32 or 64-bit header depending on the elf it is contained in.
-			BinaryBlob _content_blob; ///< 32 or 64-bit header depending on the elf it is contained in.
+		private:
 
-			BinaryBlob get_content_from_header(N_Core::BinaryBlob content)
+			// @brief Get address range where the content of the section is stored.
+			// 
+			// Helper function used when constructing a section from memory mapped elf.
+			//
+			// @param elf_blob	Full elf memory region to which the section belongs.
+			//
+			// @returns memory region where the section content is stored.
+			//
+			BinaryBlob get_content_from_header(N_Core::BinaryBlob elf_blob)
 			{
-				auto a = get_offset();
-				auto b = get_size();
-				return BinaryBlob(reinterpret_cast<uint8_t*>(content.begin()+get_offset()), reinterpret_cast<uint8_t*>(content.begin()+get_offset() + get_size()));
+				return BinaryBlob(reinterpret_cast<uint8_t*>(elf_blob.begin() + get_offset()), reinterpret_cast<uint8_t*>(elf_blob.begin() + get_offset() + get_size()));
 			}
 
+		public:
+			COW_MemoryBlob<T> _header_entry;
+			COW_MemoryBlob<T> _content;
+			BinaryBlob _header_blob;///< 32 or 64-bit header depending on the elf it is contained in.
+			BinaryBlob _content_blob; ///< Content of the section (e.g. code).
+
+
+			// @brief Construct a sectionf rom an existing section.
+			// 
+			// @param existing_section existing section to base the new section of
+			//
 			template <typename T>
-			explicit Section(T&& section, std::enable_if_t<std::is_same_v<std::decay_t<T>, Section>, int> = 0) :
-				_content(std::forward<T>(section)._content)
+			explicit Section(T&& existing_section, std::enable_if_t<std::is_same_v<std::decay_t<T>, Section>, int> = 0) :
+				_header_entry(std::forward<T>(section)._header_entry)
 				,_header_blob(section._header_blob)
 				,_content_blob(section._content_blob)
 			{
 			}
 
+			// @brief Create a section for a memory mapped elf.
+			// 
+			// @param header	address range where the header entry of this section is loaded into memory.
+			// @param elf_blob	full address range of the elf.
+			//
+			// The full memory range of the elf is required because the content may be stored anywhere
+			// in the address range and is unknown until the header has been parsed.
+			//
 			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
-				_content(header)
+				_header_entry(header)
 				,_header_blob(header)
 				,_content_blob(get_content_from_header(elf_blob))
 			{
 			}
 
-			uint64_t Section::get_name()const override { return _content.get(&T::sh_name); }
-			Type Section::get_type() const override { return _content.get(&T::sh_type); }
-			Flags Section::get_flags()const override { return static_cast<Flags>(_content.get(&T::sh_flags)); }
-			uint64_t Section::get_address()const override { return _content.get(&T::sh_addr); }
-			uint64_t Section::get_offset()const override { return _content.get(&T::sh_offset); }
-			uint64_t Section::get_size()const override { return _content.get(&T::sh_size); }
-			uint64_t Section::get_link()const override { return _content.get(&T::sh_link); }
-			uint64_t Section::get_info()const override { return _content.get(&T::sh_info); }
-			uint64_t Section::get_address_alignment()const override { return _content.get(&T::sh_addralign); }
-			uint64_t Section::get_entry_size()const override { return _content.get(&T::sh_entsize); }
+			// @brief Create a new section.
+			// 
+			explicit Section():
+				_header_entry()
+				, _header_blob()
+				, _content_blob()
+			{
+
+			}
+
+			uint64_t Section::get_name()const override { return _header_entry.get(&T::sh_name); }
+			Type Section::get_type() const override { return _header_entry.get(&T::sh_type); }
+			Flags Section::get_flags()const override { return static_cast<Flags>(_header_entry.get(&T::sh_flags)); }
+			uint64_t Section::get_address()const override { return _header_entry.get(&T::sh_addr); }
+			uint64_t Section::get_offset()const override { return _header_entry.get(&T::sh_offset); }
+			uint64_t Section::get_size()const override { return _header_entry.get(&T::sh_size); }
+			uint64_t Section::get_link()const override { return _header_entry.get(&T::sh_link); }
+			uint64_t Section::get_info()const override { return _header_entry.get(&T::sh_info); }
+			uint64_t Section::get_address_alignment()const override { return _header_entry.get(&T::sh_addralign); }
+			uint64_t Section::get_entry_size()const override { return _header_entry.get(&T::sh_entsize); }
 			BinaryBlob get_content() const override { return _content_blob; }
-			std::unique_ptr<ASection> deep_copy() const& override
-			{
-				return std::make_unique<Section>(*this);
-			}
-			std::unique_ptr<ASection> deep_copy() && override
-			{
-				return std::make_unique<Section>(std::move(*this));
-			}
-
-
-			//N_Core::VirtualAddressChangedSignal _virtual_address_changed_signal; ///< Connect slot to this signal to receive updates about VMA changes.
-
-		
+			std::unique_ptr<ASection> deep_copy() const& override { return std::make_unique<Section>(*this);}
+			std::unique_ptr<ASection> deep_copy() && override { return std::make_unique<Section>(std::move(*this));}
 		};
 	}
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "src/include/core/read_write_blob.h"
+#include "src/include/core/COW_memory_blob.h"
 #include <cstdint>
 namespace N_Core
 {
@@ -43,7 +43,7 @@ namespace N_Core
 		class TSymbolParseStrategy : public SymbolParseStrategy
 		{
 		private:
-			ReadWriteBlob<T> _read_write_blob;
+			COW_MemoryBlob<T> _read_write_blob;
 		public:
 			using InnerType = T;
 			TSymbolParseStrategy(N_Core::BinaryBlob& header) :

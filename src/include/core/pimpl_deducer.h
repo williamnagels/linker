@@ -22,20 +22,20 @@ namespace N_Core
 	*
 	*/
 	template<typename StrategyInterface, typename StrategyType, typename ... StrategyTypes>
-	std::unique_ptr<StrategyInterface> create_strategy_from_size(PossibleGeneratorTypes<StrategyInterface, StrategyType, StrategyTypes...> e, BinaryBlob& memory_blob)
+	std::unique_ptr<StrategyInterface> pimpl_deducer(PossibleGeneratorTypes<StrategyInterface, StrategyType, StrategyTypes...> e, BinaryBlob memory_blob)
 	{
-		if (sizeof(std::declval<typename StrategyType::InnerType>()) == memory_blob.size())
+		if (sizeof(StrategyType::InnerType) == memory_blob.size())
 		{
 			return std::make_unique<StrategyType>(memory_blob);
 		}
 
-		return create_strategy_from_size(PossibleGeneratorTypes<StrategyInterface, StrategyTypes...>(), memory_blob);
+		return pimpl_deducer(PossibleGeneratorTypes<StrategyInterface, StrategyTypes...>(), memory_blob);
 	};
 
 	template <typename StrategyInterface>
-	std::unique_ptr<StrategyInterface> create_strategy_from_size(PossibleGeneratorTypes<StrategyInterface>, BinaryBlob& size)
+	std::unique_ptr<StrategyInterface> pimpl_deducer(PossibleGeneratorTypes<StrategyInterface>, BinaryBlob memory_blob)
 	{ 
-		throw std::invalid_argument("Cannot deduce generator to use.Size of header blob is of unexpected size."); 
+		throw std::invalid_argument("Cannot deduce generator to use. Size of header blob is of unexpected size."); 
 		return nullptr;
 	}
 }
