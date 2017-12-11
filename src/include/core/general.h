@@ -13,7 +13,7 @@ namespace N_Core
 	// @param blob		The memory region to write to the stream.
 	// 
 	void dump(std::ostream& stream, BinaryBlob blob);
-
+	
 	struct Math {}; ///< Tag to dispatch math branch overload.
 	struct Regular {}; ///< Tag to dispatch regular branch overload.
 

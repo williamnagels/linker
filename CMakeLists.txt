@@ -10,7 +10,7 @@ endif()
 
 set(Boost_DEBUG ON)
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.65.0 REQUIRED unit_test_framework date_time) 
+find_package(Boost 1.65.0 REQUIRED unit_test_framework date_time filesystem) 
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

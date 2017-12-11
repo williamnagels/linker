@@ -95,7 +95,16 @@ namespace N_Core
 			,_section_table(N_Section::create_section_table(std::forward<T>(elf)._section_table))
 		{
 		}
-		
+	
+		// @brief Remove section identified by index from the elf.
+		// 
+		// Will also update elf header to reflect the changes.	
+		//
+		// @param index		section to remove. 0 based. remove_section(0) removes the first section from the elf.
+		// 
+		// @throws std::range_error if index is bigger than total section count -1
+		//
+		void remove_section(uint16_t index);
 	};
 	
 	// @brief create elf from an existing elf
@@ -159,4 +168,6 @@ namespace N_Core
 	// @param elf		The elf to write to output stream.
 	// 
 	void dump(std::ostream& stream, Elf const& elf);
+
+
 }

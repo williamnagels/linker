@@ -1,7 +1,31 @@
 #include "src/include/core/elf.h"
 
+#include <algorithm>
 namespace N_Core
 {
+	void N_Core::Elf::remove_section(uint16_t index)
+	{
+		if (index >= _section_table._sections.size())
+		{
+			throw std::range_error("No section could be found with the index");
+		}
+		_header->set_section_header_number_of_entries(_header->get_section_header_number_of_entries() - 1);
+
+		//move logic below to section table
+		//For all sections after section with the index the offset must be reduced.
+		auto offset_to_subtract = _section_table._sections.at(index)->get_size(); 
+
+		_header->set_section_header_offset(_header->get_section_header_offset() - offset_to_subtract);
+		std::for_each(
+			_section_table._sections.begin() + (index+1)
+			,_section_table._sections.end()
+			,[=](auto const& section) { section->set_offset(section->get_offset() - offset_to_subtract);}
+		);
+
+		_section_table._sections.erase(_section_table._sections.begin() + index);
+		
+	}
+
 	N_Core::Elf create_elf(N_Core::N_Header::Class class_to_use)
 	{
 		return N_Core::Elf(class_to_use);

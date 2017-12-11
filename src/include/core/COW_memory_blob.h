@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <ostream>
+#include <algorithm>
 
 #include "src/include/core/general.h"
 
@@ -95,7 +96,7 @@ namespace N_Core
 
 	template <typename T>
 	void dump(std::ostream& stream, COW_MemoryBlob<T>const& header)
-	{
+	{	
 		stream.write(reinterpret_cast<char const*>(header._ptr), sizeof(T));
 	}
 }
