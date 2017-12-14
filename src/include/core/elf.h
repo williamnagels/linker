@@ -91,10 +91,11 @@ namespace N_Core
 		template<typename T, std::enable_if_t<std::is_same_v<Elf, std::decay_t<T>>, int> a = 0>
 		explicit Elf(T&& elf) :
 			_region(std::forward<T>(elf)._region)
-			,_header(N_Header::create_header(std::forward<T>(elf)._header))
-			,_section_table(N_Section::create_section_table(std::forward<T>(elf)._section_table))
+			, _header(N_Header::create_header(std::forward<T>(elf)._header))
+			, _section_table(N_Section::create_section_table(std::forward<T>(elf)._section_table))
 		{
 		}
+
 	
 		// @brief Remove section identified by index from the elf.
 		// 
@@ -153,7 +154,7 @@ namespace N_Core
 	// Will overwrite existing file if present.
 	// Will create file if it does not exist.
 	//
-	template <typename T, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0>
+	template <typename T>//, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0
 	void dump_to_file(T&& path, Elf const& elf)
 	{
 		std::ofstream output_file;
