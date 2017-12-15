@@ -4,7 +4,7 @@
 #include <algorithm>
 BOOST_AUTO_TEST_SUITE(elf_section_table)
 
-/*
+
 BOOST_AUTO_TEST_CASE(correct_amount_of_sections)
 {
 	auto elf = N_Core::create_elf("testfiles/sleep");
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(size_in_header_and_in_memory_sanity_check)
 }
 
 
-/*
+
 BOOST_AUTO_TEST_CASE(remove_section)
 {
 	auto elf_to_remove_section_from = N_Core::create_elf("testfiles/sleep");
@@ -125,19 +125,22 @@ BOOST_AUTO_TEST_CASE(remove_section)
 	);	
 }
 
-BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf)
+BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start)
 {
 	auto elf_under_test = N_Core::create_elf("testfiles/sleep");
 	auto size_with_section = boost::filesystem::file_size("testfiles/sleep");
 	auto number_of_sections_in_original_elf = elf_under_test._header->get_section_header_number_of_entries();
 
+	auto tot_size_of_program_headers = elf_under_test._header->get_program_header_number_of_entries() * elf_under_test._header->get_program_header_entry_size();
+	
 	std::string path_for_this_iteration = "testfiles/sleep_rebuild";
 	N_Core::dump_to_file(path_for_this_iteration, N_Core::create_elf("testfiles/sleep"));
 
 	for (auto i = 0; i < number_of_sections_in_original_elf; i++)
 	{
 		auto elf_to_remove_section_from = N_Core::create_elf(path_for_this_iteration.c_str());
-		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size();
+		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size_in_file();
+
 		elf_to_remove_section_from.remove_section(0);
 
 		path_for_this_iteration = std::string("testfiles/remove_all_sections_from_elf_iteration_") + std::to_string(i);
@@ -146,10 +149,36 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf)
 
 		auto size_without_section = boost::filesystem::file_size(path_for_this_iteration);
 
-		BOOST_CHECK_EQUAL(
-			size_with_section - size_of_removed_section - sizeof(N_Core::N_Section::Elf64_Shdr),
-			size_without_section
-		);
+		// This check only works for all except the last section removed.
+		// For one, the program header is still present and padding(sections are not always glued together there may be spacing (in file size) between them)
+		// between the sections will have been accumulated ensuring that when all but one sections has been removed there is a gap
+		// between the elf header and the first sections.
+		// to ensure that when the elf is memory mapped sections can be loaded into memory directly and do not need copying to the correct address (see page alignment).
+		// For example
+		//
+		// [HEADER][SEGMENT TABLE][S1][PADDING1][S2][PADDING2][SECTION TABLE]
+		//
+		// Remove S1
+		//
+		// [HEADER][SEGMENT TABLE][PADDING1][S2][PADDING2][SECTION TABLE]
+		//
+		// Note S1 padding is still present. This padding is actually present in the offset of S2.
+		// offset of S2 = offset S1 + size S1 + padding between S1 and S2. 
+		// Remove 2
+		//
+		// [HEADER][SEGMENT TABLE][PADDING1][PADDING2][SECTION TABLE]
+		//
+		// Note S1 and S2 padding. thsi padding is present in the offset of the section header table.
+		//
+		// However; if the section table contains no entries it will not be dumped to file and thus the offset is
+		// ignored and all padding spacing and segment table spacing is ignored. leading to an elf with a header only.
+		if (i != number_of_sections_in_original_elf - 1)
+		{
+			BOOST_CHECK_EQUAL(
+				size_with_section - size_of_removed_section - sizeof(N_Core::N_Section::Elf64_Shdr),
+				size_without_section
+			);
+		} 
 
 		size_with_section = size_without_section;
 	}
@@ -162,8 +191,6 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf)
 	);
 
 }
-*/
-
 
 BOOST_AUTO_TEST_CASE(remove_first_section)
 {

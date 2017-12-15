@@ -7,7 +7,6 @@
 #define HAS_MESSAGE(message_to_verify) [](auto& exception) { return !std::string(exception.what()).compare(message_to_verify); }
 
 BOOST_AUTO_TEST_SUITE(elf_header)
-/*
 
 // Not being able to parse elf header (magic byte = wrong)
 BOOST_AUTO_TEST_CASE(not_an_elf)
@@ -111,6 +110,6 @@ BOOST_AUTO_TEST_CASE(new_elf)
 		BOOST_CHECK_EQUAL(elf2._header->get_entry(), i);
 	}
 
-}*/
+}
 
 BOOST_AUTO_TEST_SUITE_END()

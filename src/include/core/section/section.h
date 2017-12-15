@@ -36,7 +36,7 @@ namespace N_Core
 			virtual uint64_t get_info()const = 0;
 			virtual uint64_t get_address_alignment()const = 0;
 			virtual uint64_t get_entry_size()const = 0;
-
+			virtual uint64_t get_size_in_file() const = 0;
 			virtual std::unique_ptr<ASection> deep_copy() const& = 0;
 			virtual std::unique_ptr<ASection> deep_copy() && = 0;
 		};
@@ -209,6 +209,7 @@ namespace N_Core
 			uint64_t get_address_alignment()const override { return _header_entry.get(&T::sh_addralign); }
 			uint64_t get_entry_size()const override { return _header_entry.get(&T::sh_entsize); }
 			BinaryBlob get_content() const override { return _content_blob; }
+			uint64_t get_size_in_file() const override { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 			std::unique_ptr<ASection> deep_copy() const& override { return std::make_unique<Section>(*this);}
 			std::unique_ptr<ASection> deep_copy() && override { return std::make_unique<Section>(std::move(*this));}
 		};

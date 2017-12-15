@@ -19,7 +19,7 @@ namespace N_Core
 				{
 					stream.seekp(std::streamoff(section_index * sizeof(T)), std::ios::cur);
 					dump(stream, ptr->_header_entry);
-					if (ptr->get_type() != N_Core::N_Section::Type::SHT_NOBITS)
+					if (ptr->get_size_in_file() != 0)
 					{
 						stream.seekp(ptr->get_offset());
 						N_Core::dump(stream, ptr->_content_blob);

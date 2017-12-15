@@ -14,7 +14,7 @@ namespace N_Core
 
 		//move logic below to section table
 		//For all sections after section with the index the offset must be reduced.
-		auto offset_to_subtract = _section_table._sections.at(index)->get_size(); 
+		auto offset_to_subtract = _section_table._sections.at(index)->get_size_in_file();
 
 		_header->set_section_header_offset(_header->get_section_header_offset() - offset_to_subtract);
 
