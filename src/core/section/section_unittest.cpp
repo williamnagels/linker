@@ -123,8 +123,8 @@ BOOST_AUTO_TEST_CASE(remove_section)
 		boost::filesystem::file_size("testfiles/remove_section"), 
 		boost::filesystem::file_size("testfiles/sleep") - sizeof(N_Core::N_Section::Elf64_Shdr) - size_of_removed_section
 	);	
-}*/
-/*
+}
+
 BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf)
 {
 	auto elf_under_test = N_Core::create_elf("testfiles/sleep");
@@ -159,10 +159,10 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf)
 	BOOST_CHECK_EQUAL(
 		sizeof(N_Core::N_Header::Elf64_Ehdr),
 		size_without_any_sections
-	);¨
+	);
 
-}*/
-
+}
+*/
 
 
 BOOST_AUTO_TEST_CASE(remove_first_section)
@@ -170,12 +170,34 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 	std::string path_for_this_iteration = "testfiles/remove_first_section";
 
 	auto elf_to_remove_section_from = N_Core::create_elf("testfiles/sleep");
+
+	BOOST_CHECK_EQUAL(
+		elf_to_remove_section_from._section_table._sections.at(0).get()->get_type()
+		, N_Core::N_Section::Type::SHT_NULL
+	);
+
 	elf_to_remove_section_from.remove_section(0);
+
+	for (auto const& section : elf_to_remove_section_from._section_table._sections)
+	{
+		if (section->get_offset() + section->get_size() > elf_to_remove_section_from._header->get_section_header_offset())
+		{
+			auto b = 0;
+		}
+	}
+
+	BOOST_CHECK_EQUAL(
+		elf_to_remove_section_from._section_table._sections.at(0).get()->get_type()
+		, N_Core::N_Section::Type::SHT_PROGBITS
+	);
+	
 	N_Core::dump_to_file(path_for_this_iteration, elf_to_remove_section_from);
 	auto elf_to_remove_section_from_2 = N_Core::create_elf(path_for_this_iteration.c_str());
 
-
-	auto a = 0;
+	BOOST_CHECK_EQUAL(
+		elf_to_remove_section_from_2._section_table._sections.at(0).get()->get_type()
+		, N_Core::N_Section::Type::SHT_PROGBITS
+	);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

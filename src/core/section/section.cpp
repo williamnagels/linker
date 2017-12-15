@@ -2,6 +2,7 @@
 #include "src/include/core/symtab/symbol_table.h"
 #include "src/include/core/elf.h"
 #include "src/include/core/pimpl_deducer.h"
+#include <iostream>
 namespace N_Core
 {
 	namespace N_Section
@@ -18,8 +19,11 @@ namespace N_Core
 				{
 					stream.seekp(std::streamoff(section_index * sizeof(T)), std::ios::cur);
 					dump(stream, ptr->_header_entry);
-					stream.seekp(ptr->get_offset());
-					N_Core::dump(stream, ptr->_content_blob);
+					if (ptr->get_type() != N_Core::N_Section::Type::SHT_NOBITS)
+					{
+						stream.seekp(ptr->get_offset());
+						N_Core::dump(stream, ptr->_content_blob);
+					}
 				}
 			}
 		}
@@ -136,8 +140,8 @@ namespace N_Core
 					auto end_header = begin_header + size_of_entry;
 
 					auto header_range = boost::make_iterator_range(begin_header, end_header);
-
-					table.add_section(create_section(elf.get_memory_mapped_region(), header_range));
+					auto section = create_section(elf.get_memory_mapped_region(), header_range);
+					table.add_section(std::move(section));
 				}
 			}
 			else

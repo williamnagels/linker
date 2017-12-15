@@ -1,6 +1,7 @@
 #include "src/include/core/elf.h"
 
 #include <algorithm>
+#include <iostream>
 namespace N_Core
 {
 	void N_Core::Elf::remove_section(uint16_t index)
@@ -17,11 +18,13 @@ namespace N_Core
 
 		_header->set_section_header_offset(_header->get_section_header_offset() - offset_to_subtract);
 
-		auto current_section_header = _header->get_section_header_offset();
 		std::for_each(
 			_section_table._sections.begin() + (index+1)
 			,_section_table._sections.end()
-			,[=](auto const& section) { section->set_offset(section->get_offset() - offset_to_subtract);}
+			,[=](auto const& section) 
+		{
+			section->set_offset(section->get_offset() - offset_to_subtract);
+		}
 		);
 
 
