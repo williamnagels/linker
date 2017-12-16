@@ -4,7 +4,7 @@
 #include <iostream>
 namespace N_Core
 {
-	void N_Core::Elf::remove_section(uint16_t index)
+	void N_Core::Elf::remove_section(uint16_t index, N_Core::N_Section::SectionRemovalPolicy policy)
 	{
 		if (index >= _section_table._sections.size())
 		{

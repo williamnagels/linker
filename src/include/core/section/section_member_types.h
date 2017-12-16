@@ -4,6 +4,11 @@ namespace N_Core
 {
 	namespace N_Section
 	{
+		enum SectionRemovalPolicy
+		{
+			GAP,
+			FILL
+		};
 
 		enum Flags: uint64_t
 		{

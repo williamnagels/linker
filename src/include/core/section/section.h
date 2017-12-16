@@ -15,6 +15,7 @@ namespace N_Core
 
 	namespace N_Section
 	{
+
 		// @brief Public API of a section.
 		// 
 		// This class exposes many setters & getters that can be used to change

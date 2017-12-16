@@ -105,7 +105,7 @@ namespace N_Core
 		// 
 		// @throws std::range_error if index is bigger than total section count -1
 		//
-		void remove_section(uint16_t index);
+		void remove_section(uint16_t index, N_Section::SectionRemovalPolicy policy);
 	};
 	
 	// @brief create elf from an existing elf

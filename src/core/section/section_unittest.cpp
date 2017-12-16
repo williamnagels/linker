@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(remove_section)
 	auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[index_of_section_to_remove]->get_size();
 	BOOST_CHECK_EQUAL(size_of_removed_section_check, size_of_removed_section);
 
-	elf_to_remove_section_from.remove_section(index_of_section_to_remove);
+	elf_to_remove_section_from.remove_section(index_of_section_to_remove, N_Core::N_Section::SectionRemovalPolicy::GAP);
 
 	BOOST_CHECK_EQUAL(
 		elf_to_remove_section_from._header->get_section_header_number_of_entries(),
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start)
 		auto elf_to_remove_section_from = N_Core::create_elf(path_for_this_iteration.c_str());
 		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size_in_file();
 
-		elf_to_remove_section_from.remove_section(0);
+		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::GAP);
 
 		path_for_this_iteration = std::string("testfiles/remove_all_sections_from_elf_iteration_") + std::to_string(i);
 
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 		, N_Core::N_Section::Type::SHT_NULL
 	);
 
-	elf_to_remove_section_from.remove_section(0);
+	elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::GAP);
 
 	for (auto const& section : elf_to_remove_section_from._section_table._sections)
 	{
