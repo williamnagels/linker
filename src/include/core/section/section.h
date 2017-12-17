@@ -70,6 +70,15 @@ namespace N_Core
 				_sections.push_back(std::forward<T>(section));
 			}
 
+			// @brief Remove section identified by index from the section table
+			// 
+			// @param index		section to remove. 0 based. remove_section(0) removes the first section from the table
+			// @param policy	what the elf should look like after the section is removed. See enum for descriptin of options.
+			//
+			// @throws std::range_error if index is invalid (larger than amount of sections).
+			//
+			void remove_section(uint16_t section_index, SectionRemovalPolicy policy);
+
 			std::vector<std::unique_ptr<ASection>> _sections; ///< list of sections assigned to this table.
 			
 			// @brief Create a section table based on an existing section table.

@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(remove_section)
 	auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[index_of_section_to_remove]->get_size();
 	BOOST_CHECK_EQUAL(size_of_removed_section_check, size_of_removed_section);
 
-	elf_to_remove_section_from.remove_section(index_of_section_to_remove, N_Core::N_Section::SectionRemovalPolicy::GAP);
+	elf_to_remove_section_from.remove_section(index_of_section_to_remove, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
 
 	BOOST_CHECK_EQUAL(
 		elf_to_remove_section_from._header->get_section_header_number_of_entries(),
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start)
 		auto elf_to_remove_section_from = N_Core::create_elf(path_for_this_iteration.c_str());
 		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size_in_file();
 
-		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::GAP);
+		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
 
 		path_for_this_iteration = std::string("testfiles/remove_all_sections_from_elf_iteration_") + std::to_string(i);
 
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 		, N_Core::N_Section::Type::SHT_NULL
 	);
 
-	elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::GAP);
+	elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
 
 	for (auto const& section : elf_to_remove_section_from._section_table._sections)
 	{
@@ -225,6 +225,60 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 		elf_to_remove_section_from_2._section_table._sections.at(0).get()->get_type()
 		, N_Core::N_Section::Type::SHT_PROGBITS
 	);
+}
+
+BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start_gap)
+{
+	auto elf_under_test = N_Core::create_elf("testfiles/sleep");
+	auto size_with_section = boost::filesystem::file_size("testfiles/sleep");
+	auto number_of_sections_in_original_elf = elf_under_test._header->get_section_header_number_of_entries();
+
+	auto tot_size_of_program_headers = elf_under_test._header->get_program_header_number_of_entries() * elf_under_test._header->get_program_header_entry_size();
+
+	std::string path_for_this_iteration = "testfiles/sleep_rebuild";
+	N_Core::dump_to_file(path_for_this_iteration, N_Core::create_elf("testfiles/sleep"));
+
+	for (auto i = 0; i < number_of_sections_in_original_elf; i++)
+	{
+		auto elf_to_remove_section_from = N_Core::create_elf(path_for_this_iteration.c_str());
+		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size_in_file();
+
+		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::GAP);
+
+		path_for_this_iteration = std::string("testfiles/remove_all_sections_from_elf_iteration_gap_") + std::to_string(i);
+
+		N_Core::dump_to_file(path_for_this_iteration, elf_to_remove_section_from);
+
+		auto size_without_section = boost::filesystem::file_size(path_for_this_iteration);
+
+		//When the last section is removed there is no longer any gap in the sections.
+		// For example:
+		// Say 3 sections exist indicated S1, S2 and S3
+		// [HEADER][S1][S2][S3][SECTION_TABLE (3 elements)]
+		// remove S1
+		// [HEADER][GAP][S2][S3][SECTION_TABLE (2 elements)]
+		// remove S3
+		// [HEADER][GAP][S2][GAP][SECTION_TABLE (1 element)]
+		// remove S2
+		// [HEADER[GAP][GAP][GAP][SECTION_TABLE (0 elements)] = [HEADER]
+		// GAPS are not written to file nor is a section table without any elements.
+		if (i != number_of_sections_in_original_elf - 1)
+		{
+			BOOST_CHECK_EQUAL(
+				size_with_section - sizeof(N_Core::N_Section::Elf64_Shdr)
+				, size_without_section
+			);
+		}
+		size_with_section = size_without_section;
+	}
+
+	//finally only elf header should be left.
+	auto size_without_any_sections = size_with_section;
+	BOOST_CHECK_EQUAL(
+		size_without_any_sections,
+		sizeof(N_Core::N_Header::Elf64_Ehdr)
+	);
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()

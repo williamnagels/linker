@@ -6,32 +6,22 @@ namespace N_Core
 {
 	void N_Core::Elf::remove_section(uint16_t index, N_Core::N_Section::SectionRemovalPolicy policy)
 	{
-		if (index >= _section_table._sections.size())
-		{
-			throw std::range_error("No section could be found with the index");
-		}
+		auto offset_to_subtract = _section_table._sections.at(index)->get_size_in_file();
+		
+		//throws if index is not valid that's why offset must first be retrieved.
+		_section_table.remove_section(index, policy); 
+
 		_header->set_section_header_number_of_entries(_header->get_section_header_number_of_entries() - 1);
 
-		//move logic below to section table
-		//For all sections after section with the index the offset must be reduced.
-		auto offset_to_subtract = _section_table._sections.at(index)->get_size_in_file();
-
-		_header->set_section_header_offset(_header->get_section_header_offset() - offset_to_subtract);
-
-		std::for_each(
-			_section_table._sections.begin() + (index+1)
-			,_section_table._sections.end()
-			,[=](auto const& section) 
+		if (policy == N_Section::SectionRemovalPolicy::COMPACT)
 		{
-			section->set_offset(section->get_offset() - offset_to_subtract);
+
+			_header->set_section_header_offset(_header->get_section_header_offset() - offset_to_subtract);
 		}
-		);
 
 
-		auto element_to_delete = _section_table._sections.begin() + index;
-		_section_table._sections.erase(_section_table._sections.begin() + index);
 		
-	}
+	} 
 
 	N_Core::Elf create_elf(N_Core::N_Header::Class class_to_use)
 	{

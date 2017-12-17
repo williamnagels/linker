@@ -118,6 +118,28 @@ namespace N_Core
 			}
 		}
 
+		void Table::remove_section(uint16_t section_index, SectionRemovalPolicy policy)
+		{
+			if (section_index >= _sections.size())
+			{
+				throw std::range_error("No section could be found with the index");
+			}
+
+			if (policy == SectionRemovalPolicy::COMPACT)
+			{
+				auto offset_to_subtract = _sections.at(section_index)->get_size_in_file();
+
+				std::for_each(
+					_sections.begin() + (section_index + 1)
+					, _sections.end()
+					, [=](auto const& section) { section->set_offset(section->get_offset() - offset_to_subtract); }
+				);
+			}
+
+			auto element_to_delete = _sections.begin() + section_index;
+			_sections.erase(_sections.begin() + section_index);
+		}
+
 		Table create_section_table(N_Core::Elf const& elf)
 		{
 			Table table;

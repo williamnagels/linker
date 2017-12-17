@@ -102,8 +102,9 @@ namespace N_Core
 		// Will also update elf header to reflect the changes.	
 		//
 		// @param index		section to remove. 0 based. remove_section(0) removes the first section from the elf.
-		// 
-		// @throws std::range_error if index is bigger than total section count -1
+		// @param policy	what the elf should look like after the section is removed. See enum for descriptin of options.
+		//
+		// @throws std::range_error if index is invalid (larger than amount of sections).
 		//
 		void remove_section(uint16_t index, N_Section::SectionRemovalPolicy policy);
 	};
