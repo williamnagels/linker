@@ -27,55 +27,19 @@ namespace N_Core
 				}
 			}
 		}
-	//@brief dump header to stream
-	//
-	void dump(std::ostream& stream, Table const& table)
-	{
-		std::streampos start_of_section_table = stream.tellp();
-		int section_index = 0;
-		for (auto const& section : table._sections)
+
+		void dump(std::ostream& stream, Table const& table)
 		{
-			stream.seekp(start_of_section_table);
-			dump_if_correct_type<Elf32_Shdr>(stream, section, section_index);
-			dump_if_correct_type<Elf64_Shdr>(stream, section, section_index);
-			section_index++;
+			std::streampos start_of_section_table = stream.tellp();
+			int section_index = 0;
+			for (auto const& section : table._sections)
+			{
+				stream.seekp(start_of_section_table);
+				dump_if_correct_type<Elf32_Shdr>(stream, section, section_index);
+				dump_if_correct_type<Elf64_Shdr>(stream, section, section_index);
+				section_index++;
+			}
 		}
-	}
-		/*
-		Section::Section(N_Core::BinaryBlob& header, N_Core::BinaryBlob& content):
-			_header(header),
-			_content(content)
-		{
-			
-			switch (_header.size())
-			{
-			case 0x80:
-				_header_parse_strategy = std::make_unique<THeaderParseStrategy<Elf64_Shdr>>(header);
-				break;
-			case 0x70:
-				_header_parse_strategy = std::make_unique<THeaderParseStrategy<Elf32_Shdr>>(header);
-				break;
-			default:
-				throw std::invalid_argument("Size of header blob is of unexpected size.");
-			}
-
-			switch (_header_parse_strategy->get_type())
-			{
-			case N_Section::SHT_SYMTAB:
-				_parsed_content = N_SymTab::create_symbol_table_from_section(*this);
-				break;
-			
-			case N_Section::SHT_RELA:
-				break;
-
-			case N_Section::SHT_PROGBITS:
-				_parsed_content = header;
-				break;
-			default:
-				throw std::invalid_argument("Size of header blob is of unexpected size.");
-			}
-		}*/
-
 
 		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob)
 		{

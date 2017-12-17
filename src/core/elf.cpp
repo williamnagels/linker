@@ -15,7 +15,6 @@ namespace N_Core
 
 		if (policy == N_Section::SectionRemovalPolicy::COMPACT)
 		{
-
 			_header->set_section_header_offset(_header->get_section_header_offset() - offset_to_subtract);
 		}
 

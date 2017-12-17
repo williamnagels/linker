@@ -42,7 +42,7 @@ namespace N_Core
 			virtual std::unique_ptr<ASection> deep_copy() && = 0;
 		};
 
-		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob content_blob, N_Core::BinaryBlob header_blob);
+		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob);
 		std::unique_ptr<ASection> create_section(bool is_64_bit);
 
 		// @brief Collection of sections forms the section table.
