@@ -166,7 +166,6 @@ namespace N_Core
 		public:
 			COW_MemoryBlob<T> _header_entry;
 			COW_MemoryBlob<uint8_t> _content;
-			BinaryBlob _header_blob;///< 32 or 64-bit header depending on the elf it is contained in.
 			BinaryBlob _content_blob; ///< Content of the section (e.g. code).
 
 
@@ -177,7 +176,6 @@ namespace N_Core
 			template <typename T>
 			explicit Section(T&& existing_section, std::enable_if_t<std::is_same_v<std::decay_t<T>, Section>, int> = 0) :
 				_header_entry(std::forward<T>(section)._header_entry)
-				,_header_blob(section._header_blob)
 				,_content_blob(section._content_blob)
 			{
 			}
@@ -192,7 +190,6 @@ namespace N_Core
 			//
 			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_header_entry(header)
-				,_header_blob(header)
 				,_content_blob(get_content_from_header(elf_blob))
 			{
 			}
@@ -201,7 +198,6 @@ namespace N_Core
 			// 
 			explicit Section():
 				_header_entry()
-				, _header_blob()
 				, _content_blob()
 			{
 

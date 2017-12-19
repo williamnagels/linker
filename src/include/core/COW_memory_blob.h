@@ -20,7 +20,7 @@ namespace N_Core
 		uint64_t _current_size_in_elements; // how many  elements are stored in the allocated array
 	};
 
-	template<class T, class Allocator = DefaultAllocator>
+	template<class T, class Allocator>
 	class COW_MemoryBlob;
 
 	template <typename T>
