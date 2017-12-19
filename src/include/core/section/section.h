@@ -165,7 +165,7 @@ namespace N_Core
 
 		public:
 			COW_MemoryBlob<T> _header_entry;
-			//COW_MemoryBlob<T> _content;
+			COW_MemoryBlob<uint8_t> _content;
 			BinaryBlob _header_blob;///< 32 or 64-bit header depending on the elf it is contained in.
 			BinaryBlob _content_blob; ///< Content of the section (e.g. code).
 
@@ -207,17 +207,17 @@ namespace N_Core
 
 			}
 
-			uint64_t get_name()const override { return _header_entry.get(&T::sh_name); }
-			Type get_type() const override { return _header_entry.get(&T::sh_type); }
-			Flags get_flags()const override { return static_cast<Flags>(_header_entry.get(&T::sh_flags)); }
-			uint64_t get_address()const override { return _header_entry.get(&T::sh_addr); }
-			uint64_t get_offset()const override { return _header_entry.get(&T::sh_offset); }
-			void set_offset(uint64_t offset) override { return _header_entry.set(&T::sh_offset, offset); };
-			uint64_t get_size()const override { return _header_entry.get(&T::sh_size); }
-			uint64_t get_link()const override { return _header_entry.get(&T::sh_link); }
-			uint64_t get_info()const override { return _header_entry.get(&T::sh_info); }
-			uint64_t get_address_alignment()const override { return _header_entry.get(&T::sh_addralign); }
-			uint64_t get_entry_size()const override { return _header_entry.get(&T::sh_entsize); }
+			uint64_t get_name()const override { return get(_header_entry, &T::sh_name); }
+			Type get_type() const override { return get(_header_entry, &T::sh_type); }
+			Flags get_flags()const override { return static_cast<Flags>(get(_header_entry, &T::sh_flags)); }
+			uint64_t get_address()const override { return get(_header_entry, &T::sh_addr); }
+			uint64_t get_offset()const override { return get(_header_entry, &T::sh_offset); }
+			void set_offset(uint64_t offset) override { return set(_header_entry, &T::sh_offset, offset); };
+			uint64_t get_size()const override { return get(_header_entry, &T::sh_size); }
+			uint64_t get_link()const override { return get(_header_entry, &T::sh_link); }
+			uint64_t get_info()const override { return get(_header_entry, &T::sh_info); }
+			uint64_t get_address_alignment()const override { return get(_header_entry, &T::sh_addralign); }
+			uint64_t get_entry_size()const override { return get(_header_entry, &T::sh_entsize); }
 			BinaryBlob get_content() const override { return _content_blob; }
 			uint64_t get_size_in_file() const override { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 			std::unique_ptr<ASection> deep_copy() const& override { return std::make_unique<Section>(*this);}
