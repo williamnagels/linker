@@ -16,8 +16,13 @@ namespace N_Core
 
 	struct ArrayAllocator
 	{
+
 		uint64_t _desired_size_in_elements; // how many  elements should be stored in the allocated array
 		uint64_t _current_size_in_elements; // how many  elements are stored in the allocated array
+
+		ArrayAllocator(uint64_t desired_size_in_elements=0, uint64_t current_size_in_elements=0):
+			_desired_size_in_elements(desired_size_in_elements)
+			, _current_size_in_elements(current_size_in_elements){}
 	};
 
 	template<class T, class Allocator>
@@ -31,14 +36,15 @@ namespace N_Core
 			return;
 		}
 
-		std::unique_ptr<T> temporary_storage = std::make_unique<T>(cow._allocator._desired_size_in_elements);
+		std::unique_ptr<COW_MemoryBlob<T, ArrayAllocator>::ValueType[]> temporary_storage = 
+			std::make_unique<COW_MemoryBlob<T, ArrayAllocator>::ValueType[]>(cow._allocator._desired_size_in_elements);
 
-		std::memcpy(temporary_storage.get(), cow._ptr.get(), cow._allocator._current_size_in_elements);
+		/*std::memcpy(temporary_storage.get(), cow._ptr, cow._allocator._current_size_in_elements);
 
 		cow._allocated_ptr = std::move(temporary_storage);
 		cow._ptr = cow._allocated_ptr.get();
 
-		cow._allocator._current_size_in_elements = cow._allocator._desired_size_in_elements;
+		cow._allocator._current_size_in_elements = cow._allocator._desired_size_in_elements;*/
 	}
 	template <typename T>
 	void allocate(COW_MemoryBlob<T, DefaultAllocator>& cow)
@@ -84,34 +90,46 @@ namespace N_Core
 	public:
 		using ValueType = std::decay_t<T>;
 		using PointerType = std::add_pointer_t<ValueType>;
+		using UniquePtrType = std::conditional_t<std::is_same_v<Allocator, DefaultAllocator>, ValueType, ValueType[]>;
 
 
 		PointerType _ptr; ///< Memory access ptr
 		Allocator _allocator;
-		std::unique_ptr<ValueType> _allocated_ptr; ///< Allocated memory if writes are required.
+		std::unique_ptr<UniquePtrType> _allocated_ptr; ///< Allocated memory if writes are required.
 
-		COW_MemoryBlob(N_Core::BinaryBlob const& header, std::add_pointer_t<std::enable_if_t<std::is_pod_v<T>>> = 0 ) :
+		template <class = std::enable_if_t<std::is_same_v<Allocator, DefaultAllocator>>>
+		COW_MemoryBlob(N_Core::BinaryBlob const& header, std::add_pointer_t<std::enable_if_t<std::is_pod_v<ValueType>>> = 0 ) :
 			_ptr(reinterpret_cast<PointerType>(header.begin())) {}
+
+
+		template <class = int, class = std::enable_if_t<std::is_same_v<Allocator, ArrayAllocator>>>
+		COW_MemoryBlob(N_Core::BinaryBlob const& header, std::add_pointer_t<std::enable_if_t<std::is_pod_v<ValueType>>> = 0) :
+			_ptr(reinterpret_cast<PointerType>(header.begin()))
+			, _allocator(header.size(), header.size()) {}
 
 		COW_MemoryBlob():
 			_ptr(nullptr)
 			,_allocated_ptr(nullptr)
+			, _allocator()
 		{
 			allocate(*this);
 		}
 
+
 		COW_MemoryBlob(COW_MemoryBlob const& blob) :
 			_ptr(blob._ptr)
+			,_allocator(blob._allocator)
 		{
 			if (blob._allocated_ptr)
 			{
-				_allocated_ptr = std::make_unique<T>(*blob._allocated_ptr); //copy ctor of T
+				//_allocated_ptr = std::make_unique<typename UniquePtrType>(*blob._allocated_ptr); //copy ctor of T
 				_ptr = _allocated_ptr.get();
 			}
 		}
 
 		COW_MemoryBlob(COW_MemoryBlob&& blob) :
 			_ptr(blob._ptr)
+			, _allocator(blob._allocator)
 		{
 			if (blob._allocated_ptr)
 			{
@@ -137,11 +155,22 @@ namespace N_Core
 	}
 
 	template <typename T>
-	void dump(std::ostream& stream, COW_MemoryBlob<T>const& header)
-	{	
-		stream.write(reinterpret_cast<char const*>(header._ptr), sizeof(T));
+	uint64_t get_size(COW_MemoryBlob<T, DefaultAllocator> const& cow)
+	{
+		return sizeof(COW_MemoryBlob<T, DefaultAllocator>::ValueType);
 	}
 
+	template <typename T>
+	uint64_t get_size(COW_MemoryBlob<T, ArrayAllocator> const& cow)
+	{
 
+		return cow._allocator._current_size_in_elements * sizeof(COW_MemoryBlob<T, ArrayAllocator>::ValueType);
+	}
+
+	template <typename T, typename Allocator>
+	void dump(std::ostream& stream, COW_MemoryBlob<T, Allocator>const& blob)
+	{	
+		stream.write(reinterpret_cast<char const*>(blob._ptr), get_size(blob));
+	}
 
 }

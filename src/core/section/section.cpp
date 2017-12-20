@@ -22,7 +22,7 @@ namespace N_Core
 					if (ptr->get_size_in_file() != 0)
 					{
 						stream.seekp(ptr->get_offset());
-						N_Core::dump(stream, ptr->_content_blob);
+						N_Core::dump(stream, ptr->_content);
 					}
 				}
 			}
