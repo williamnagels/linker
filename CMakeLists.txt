@@ -1,5 +1,6 @@
 project (Linker)
 include( CTest )
+include(ExternalProject)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 cmake_minimum_required (VERSION 3.9.2)
 
@@ -11,11 +12,26 @@ endif()
 set(Boost_DEBUG ON)
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.65.0 REQUIRED unit_test_framework date_time filesystem) 
+find_package(Git REQUIRED) 
 
+set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
 
+ExternalProject_Add(
+    mmcow
+    #PREFIX ${CMAKE_BINARY_DIR}/mmcow
+    GIT_REPOSITORY https://github.com/williamnagels/mmcow.git
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    LOG_DOWNLOAD ON
+    )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 
+ExternalProject_Get_Property(mmcow source_dir)
+set(mmcowIncludeDir ${source_dir}/include)
+MESSAGE( STATUS "mmcow header files:" ${mmcowIncludeDir} )
+include_directories(${mmcowIncludeDir})
 add_library(linker_core STATIC
 	src/core/addressable.cpp
 	src/core/COW_memory_blob.cpp
@@ -33,6 +49,7 @@ add_library(linker_core STATIC
 )
 
 add_executable(linker src/main.cpp) 
+add_dependencies(linker mmcow)
 
 add_executable(linker_unit_tests 
 	src/unittest_main.cpp
@@ -40,6 +57,7 @@ add_executable(linker_unit_tests
 	src/core/header/header_unittest.cpp
 	src/core/section/section_unittest.cpp
 ) 
+add_dependencies(linker_unit_tests mmcow)
 
 add_custom_command(TARGET linker_unit_tests
                    POST_BUILD
