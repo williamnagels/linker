@@ -7,22 +7,7 @@
 
 namespace N_Core
 {
-
-
-
-	struct DefaultAllocator
-	{		
-	};
-
-	struct ArrayAllocator
-	{
-		uint64_t _current_size_in_elements; ///how many  elements are stored in the allocated array
-	};
-
-
 	// @brief Copy-on-write memory blob
-	//
-	//
 	//
 	// The memory region passed in the ctor is reinterpreted as
 	// an object of type T. Very useful when working with memory
@@ -32,7 +17,7 @@ namespace N_Core
 	//
 	// @returns true_branch if condition is true else returns false.
 	//
-	template<class T, class Allocator=DefaultAllocator>
+	template<class T>
 	class COW_MemoryBlob
 	{
 	private:
@@ -41,7 +26,6 @@ namespace N_Core
 
 		void allocate_if_required()
 		{
-			// Already allocated memory; not going to reallocate.
 			if (_allocated_ptr)
 			{
 				return;
@@ -62,8 +46,6 @@ namespace N_Core
 		}
 	public:
 		T * _ptr; ///< Memory access ptr
-		Allocator _allocator;
-
 		COW_MemoryBlob(N_Core::BinaryBlob const& header, std::add_pointer_t<std::enable_if_t<std::is_pod_v<T>>> = 0 ) :
 			_ptr(reinterpret_cast<T*>(header.begin())) {}
 
@@ -79,7 +61,7 @@ namespace N_Core
 		{
 			if (blob._allocated_ptr)
 			{
-				_allocated_ptr = std::make_unique<T>(*blob._allocated_ptr); //copy ctor of T
+				_allocated_ptr = std::make_unique<T>(*blob._allocated_ptr);
 				_ptr = _allocated_ptr.get();
 			}
 		}
