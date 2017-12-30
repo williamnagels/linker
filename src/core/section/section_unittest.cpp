@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 
 			BOOST_CHECK_EQUAL(section_elf_1->get_size(), section_elf_2->get_size());
 			BOOST_CHECK_EQUAL(binary_blob_elf_1.size(), binary_blob_elf_2.size());
-     		BOOST_CHECK_EQUAL(section_elf_1->get_size(), binary_blob_elf_2.size());
+			BOOST_CHECK_EQUAL(section_elf_1->get_size(), binary_blob_elf_2.size());
 			BOOST_CHECK_EQUAL(std::memcmp(binary_blob_elf_1.begin(), binary_blob_elf_2.begin(), binary_blob_elf_1.size()), 0);
 			return N_Core::VoidIterator<>::value_type();
 		}

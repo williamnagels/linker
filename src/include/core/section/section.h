@@ -165,8 +165,8 @@ namespace N_Core
 
 		public:
 			COW_MemoryBlob<T> _header_entry;
-			COW_MemoryBlob<uint8_t, ArrayAllocator> _content;
-			//BinaryBlob _content_blob; ///< Content of the section (e.g. code).
+			COW_MemoryBlob<uint8_t> _content;
+			BinaryBlob _content_blob; ///< Content of the section (e.g. code).
 
 
 			// @brief Construct a sectionf rom an existing section.
@@ -176,7 +176,7 @@ namespace N_Core
 			template <typename T>
 			explicit Section(T&& existing_section, std::enable_if_t<std::is_same_v<std::decay_t<T>, Section>, int> = 0) :
 				_header_entry(std::forward<T>(section)._header_entry)
-				, _content(std::forward<T>(section)._content)
+				,_content_blob(section._content_blob)
 			{
 			}
 
@@ -190,7 +190,7 @@ namespace N_Core
 			//
 			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_header_entry(header)
-				, _content(get_content_from_header(elf_blob))
+				,_content_blob(get_content_from_header(elf_blob))
 			{
 			}
 
@@ -198,7 +198,7 @@ namespace N_Core
 			// 
 			explicit Section():
 				_header_entry()
-				, _content()
+				, _content_blob()
 			{
 
 			}
@@ -214,10 +214,7 @@ namespace N_Core
 			uint64_t get_info()const override { return get(_header_entry, &T::sh_info); }
 			uint64_t get_address_alignment()const override { return get(_header_entry, &T::sh_addralign); }
 			uint64_t get_entry_size()const override { return get(_header_entry, &T::sh_entsize); }
-			BinaryBlob get_content() const override 
-			{ 
-				return BinaryBlob(_content._ptr, _content._ptr + N_Core::get_size(_content)); 
-			}
+			BinaryBlob get_content() const override { return _content_blob; }
 			uint64_t get_size_in_file() const override { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 			std::unique_ptr<ASection> deep_copy() const& override { return std::make_unique<Section>(*this);}
 			std::unique_ptr<ASection> deep_copy() && override { return std::make_unique<Section>(std::move(*this));}
