@@ -34,7 +34,6 @@ MESSAGE( STATUS "mmcow header files:" ${mmcowIncludeDir} )
 include_directories(${mmcowIncludeDir})
 add_library(linker_core STATIC
 	src/core/addressable.cpp
-	src/core/COW_memory_blob.cpp
 	src/core/general.cpp
 	src/core/elf.cpp
 	src/core/section/section.cpp

@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start_gap)
 		// remove S3
 		// [HEADER][GAP][S2][GAP][SECTION_TABLE (1 element)]
 		// remove S2
-		// [HEADER[GAP][GAP][GAP][SECTION_TABLE (0 elements)] = [HEADER]
+		// [HEADER][GAP][GAP][GAP][SECTION_TABLE (0 elements)] = [HEADER]
 		// GAPS are not written to file nor is a section table without any elements.
 		if (i != number_of_sections_in_original_elf - 1)
 		{
