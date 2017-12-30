@@ -49,12 +49,12 @@ namespace N_Core
 			TSymbolParseStrategy(N_Core::BinaryBlob& header) :
 				_read_write_blob(header) {}
 
-			uint64_t get_name() { return get(_read_write_blob, &T::st_name); }
-			uint64_t get_info() { return get(_read_write_blob, &T::st_info); }
-			uint64_t get_other() { return get(_read_write_blob, &T::st_other); }
-			uint64_t get_value() { return get(_read_write_blob, &T::st_value); }
-			uint64_t get_size() { return get(_read_write_blob, &T::st_size); }
-			uint64_t get_section_index() { return get(_read_write_blob, &T::st_shndx); }
+			uint64_t get_name() { return _read_write_blob.get(&T::st_name); }
+			uint64_t get_info() { return _read_write_blob.get(&T::st_info); }
+			uint64_t get_other() { return _read_write_blob.get(&T::st_other); }
+			uint64_t get_value() { return _read_write_blob.get(&T::st_value); }
+			uint64_t get_size() { return _read_write_blob.get(&T::st_size); }
+			uint64_t get_section_index() { return _read_write_blob.get(&T::st_shndx); }
 			uint64_t get_total_size_in_bytes() { return T::SIZE_IN_BYTES; }
 		};
 	}
