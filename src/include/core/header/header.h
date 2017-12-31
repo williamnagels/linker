@@ -220,7 +220,7 @@ namespace N_Core
 			// @throws std::invalid_argument if the magic bytes are not set.
 			//
 			explicit Header(N_Core::BinaryBlob header_memory_blob) :
-				_header_content(header_memory_blob)
+				_header_content(header_memory_blob.begin(), header_memory_blob.end())
 			{
 				if (!are_magic_bytes_correct())
 				{
