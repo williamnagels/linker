@@ -18,7 +18,7 @@ namespace N_Core
 				if (ptr)
 				{
 					stream.seekp(std::streamoff(section_index * sizeof(T)), std::ios::cur);
-					dump(stream, ptr->_header_entry);
+					stream << ptr->_header_entry;
 					if (ptr->get_size_in_file() != 0)
 					{
 						stream.seekp(ptr->get_offset());

@@ -1,4 +1,6 @@
 #pragma once
+#include "cow.h"
+
 #include <boost/range.hpp>
 #include <vector>
 #include <cstdint>
@@ -13,6 +15,12 @@ namespace N_Core
 	// @param blob		The memory region to write to the stream.
 	// 
 	void dump(std::ostream& stream, BinaryBlob blob);
+
+	template <typename T>
+	void dump(std::ostream& stream, MMap::Container<T> const& container)
+	{
+		stream.write(reinterpret_cast<char const*>(container._ptr), container.get_size());
+	}
 	
 	struct Math {}; ///< Tag to dispatch math branch overload.
 	struct Regular {}; ///< Tag to dispatch regular branch overload.

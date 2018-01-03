@@ -11,12 +11,12 @@ namespace N_Core
 			auto ptr32 = dynamic_cast<Header<Elf32_Ehdr> const*>(&header);
 			if (ptr32)
 			{
-				//return dump(stream, ptr32->_header_content);
+				stream << ptr32->_header_content;
 			}
 			auto ptr64 = dynamic_cast<Header<Elf64_Ehdr> const*>(&header);
 			if (ptr64)
 			{
-				//return dump(stream, ptr64->_header_content);
+				stream << ptr64->_header_content;
 			}
 		}
 
