@@ -18,18 +18,20 @@ set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
 
 ExternalProject_Add(
     mmcow
-    #PREFIX ${CMAKE_BINARY_DIR}/mmcow
     GIT_REPOSITORY https://github.com/williamnagels/mmcow.git
-    CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
-    LOG_DOWNLOAD ON
+	CONFIGURE_COMMAND ""
+	UPDATE_COMMAND ${GIT_EXECUTABLE} pull
+	BUILD_IN_SOURCE ON
+	BUILD_ALWAYS OFF
     )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 
 ExternalProject_Get_Property(mmcow source_dir)
 set(mmcowIncludeDir ${source_dir}/include)
+
 MESSAGE( STATUS "mmcow header files:" ${mmcowIncludeDir} )
 include_directories(${mmcowIncludeDir})
 add_library(linker_core STATIC
