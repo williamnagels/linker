@@ -1,4 +1,6 @@
 #include <boost/test/unit_test.hpp> 
+#include <boost/filesystem.hpp>
+
 #include "src/include/core/header/header.h"
 #include "src/include/core/elf.h"
 
@@ -84,6 +86,8 @@ BOOST_AUTO_TEST_CASE(dump)
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_4(), 'i');
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_5(), 'a');
 	BOOST_CHECK_EQUAL(elf3._header->get_padding_byte_6(), 'm');
+
+
 }
 
 BOOST_AUTO_TEST_CASE(non_existing_file)
@@ -108,6 +112,11 @@ BOOST_AUTO_TEST_CASE(new_elf)
 
 		BOOST_CHECK_EQUAL(elf2._header->get_class(), N_Core::N_Header::Class::ELFCLASS64);
 		BOOST_CHECK_EQUAL(elf2._header->get_entry(), i);
+
+		BOOST_CHECK_EQUAL(
+			boost::filesystem::file_size("testfiles/new_elf"),
+			sizeof(N_Core::N_Header::Elf64_Ehdr)
+		);
 	}
 
 }
