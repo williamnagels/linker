@@ -27,7 +27,7 @@ namespace N_Core
 		{
 		public:
 			virtual ~ASection() {}
-			virtual BinaryBlob get_content() const = 0;
+			virtual MMap::Container<uint8_t>const& get_content() const = 0;
 			virtual uint64_t get_name() const = 0;
 			virtual Type get_type() const = 0;
 			virtual Flags get_flags() const = 0;
@@ -167,9 +167,7 @@ namespace N_Core
 
 		public:
 			MMap::Container<T> _header_entry;
-			BinaryBlob _header_blob;///< 32 or 64-bit header depending on the elf it is contained in.
-			BinaryBlob _content_blob; ///< Content of the section (e.g. code).
-
+			MMap::Container<uint8_t> _content;
 
 			// @brief Construct a sectionf rom an existing section.
 			// 
@@ -178,8 +176,7 @@ namespace N_Core
 			template <typename T>
 			explicit Section(T&& existing_section, std::enable_if_t<std::is_same_v<std::decay_t<T>, Section>, int> = 0) :
 				_header_entry(std::forward<T>(section)._header_entry)
-				,_header_blob(section._header_blob)
-				,_content_blob(section._content_blob)
+				,_content(std::forward<T>(section)._content)
 			{
 			}
 
@@ -193,8 +190,7 @@ namespace N_Core
 			//
 			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_header_entry(header.begin())
-				,_header_blob(header)
-				,_content_blob(get_content_from_header(elf_blob))
+				, _content(get_content_from_header(elf_blob).begin(), get_content_from_header(elf_blob).end())
 			{
 			}
 
@@ -202,8 +198,7 @@ namespace N_Core
 			// 
 			explicit Section():
 				_header_entry()
-				, _header_blob()
-				, _content_blob()
+				, _content()
 			{
 
 			}
@@ -219,7 +214,7 @@ namespace N_Core
 			uint64_t get_info()const override { return  get(_header_entry, &T::sh_info); }
 			uint64_t get_address_alignment()const override { return  get(_header_entry, &T::sh_addralign); }
 			uint64_t get_entry_size()const override { return  get(_header_entry, &T::sh_entsize); }
-			BinaryBlob get_content() const override { return _content_blob; }
+			MMap::Container<uint8_t> const& get_content() const override { return _content;}
 			uint64_t get_size_in_file() const override { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 			std::unique_ptr<ASection> deep_copy() const& override { return std::make_unique<Section>(*this);}
 			std::unique_ptr<ASection> deep_copy() && override { return std::make_unique<Section>(std::move(*this));}
