@@ -81,6 +81,13 @@ namespace N_Core
 			//
 			void remove_section(uint16_t section_index, SectionRemovalPolicy policy);
 
+			// @brief Add section to the table
+			// 
+			// @param index		index of section to add.
+			// @param section	section to add. See create_section(...), use 0xffff if index doesn't matter.
+			//
+			void add_section(uint16_t section_index, std::unique_ptr<ASection>&& section, SectionAdditionPolicy policy);
+
 			std::vector<std::unique_ptr<ASection>> _sections; ///< list of sections assigned to this table.
 			
 			// @brief Create a section table based on an existing section table.

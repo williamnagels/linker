@@ -104,6 +104,11 @@ namespace N_Core
 			_sections.erase(_sections.begin() + section_index);
 		}
 
+		void Table::add_section(uint16_t section_index, std::unique_ptr<ASection>&& section, SectionAdditionPolicy policy)
+		{
+
+		}
+
 		Table create_section_table(N_Core::Elf const& elf)
 		{
 			Table table;
