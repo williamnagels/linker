@@ -17,6 +17,8 @@ namespace N_Core
 
 	namespace N_Section
 	{
+		static const std::string invalid_section_index= "No section could be found with the index";
+
 		// @brief Section identifier.
 		// 
 		// Identifies a unique section in the section table. Used in various API functions.
@@ -64,7 +66,24 @@ namespace N_Core
 			virtual std::unique_ptr<ASection> deep_copy() && = 0;
 		};
 
+		// @brief Create a section from already allocated memory.
+		// 
+		// @param header	Address range where the header entry of this section is loaded into memory.
+		// @param elf_blob	Full address range of the elf (needed to look up the content).
+		//
+		// @returns the section
+		//
+		// @note In no way does this function take ownership of the data at the memory regions
+		//   of the content and section header.
+		//
 		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob);
+
+		// @brief Create an empty section.
+		// 
+		// @param is_64_bit		Create 32-bit or 64-bit header for section.
+		//
+		// @returns the section
+		//
 		std::unique_ptr<ASection> create_section(bool is_64_bit);
 
 		// @brief Collection of sections forms the section table.
@@ -110,7 +129,7 @@ namespace N_Core
 			// @param index		section to remove. 0 based. remove_section(0) removes the first section from the table
 			// @param policy	what the elf should look like after the section is removed. See enum for descriptin of options.
 			//
-			// @throws std::range_error if index is invalid (larger than amount of sections).
+			// @throws std::invalid_argument if index is invalid (larger than amount of sections).
 			//
 			void remove_section(Index index, SectionRemovalPolicy policy);
 

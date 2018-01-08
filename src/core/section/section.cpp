@@ -108,7 +108,7 @@ namespace N_Core
 		{
 			if (!are_valid_indices<SupportsWildcard>(index1, index2))
 			{
-				throw std::invalid_argument("invalid iterators to swap");
+				throw std::invalid_argument(invalid_section_index);
 			}
 
 			decltype(_sections)::iterator iterator1 = std::begin(_sections);
@@ -129,26 +129,26 @@ namespace N_Core
 				_sections.insert(iterator, std::move(section));
 			}
 		}
-		void Table::remove_section(Index section_index, SectionRemovalPolicy policy)
+		void Table::remove_section(Index index, SectionRemovalPolicy policy)
 		{
-			if (section_index >= _sections.size())
+			if (!is_valid_index<DoesNotSupportWildCard>(index))
 			{
-				throw std::range_error("No section could be found with the index");
+				throw std::range_error(invalid_section_index);
 			}
 
 			if (policy == SectionRemovalPolicy::COMPACT)
 			{
-				auto offset_to_subtract = _sections.at(section_index)->get_size_in_file();
+				auto offset_to_subtract = _sections.at(index)->get_size_in_file();
 
 				std::for_each(
-					_sections.begin() + (section_index + 1)
+					_sections.begin() + (index + 1)
 					, _sections.end()
 					, [=](auto const& section) { section->set_offset(section->get_offset() - offset_to_subtract); }
 				);
 			}
 
-			auto element_to_delete = _sections.begin() + section_index;
-			_sections.erase(_sections.begin() + section_index);
+			auto element_to_delete = _sections.begin() + index;
+			_sections.erase(_sections.begin() + index);
 		}
 
 		Table create_section_table(N_Core::Elf const& elf)
