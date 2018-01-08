@@ -8,7 +8,7 @@
 
 #include <variant>
 #include <functional>
-
+#include <numeric>
 namespace N_Core
 {
 	class Elf;
@@ -17,6 +17,26 @@ namespace N_Core
 
 	namespace N_Section
 	{
+		// @brief Section identifier.
+		// 
+		// Identifies a unique section in the section table. Used in various API functions.
+		//
+		// Note: First section has index 0.
+		//
+		struct Index
+		{
+			uint16_t _value;
+			static const decltype(_value) Wildcard = std::numeric_limits<decltype(_value)>::max();
+			operator decltype(_value)(){return _value;}
+
+			Index(decltype(_value) value):
+				_value(value){}
+		};
+		// @brief Wether or not the index is the wildcard index.
+		// 
+		// Used in the API to check if the index of some section is the wildcard section.
+		//
+		bool is_wildcard(Index index);
 
 		// @brief Public API of a section.
 		// 
@@ -58,19 +78,32 @@ namespace N_Core
 		//
 		class Table
 		{
-
 		public:
 			// @brief Add section to the section table.
-			// 
+			//
+			// @param index		index of section to add. See create_section(...), 
+			//   use N_Section::WildcardIndex if index doesnt matter;
+			//
 			// @param section	section to add to the table
 			//
-			// Create the section using one of the create_section(...) free functions.
+			// Note 1: if a section already exists for the index, that section
+			// has its index increased.
 			//
-			template <typename T>
-			void add_section(T&& section)
-			{
-				_sections.push_back(std::forward<T>(section));
-			}
+			// Note 2: the ordering of section has nothing to do with the
+			// placement of sections in the elf. See get_offset() and get_size()
+			// to find the location of the section in the file.
+			//
+			void add_section(std::unique_ptr<ASection>&& section, Index index = Index::Wildcard);
+
+			// @brief Swap section at index1 with section at index2
+			//
+			// swaps the header entry of index1 with the header entry of index2
+			// This does not move around the content of the section only moves the header entry.
+			//
+			// @throws std::invalid_argument if index1 and index2 are invalid (does not
+			// identify a section).
+			//
+			void swap_section(Index index1, Index index2);
 
 			// @brief Remove section identified by index from the section table
 			// 
@@ -79,14 +112,7 @@ namespace N_Core
 			//
 			// @throws std::range_error if index is invalid (larger than amount of sections).
 			//
-			void remove_section(uint16_t section_index, SectionRemovalPolicy policy);
-
-			// @brief Add section to the table
-			// 
-			// @param index		index of section to add.
-			// @param section	section to add. See create_section(...), use 0xffff if index doesn't matter.
-			//
-			void add_section(uint16_t section_index, std::unique_ptr<ASection>&& section, SectionAdditionPolicy policy);
+			void remove_section(Index index, SectionRemovalPolicy policy);
 
 			std::vector<std::unique_ptr<ASection>> _sections; ///< list of sections assigned to this table.
 			
@@ -109,6 +135,35 @@ namespace N_Core
 			// @brief Create a new table to store sections in.
 			// 
 			explicit Table() {}
+
+		private:
+			void add_section_to_back(std::unique_ptr<ASection>&& section);
+			void add_section_at_index(std::unique_ptr<ASection>&& section, Index index);
+
+			struct SupportsWildcard {};
+			struct DoesNotSupportWildCard {};
+			template <typename T>
+			std::enable_if_t<std::is_same_v<T, DoesNotSupportWildCard>, bool> is_valid_index(Index index)
+			{
+				return index < _sections.size();
+			}
+
+			template <typename T>
+			std::enable_if_t<std::is_same_v<T, SupportsWildcard>, bool> is_valid_index(Index index)
+			{
+				return is_valid_index<DoesNotSupportWildCard>(index) || (index == Index::Wildcard);
+			}
+
+			template <typename T, typename ...G>
+			bool are_valid_indices(G... indices)
+			{
+				bool rc;
+				for (auto&& x : { indices... })
+				{
+					rc |= is_valid_index<T>(x);
+				}
+				return rc;
+			}
 		};
 		
 

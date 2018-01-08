@@ -28,6 +28,11 @@ namespace N_Core
 			}
 		}
 
+		bool is_wildcard(Index index)
+		{
+			return index == Index::Wildcard;
+		}
+
 		void dump(std::ostream& stream, Table const& table)
 		{
 			std::streampos start_of_section_table = stream.tellp();
@@ -56,6 +61,7 @@ namespace N_Core
 		}
 
 
+
 		std::unique_ptr<ASection> create_section(bool is_64_bit)
 		{
 			if (is_64_bit)
@@ -82,7 +88,48 @@ namespace N_Core
 			}
 		}
 
-		void Table::remove_section(uint16_t section_index, SectionRemovalPolicy policy)
+		void Table::add_section_to_back(std::unique_ptr<ASection>&& section)
+		{
+			return _sections.push_back(std::move(section));
+		}
+		void Table::add_section(std::unique_ptr<ASection>&& section, Index index)
+		{
+			if (is_wildcard(index))
+			{
+				add_section_to_back(std::move(section));
+			}
+			else
+			{
+				add_section_at_index(std::move(section), index);
+			}
+		}
+
+		void Table::swap_section(Index index1, Index index2)
+		{
+			if (!are_valid_indices<SupportsWildcard>(index1, index2))
+			{
+				throw std::invalid_argument("invalid iterators to swap");
+			}
+
+			decltype(_sections)::iterator iterator1 = std::begin(_sections);
+			decltype(_sections)::iterator iterator2 = std::begin(_sections);
+			std::advance(iterator1, index1);
+			std::advance(iterator2, index2);
+
+			std::iter_swap(iterator1, iterator2);
+		}
+
+		void Table::add_section_at_index(std::unique_ptr<ASection>&& section, Index index)
+		{
+			if (_sections.size() >= index)
+			{
+				decltype(_sections)::iterator iterator = std::begin(_sections);
+				std::advance(iterator, index);
+
+				_sections.insert(iterator, std::move(section));
+			}
+		}
+		void Table::remove_section(Index section_index, SectionRemovalPolicy policy)
 		{
 			if (section_index >= _sections.size())
 			{
@@ -102,11 +149,6 @@ namespace N_Core
 
 			auto element_to_delete = _sections.begin() + section_index;
 			_sections.erase(_sections.begin() + section_index);
-		}
-
-		void Table::add_section(uint16_t section_index, std::unique_ptr<ASection>&& section, SectionAdditionPolicy policy)
-		{
-
 		}
 
 		Table create_section_table(N_Core::Elf const& elf)
