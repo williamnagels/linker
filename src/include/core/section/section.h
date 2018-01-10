@@ -74,7 +74,8 @@ namespace N_Core
 		// @returns the section
 		//
 		// @note In no way does this function take ownership of the data at the memory regions
-		//   of the content and section header.
+		//   of the content and section header. As long as the section exists the memory must contain
+		//   the section content.
 		//
 		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob);
 
@@ -85,6 +86,33 @@ namespace N_Core
 		// @returns the section
 		//
 		std::unique_ptr<ASection> create_section(bool is_64_bit);
+
+		// @brief Set offset for an entity.
+		// 
+		// Offset is the location of an entity in the ELF.
+		// Types that can provide a location are mainly segments and ELFs.
+		//
+		// For example: an entity can be part of segment but must not be.
+		// Sections outside of a segment are valid in the ELF standard and
+		// are allowed to exist. Segments require an offset inside the ELF container.
+		//
+		// The container will provide a good offset for the locatable considering 	
+		// its size (e.g. section size) and aligment. 
+		// 
+		// @param entity	Entity that needs to have its offset set.
+		// @param container	Entity that can be used to provide an offset for the entity.
+		//
+		//
+		template<typename Locatable, typename Container>
+		void add_entity_to_container(Locatable&& entity, Container const& container)
+		{
+			//uint64_t offset = container.get_offset_for_region(locatable->get_size(), locatable->get_aligment());
+			//locatable->set_offset(offset);
+			//container.entities_contained.push_back(std::move(entity));
+
+			container.absorb(entity);
+
+		}
 
 		// @brief Collection of sections forms the section table.
 		// 

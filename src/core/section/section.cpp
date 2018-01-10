@@ -106,7 +106,7 @@ namespace N_Core
 
 		void Table::swap_section(Index index1, Index index2)
 		{
-			if (!are_valid_indices<SupportsWildcard>(index1, index2))
+			if (!are_valid_indices<DoesNotSupportWildCard>(index1, index2))
 			{
 				throw std::invalid_argument(invalid_section_index);
 			}
