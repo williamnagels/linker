@@ -18,9 +18,11 @@ using Locatable = boost::type_erasure::any<
 	boost::type_erasure::_self&>
 >;
 
-BOOST_TYPE_ERASURE_MEMBER((assign_region), assign_region, 1)
+BOOST_TYPE_ERASURE_MEMBER((has_assign_region), assign_region, 1)
+BOOST_TYPE_ERASURE_MEMBER((has_free_region), free_region, 1)
 using Provider = boost::type_erasure::any<
 	boost::mpl::vector<
-	assign_region<void(Locatable&)>,
+	has_assign_region<void(Locatable&)>,
+	has_free_region<void(Locatable const&)>,
 	boost::type_erasure::_self&>
 >;
