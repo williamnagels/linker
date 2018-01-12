@@ -1,6 +1,9 @@
 #pragma once
-#include <vector>
+#include "src/include/core/locatable.h"
+
 #include <boost/signals2/signal.hpp>
+
+#include <vector>
 namespace N_Core
 {
 	/*@brief An addressable entity is an object that will be 

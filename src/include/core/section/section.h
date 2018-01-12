@@ -9,6 +9,8 @@
 #include <variant>
 #include <functional>
 #include <numeric>
+
+
 namespace N_Core
 {
 	class Elf;
@@ -39,6 +41,7 @@ namespace N_Core
 		// Used in the API to check if the index of some section is the wildcard section.
 		//
 		bool is_wildcard(Index index);
+
 
 		// @brief Public API of a section.
 		// 
@@ -111,7 +114,6 @@ namespace N_Core
 			//container.entities_contained.push_back(std::move(entity));
 
 			container.absorb(entity);
-
 		}
 
 		// @brief Collection of sections forms the section table.

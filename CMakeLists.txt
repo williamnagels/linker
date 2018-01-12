@@ -2,6 +2,7 @@ project (Linker)
 include( CTest )
 include(ExternalProject)
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_GENERATOR_PLATFORM x86-64)
 cmake_minimum_required (VERSION 3.9.2)
 
 
@@ -26,11 +27,15 @@ ExternalProject_Add(
 	BUILD_IN_SOURCE ON
 	BUILD_ALWAYS OFF
     )
+
+
+	
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Boost_INCLUDE_DIRS})
 
 ExternalProject_Get_Property(mmcow source_dir)
 set(mmcowIncludeDir ${source_dir}/include)
+
 
 MESSAGE( STATUS "mmcow header files:" ${mmcowIncludeDir} )
 include_directories(${mmcowIncludeDir})
@@ -50,7 +55,6 @@ add_library(linker_core STATIC
 )
 
 add_executable(linker src/main.cpp) 
-add_dependencies(linker mmcow)
 
 add_executable(linker_unit_tests 
 	src/unittest_main.cpp
@@ -59,7 +63,7 @@ add_executable(linker_unit_tests
 	src/core/section/section_unittest.cpp
 ) 
 add_dependencies(linker_unit_tests mmcow)
-
+add_dependencies(linker mmcow)
 add_custom_command(TARGET linker_unit_tests
                    POST_BUILD
                    COMMAND ctest -C $<CONFIGURATION> -VV --output-on-failure)
