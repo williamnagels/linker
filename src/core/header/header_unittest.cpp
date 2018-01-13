@@ -3,6 +3,7 @@
 
 #include "src/include/core/header/header.h"
 #include "src/include/core/elf.h"
+#include "src/include/core/section/section.h"
 
 #include <fstream>
 #include <string>

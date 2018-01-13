@@ -1,5 +1,6 @@
 #pragma once
-#include "src/include/core/section/section.h"
+#include "src/include/core/section/section_table.h"
+#include "src/include/core/section/section_member_types.h"
 #include "src/include/core/header/header.h"
 #include "src/include/core/general.h"
 

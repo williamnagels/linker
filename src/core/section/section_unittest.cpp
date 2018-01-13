@@ -1,6 +1,7 @@
 #include <boost/test/unit_test.hpp> 
 #include <boost/filesystem.hpp>
 #include "src/include/core/elf.h"
+#include "src/include/core/section/section.h"
 #include <algorithm>
 BOOST_AUTO_TEST_SUITE(elf_section_table)
 
@@ -88,7 +89,7 @@ BOOST_AUTO_TEST_CASE(size_in_header_and_in_memory_sanity_check)
 	auto size_of_section_21 = 0x1d0;
 	auto elf = N_Core::create_elf("testfiles/sleep");
 	
-	BOOST_CHECK_EQUAL(elf._section_table._sections[21]->get_size(), size_of_section_21);
+	BOOST_CHECK_EQUAL(elf._section_table.get_section_at_index(21).get_size(), size_of_section_21);
 	//BOOST_CHECK_EQUAL(elf._section_table._sections[21]->get_content().size(), size_of_section_21);
 }
 

@@ -43,7 +43,7 @@ add_library(linker_core STATIC
 	src/core/addressable.cpp
 	src/core/general.cpp
 	src/core/elf.cpp
-	src/core/section/section.cpp
+
 
 	# symbol table
 	src/core/symtab/symbol.cpp
@@ -52,6 +52,11 @@ add_library(linker_core STATIC
 
 	# header
 	src/core/header/header.cpp
+
+	#section
+	src/core/section/helpers.cpp
+	src/core/section/section.cpp
+	src/core/section/section_table.cpp
 )
 
 add_executable(linker src/main.cpp) 
@@ -61,6 +66,7 @@ add_executable(linker_unit_tests
 	src/core/symtab/symbol_table_unittest.cpp	
 	src/core/header/header_unittest.cpp
 	src/core/section/section_unittest.cpp
+
 ) 
 add_dependencies(linker_unit_tests mmcow)
 add_dependencies(linker mmcow)

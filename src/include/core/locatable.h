@@ -6,6 +6,7 @@
 #include <boost/type_erasure/free.hpp>
 #include <boost/mpl/vector.hpp>
 
+/*
 BOOST_TYPE_ERASURE_MEMBER((has_set_region), set_region, 1)
 BOOST_TYPE_ERASURE_MEMBER((has_get_region), get_region, 0)
 BOOST_TYPE_ERASURE_MEMBER((has_get_size), get_size, 0)
@@ -25,4 +26,4 @@ using Provider = boost::type_erasure::any<
 	has_assign_region<void(Locatable&)>,
 	has_free_region<void(Locatable const&)>,
 	boost::type_erasure::_self&>
->;
+>;*/
