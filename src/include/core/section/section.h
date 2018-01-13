@@ -3,6 +3,7 @@
 #include "src/include/core/general.h"
 #include "src/include/core/symtab/symbol_table.h"
 #include "src/include/core/section/section_member_types.h"
+#include "src/include/core/section/asection.h"
 
 #include "cow.h"
 
@@ -18,80 +19,6 @@ namespace N_Core
 
 	namespace N_Section
 	{
-		// @brief Public API of a section.
-		// 
-		// This class exposes many setters & getters that can be used to change
-		// the value of basically all members of a section as described by the ELF standard.
-		//
-		class ASection
-		{
-		public:
-			virtual ~ASection() {}
-			virtual MMap::Container<uint8_t>const& get_content() const = 0;
-			virtual uint64_t get_name() const = 0;
-			virtual Type get_type() const = 0;
-			virtual Flags get_flags() const = 0;
-			virtual uint64_t get_address()const = 0;
-			virtual uint64_t get_offset()const = 0;
-			virtual void set_offset(uint64_t offset) = 0;
-			virtual uint64_t get_size()const = 0;
-			virtual uint64_t get_link() const = 0;
-			virtual uint64_t get_info()const = 0;
-			virtual uint64_t get_address_alignment()const = 0;
-			virtual uint64_t get_entry_size()const = 0;
-			virtual uint64_t get_size_in_file() const = 0;
-			virtual std::unique_ptr<ASection> deep_copy() const& = 0;
-			virtual std::unique_ptr<ASection> deep_copy() && = 0;
-		};
-
-		// @brief Create a section from already allocated memory.
-		// 
-		// @param header	Address range where the header entry of this section is loaded into memory.
-		// @param elf_blob	Full address range of the elf (needed to look up the content).
-		//
-		// @returns the section
-		//
-		// @note In no way does this function take ownership of the data at the memory regions
-		//   of the content and section header. As long as the section exists the memory must contain
-		//   the section content.
-		//
-		std::unique_ptr<ASection> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob);
-
-		// @brief Create an empty section.
-		// 
-		// @param is_64_bit		Create 32-bit or 64-bit header for section.
-		//
-		// @returns the section
-		//
-		std::unique_ptr<ASection> create_section(bool is_64_bit);
-
-		// @brief Set offset for an entity.
-		// 
-		// Offset is the location of an entity in the ELF.
-		// Types that can provide a location are mainly segments and ELFs.
-		//
-		// For example: an entity can be part of segment but must not be.
-		// Sections outside of a segment are valid in the ELF standard and
-		// are allowed to exist. Segments require an offset inside the ELF container.
-		//
-		// The container will provide a good offset for the locatable considering 	
-		// its size (e.g. section size) and aligment. 
-		// 
-		// @param entity	Entity that needs to have its offset set.
-		// @param container	Entity that can be used to provide an offset for the entity.
-		//
-		//
-		template<typename Locatable, typename Container>
-		void add_entity_to_container(Locatable&& entity, Container const& container)
-		{
-			//uint64_t offset = container.get_offset_for_region(locatable->get_size(), locatable->get_aligment());
-			//locatable->set_offset(offset);
-			//container.entities_contained.push_back(std::move(entity));
-
-			container.absorb(entity);
-		}
-
-
 		/*@brief ELF Section representation.
 		*
 		* Contains section header and reference to the content of the section.
