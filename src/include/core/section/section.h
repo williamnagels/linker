@@ -4,6 +4,7 @@
 #include "src/include/core/symtab/symbol_table.h"
 #include "src/include/core/section/section_member_types.h"
 #include "src/include/core/section/asection.h"
+#include "src/include/core/locatable.h"
 
 #include "cow.h"
 
