@@ -12,7 +12,9 @@
 #include <fstream>
 
 namespace N_Core
-{
+{	
+
+
 	// @brief Class representing an elf loaded from file or a custom created elf.
 	//
 	// 0. Creating an elf.
@@ -48,7 +50,13 @@ namespace N_Core
 		// When moving an elf the region will be moved.
 		// When copying an elf the region will be shared.
 		std::shared_ptr<boost::interprocess::mapped_region> _region;
-	
+
+		// @brief Create section table
+		// 
+		// Method works both for memory mapped elfs and customly created elfs. 
+		// The amount of sections as defined in the header will be created.
+		//
+		void create_section_table();
 	public:
 		// The header is templated because based on type type of elf(64 bit vs 32bit) another memory map (different 
 		// member variables) is selected.
@@ -80,8 +88,9 @@ namespace N_Core
 		explicit Elf(T&& mapped_region):
 			_region(std::forward<T>(mapped_region))
 			,_header(std::move(N_Header::create_header(get_memory_mapped_region())))
-			,_section_table(std::move(N_Section::create_section_table(*this)))
+			,_section_table()
 		{
+			create_section_table();
 		}
 
 		// @brief Construct an elf from an existing elf and write to file on disk.
@@ -90,7 +99,7 @@ namespace N_Core
 		explicit Elf(T&& elf) :
 			_region(std::forward<T>(elf)._region)
 			, _header(N_Header::create_header(std::forward<T>(elf)._header))
-			, _section_table(N_Section::create_section_table(std::forward<T>(elf)._section_table))
+			, _section_table(std::forward<T>(elf)._section_table)
 		{
 		}
 
@@ -106,7 +115,7 @@ namespace N_Core
 		//
 		void remove_section(uint16_t index, N_Section::SectionRemovalPolicy policy);
 	};
-	
+
 	// @brief create elf from an existing elf
 	// 
 	// @param existing_elf	Elf to use as blueprint for new elf.

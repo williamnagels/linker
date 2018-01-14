@@ -70,7 +70,7 @@ namespace N_Core
 			// Will move sections from existing_table to the newly created table.
 			//
 			Table(Table&& existing_table);
-
+			Table& operator=(Table&&);
 			// @brief Create a section table based on an existing section table.
 			// 
 			// @param existing_table	blueprint for the new table.
@@ -78,7 +78,7 @@ namespace N_Core
 			// Will deep copy sections from existing_table to the newly created table.
 			//
 			Table(Table const& existing_table);
-
+			Table& operator=(Table const&);
 			// @brief Create a new table to store sections in.
 			// 
 			explicit Table() {}
@@ -130,28 +130,5 @@ namespace N_Core
 		// @precondition	The cursor may be anywhere. Do not assume anything about its position.
 		//					
 		void dump(std::ostream& stream, Table const& table);
-
-		// @brief Create section table
-		// 
-		// @param elf		Elf that defines what the table will look like.
-		//
-		// Method works both for memory mapped elfs and customly created elfs. 
-		// The amount of sections as defined in the header will be created.
-		//
-		// @returns created table.
-		//
-		Table create_section_table(N_Core::Elf const& elf);
-
-		// @brief Create section table from existing section table
-		// 
-		// @param existing_table	
-		//
-		// @returns table with same sections as existing_table
-		//
-		template <typename T, std::add_pointer_t<std::enable_if_t<std::is_same_v<std::decay_t<T>, Table>>> = 0>
-		Table create_section_table(T&& existing_table)
-		{
-			return Table(std::forward<T>(existing_table));
-		}
 	}
 }

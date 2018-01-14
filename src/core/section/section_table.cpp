@@ -10,14 +10,25 @@ namespace N_Core
 		{
 			_sections = std::move(other_table)._sections;
 		}
-
+		Table& Table::operator=(Table&& other_table)
+		{
+			_sections = std::move(other_table)._sections;
+			return *this;
+		}
 		Table::Table(Table const& other_table)
 		{
-
 			for (auto const& section : other_table._sections)
 			{
 				_sections.emplace_back(section->deep_copy());
 			}
+		}
+		Table& Table::operator=(Table const& other_table)
+		{
+			for (auto const& section : other_table._sections)
+			{
+				_sections.emplace_back(section->deep_copy());
+			}			
+			return *this;
 		}
 
 		void Table::add_section_to_back(std::unique_ptr<ASection>&& section)
@@ -85,45 +96,11 @@ namespace N_Core
 
 		ASection& Table::get_section_at_index(Index index)
 		{
+			if (!is_valid_index<DoesNotSupportWildCard>(index))
+			{
+				throw std::range_error(invalid_section_index);
+			}
 			return *_sections.at(index);
-		}
-
-		Table create_section_table(N_Core::Elf const& elf)
-		{
-			Table table;
-
-			if (elf._header->get_section_header_number_of_entries() == 0)
-			{
-				return table;
-			}
-			auto number_of_entries = elf._header->get_section_header_number_of_entries();
-
-			auto start_of_table = elf._header->get_section_header_offset();
-			auto size_of_entry = elf._header->get_section_header_entry_size();
-
-			if (elf.is_memory_mapped())
-			{
-				for (auto i = 0; i < number_of_entries; i++)
-				{
-					auto header_of_section_entry = start_of_table + size_of_entry * i;
-					auto begin_header = elf.get_memory_mapped_region().begin() + header_of_section_entry;
-					auto end_header = begin_header + size_of_entry;
-
-					auto header_range = boost::make_iterator_range(begin_header, end_header);
-					auto section = create_section(elf.get_memory_mapped_region(), header_range);
-					table.add_section(std::move(section));
-				}
-			}
-			else
-			{
-				for (auto i = 0; i < number_of_entries; i++)
-				{
-					table.add_section(create_section(elf._header->get_class() == N_Core::N_Header::Class::ELFCLASS64));
-				}
-			}
-
-
-			return table;
 		}
 	}
 }

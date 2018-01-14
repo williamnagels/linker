@@ -53,4 +53,33 @@ namespace N_Core
 	{
 	}
 
+
+
+	void N_Core::Elf::create_section_table()
+	{
+		auto number_of_entries = _header->get_section_header_number_of_entries();
+		auto start_of_table = _header->get_section_header_offset();
+		auto size_of_entry = _header->get_section_header_entry_size();
+
+		if (is_memory_mapped())
+		{
+			for (auto i = 0; i < number_of_entries; i++)
+			{
+				auto header_of_section_entry = start_of_table + size_of_entry * i;
+				auto begin_header = get_memory_mapped_region().begin() + header_of_section_entry;
+				auto end_header = begin_header + size_of_entry;
+
+				auto header_range = boost::make_iterator_range(begin_header, end_header);
+				auto section = N_Section::create_section(get_memory_mapped_region(), header_range);
+				_section_table.add_section(std::move(section));
+			}
+		}
+		else
+		{
+			for (auto i = 0; i < number_of_entries; i++)
+			{
+				_section_table.add_section(N_Section::create_section(_header->get_class() == N_Core::N_Header::Class::ELFCLASS64));
+			}
+		}
+	}
 }
