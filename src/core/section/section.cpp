@@ -1,7 +1,4 @@
 #include "src/include/core/section/section.h"
-#include "src/include/core/symtab/symbol_table.h"
-#include "src/include/core/elf.h"
-#include "src/include/core/pimpl_deducer.h"
 #include <iostream>
 namespace N_Core
 {

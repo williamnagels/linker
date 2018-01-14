@@ -1,18 +1,15 @@
 #pragma once
 #include "src/include/core/section/section_table.h"
-#include "src/include/core/section/section_member_types.h"
 #include "src/include/core/header/header.h"
 #include "src/include/core/general.h"
 
+#include <boost/interprocess/file_mapping.hpp>
+#include <boost/interprocess/mapped_region.hpp>
 
 #include <string>
 #include <optional>
 #include <memory>
 #include <fstream>
-
-#include <boost/interprocess/file_mapping.hpp>
-#include <boost/interprocess/mapped_region.hpp>
-
 
 namespace N_Core
 {

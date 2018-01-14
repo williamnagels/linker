@@ -1,7 +1,8 @@
+#include "src/include/core/elf.h"
+
 #include <boost/test/unit_test.hpp> 
 #include <boost/filesystem.hpp>
-#include "src/include/core/elf.h"
-#include "src/include/core/section/section.h"
+
 #include <algorithm>
 BOOST_AUTO_TEST_SUITE(elf_section_table)
 

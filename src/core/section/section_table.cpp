@@ -1,5 +1,3 @@
-#include "src/include/core/section/section_table.h"
-#include "src/include/core/section/section.h"
 #include "src/include/core/elf.h"
 
 namespace N_Core

@@ -1,7 +1,7 @@
 #pragma once
 #include "src/include/core/section/helpers.h"
 #include "src/include/core/section/section_member_types.h"
-
+#include "src/include/core/section/asection.h"
 #include <vector>
 #include <memory>
 #include <utility>
@@ -12,7 +12,7 @@ namespace N_Core
 
 	namespace N_Section
 	{
-		class ASection;
+		//class ASection;
 		// @brief Collection of sections forms the section table.
 		// 
 		// This class is essentially a wrapper around std::vector
