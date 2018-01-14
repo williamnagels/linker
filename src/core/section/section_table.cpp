@@ -1,4 +1,4 @@
-#include "src/include/core/elf.h"
+#include "src/include/core/section/section_table.h"
 
 namespace N_Core
 {
