@@ -15,6 +15,7 @@
 
 namespace N_Core
 {
+	template <typename V>
 	class Elf;
 	namespace N_Header { class HeaderA;}
 

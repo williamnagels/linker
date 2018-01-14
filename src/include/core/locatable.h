@@ -2,4 +2,5 @@
 #include "src/include/core/section/section.h"
 #include <variant>
 
-using Provider = std::variant<N_Core::Elf>;
+//template <typename T>
+//using Provider = std::variant<N_Core::Elf<T>>;

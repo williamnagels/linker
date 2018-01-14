@@ -6,6 +6,10 @@
 #include <cstdint>
 namespace N_Core
 {
+	struct Bit64 {};
+	struct Bit32 {};
+
+
 	// Region of memory. Start and end-address range.
 	using BinaryBlob = boost::iterator_range<uint8_t*>;
 

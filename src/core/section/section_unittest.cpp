@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_SUITE(elf_section_table)
 
 BOOST_AUTO_TEST_CASE(correct_amount_of_sections)
 {
-	auto elf = N_Core::create_elf("testfiles/sleep");
+	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 	BOOST_CHECK_EQUAL(elf._section_table._sections.size(), 27);
 
 	auto elf2(elf);
@@ -17,15 +17,15 @@ BOOST_AUTO_TEST_CASE(correct_amount_of_sections)
 
 	N_Core::dump_to_file("testfiles/correct_amount_of_sections", elf2);
 	
-	auto elf3 = N_Core::create_elf("testfiles/correct_amount_of_sections");
+	auto elf3 = N_Core::create_elf<N_Core::Bit64>("testfiles/correct_amount_of_sections");
 	BOOST_CHECK_EQUAL(elf3._section_table._sections.size(), 27);
 
 }
 BOOST_AUTO_TEST_CASE(correct_section_header_after_dump)
 {
-	auto elf = N_Core::create_elf("testfiles/sleep");
+	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 	N_Core::dump_to_file("testfiles/correct_header_after_dump", elf);
-	auto elf2 = N_Core::create_elf("testfiles/correct_header_after_dump");
+	auto elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/correct_header_after_dump");
 
 	std::transform(
 		elf._section_table._sections.begin(),
@@ -53,10 +53,10 @@ BOOST_AUTO_TEST_CASE(correct_section_header_after_dump)
 
 BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 {
-	auto elf = N_Core::create_elf("testfiles/sleep");
-	N_Core::dump_to_file("testfiles/correct_content_when_dumping_table", N_Core::create_elf(elf));
-	auto elf2 = N_Core::create_elf("testfiles/correct_content_when_dumping_table");
-	BOOST_CHECK_EQUAL(elf._header->get_section_header_number_of_entries(), elf2._header->get_section_header_number_of_entries());
+	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
+	N_Core::dump_to_file("testfiles/correct_content_when_dumping_table", elf);
+	auto elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/correct_content_when_dumping_table");
+	BOOST_CHECK_EQUAL(elf._header.get_section_header_number_of_entries(), elf2._header.get_section_header_number_of_entries());
 
 	std::transform(
 		elf._section_table._sections.begin(),
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 BOOST_AUTO_TEST_CASE(size_in_header_and_in_memory_sanity_check)
 {
 	auto size_of_section_21 = 0x1d0;
-	auto elf = N_Core::create_elf("testfiles/sleep");
+	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 	
 	BOOST_CHECK_EQUAL(elf._section_table.get_section_at_index(21).get_size(), size_of_section_21);
 	//BOOST_CHECK_EQUAL(elf._section_table._sections[21]->get_content().size(), size_of_section_21);
@@ -98,15 +98,15 @@ BOOST_AUTO_TEST_CASE(size_in_header_and_in_memory_sanity_check)
 
 BOOST_AUTO_TEST_CASE(remove_section)
 {
-	auto elf_to_remove_section_from = N_Core::create_elf("testfiles/sleep");
-	auto copy_of_original = N_Core::create_elf(elf_to_remove_section_from);
+	auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
+	auto copy_of_original = elf_to_remove_section_from;
 
 	BOOST_CHECK_EQUAL(
-		elf_to_remove_section_from._header->get_section_header_number_of_entries(),
-		copy_of_original._header->get_section_header_number_of_entries()
+		elf_to_remove_section_from._header.get_section_header_number_of_entries(),
+		copy_of_original._header.get_section_header_number_of_entries()
 	);
 
-	N_Core::dump_to_file("testfiles/remove_section", N_Core::create_elf(elf_to_remove_section_from));
+	N_Core::dump_to_file("testfiles/remove_section", elf_to_remove_section_from);
 
 	auto index_of_section_to_remove = 6;
 	auto size_of_removed_section_check = 0x289;
@@ -116,17 +116,17 @@ BOOST_AUTO_TEST_CASE(remove_section)
 	elf_to_remove_section_from.remove_section(index_of_section_to_remove, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
 
 	BOOST_CHECK_EQUAL(
-		elf_to_remove_section_from._header->get_section_header_number_of_entries(),
-		copy_of_original._header->get_section_header_number_of_entries() - 1
+		elf_to_remove_section_from._header.get_section_header_number_of_entries(),
+		copy_of_original._header.get_section_header_number_of_entries() - 1
 	);
 
-	N_Core::dump_to_file("testfiles/remove_section", N_Core::create_elf(elf_to_remove_section_from));
+	N_Core::dump_to_file("testfiles/remove_section", N_Core::Elf<N_Core::Bit64>(elf_to_remove_section_from));
 
-	auto verification_elf = N_Core::create_elf("testfiles/remove_section");
+	auto verification_elf = N_Core::create_elf<N_Core::Bit64>("testfiles/remove_section");
 
 	BOOST_CHECK_EQUAL(
-		verification_elf._header->get_section_header_number_of_entries(),
-		copy_of_original._header->get_section_header_number_of_entries() - 1
+		verification_elf._header.get_section_header_number_of_entries(),
+		copy_of_original._header.get_section_header_number_of_entries() - 1
 	);
 
 	BOOST_CHECK_EQUAL(
@@ -137,18 +137,18 @@ BOOST_AUTO_TEST_CASE(remove_section)
 
 BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start)
 {
-	auto elf_under_test = N_Core::create_elf("testfiles/sleep");
+	auto elf_under_test = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 	auto size_with_section = boost::filesystem::file_size("testfiles/sleep");
-	auto number_of_sections_in_original_elf = elf_under_test._header->get_section_header_number_of_entries();
+	auto number_of_sections_in_original_elf = elf_under_test._header.get_section_header_number_of_entries();
 
-	auto tot_size_of_program_headers = elf_under_test._header->get_program_header_number_of_entries() * elf_under_test._header->get_program_header_entry_size();
+	auto tot_size_of_program_headers = elf_under_test._header.get_program_header_number_of_entries() * elf_under_test._header.get_program_header_entry_size();
 	
 	std::string path_for_this_iteration = "testfiles/sleep_rebuild";
-	N_Core::dump_to_file(path_for_this_iteration, N_Core::create_elf("testfiles/sleep"));
+	N_Core::dump_to_file(path_for_this_iteration, N_Core::create_elf<N_Core::Bit64>("testfiles/sleep"));
 
 	for (auto i = 0; i < number_of_sections_in_original_elf; i++)
 	{
-		auto elf_to_remove_section_from = N_Core::create_elf(path_for_this_iteration.c_str());
+		auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
 		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size_in_file();
 
 		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 {
 	std::string path_for_this_iteration = "testfiles/remove_first_section";
 
-	auto elf_to_remove_section_from = N_Core::create_elf("testfiles/sleep");
+	auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 
 	BOOST_CHECK_EQUAL(
 		elf_to_remove_section_from._section_table._sections.at(0).get()->get_type()
@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 
 	for (auto const& section : elf_to_remove_section_from._section_table._sections)
 	{
-		if (section->get_offset() + section->get_size() > elf_to_remove_section_from._header->get_section_header_offset())
+		if (section->get_offset() + section->get_size() > elf_to_remove_section_from._header.get_section_header_offset())
 		{
 			auto b = 0;
 		}
@@ -229,7 +229,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 	);
 	
 	N_Core::dump_to_file(path_for_this_iteration, elf_to_remove_section_from);
-	auto elf_to_remove_section_from_2 = N_Core::create_elf(path_for_this_iteration.c_str());
+	auto elf_to_remove_section_from_2 = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
 
 	BOOST_CHECK_EQUAL(
 		elf_to_remove_section_from_2._section_table._sections.at(0).get()->get_type()
@@ -239,18 +239,18 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 
 BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start_gap)
 {
-	auto elf_under_test = N_Core::create_elf("testfiles/sleep");
+	auto elf_under_test = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 	auto size_with_section = boost::filesystem::file_size("testfiles/sleep");
-	auto number_of_sections_in_original_elf = elf_under_test._header->get_section_header_number_of_entries();
+	auto number_of_sections_in_original_elf = elf_under_test._header.get_section_header_number_of_entries();
 
-	auto tot_size_of_program_headers = elf_under_test._header->get_program_header_number_of_entries() * elf_under_test._header->get_program_header_entry_size();
+	auto tot_size_of_program_headers = elf_under_test._header.get_program_header_number_of_entries() * elf_under_test._header.get_program_header_entry_size();
 
 	std::string path_for_this_iteration = "testfiles/sleep_rebuild";
-	N_Core::dump_to_file(path_for_this_iteration, N_Core::create_elf("testfiles/sleep"));
+	N_Core::dump_to_file(path_for_this_iteration, N_Core::create_elf<N_Core::Bit64>("testfiles/sleep"));
 
 	for (auto i = 0; i < number_of_sections_in_original_elf; i++)
 	{
-		auto elf_to_remove_section_from = N_Core::create_elf(path_for_this_iteration.c_str());
+		auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
 		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size_in_file();
 
 		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::GAP);

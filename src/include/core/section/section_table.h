@@ -8,6 +8,7 @@
 
 namespace N_Core
 {
+	template <typename V>
 	class Elf;
 
 	namespace N_Section
@@ -82,9 +83,6 @@ namespace N_Core
 			// @brief Create a new table to store sections in.
 			// 
 			explicit Table() {}
-
-
-
 
 			ASection& get_section_at_index(Index index);
 		private:
