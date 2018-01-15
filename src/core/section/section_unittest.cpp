@@ -34,16 +34,16 @@ BOOST_AUTO_TEST_CASE(correct_section_header_after_dump)
 		N_Core::VoidIterator<>(),
 		[](auto const& section_elf_1, auto const& section_elf_2)
 		{
-			BOOST_CHECK_EQUAL(section_elf_1->get_name(), section_elf_2->get_name());
-			BOOST_CHECK_EQUAL(section_elf_1->get_type(), section_elf_2->get_type());
-			BOOST_CHECK_EQUAL(section_elf_1->get_flags(), section_elf_2->get_flags());
-			BOOST_CHECK_EQUAL(section_elf_1->get_address(), section_elf_2->get_address());
-			BOOST_CHECK_EQUAL(section_elf_1->get_offset(), section_elf_2->get_offset());
-			BOOST_CHECK_EQUAL(section_elf_1->get_size(), section_elf_2->get_size());
-			BOOST_CHECK_EQUAL(section_elf_1->get_link(), section_elf_2->get_link());
-			BOOST_CHECK_EQUAL(section_elf_1->get_info(), section_elf_2->get_info());
-			BOOST_CHECK_EQUAL(section_elf_1->get_address_alignment(), section_elf_2->get_address_alignment());
-			BOOST_CHECK_EQUAL(section_elf_1->get_entry_size(), section_elf_2->get_entry_size());
+			BOOST_CHECK_EQUAL(section_elf_1.get_name(), section_elf_2.get_name());
+			BOOST_CHECK_EQUAL(section_elf_1.get_type(), section_elf_2.get_type());
+			BOOST_CHECK_EQUAL(section_elf_1.get_flags(), section_elf_2.get_flags());
+			BOOST_CHECK_EQUAL(section_elf_1.get_address(), section_elf_2.get_address());
+			BOOST_CHECK_EQUAL(section_elf_1.get_offset(), section_elf_2.get_offset());
+			BOOST_CHECK_EQUAL(section_elf_1.get_size(), section_elf_2.get_size());
+			BOOST_CHECK_EQUAL(section_elf_1.get_link(), section_elf_2.get_link());
+			BOOST_CHECK_EQUAL(section_elf_1.get_info(), section_elf_2.get_info());
+			BOOST_CHECK_EQUAL(section_elf_1.get_address_alignment(), section_elf_2.get_address_alignment());
+			BOOST_CHECK_EQUAL(section_elf_1.get_entry_size(), section_elf_2.get_entry_size());
 
 			return N_Core::VoidIterator<>::value_type();
 		}
@@ -66,17 +66,17 @@ BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 		[](auto const& section_elf_1, auto const& section_elf_2)
 		{
 
-			std::size_t size_section_blob_elf_1 = section_elf_1->get_content().get_size();
-			std::size_t size_section_blob_elf_2 = section_elf_2->get_content().get_size();
+			std::size_t size_section_blob_elf_1 = section_elf_1.get_content().get_size();
+			std::size_t size_section_blob_elf_2 = section_elf_2.get_content().get_size();
 
 
-			BOOST_CHECK_EQUAL(section_elf_1->get_size(), section_elf_2->get_size());
+			BOOST_CHECK_EQUAL(section_elf_1.get_size(), section_elf_2.get_size());
 			BOOST_CHECK_EQUAL(size_section_blob_elf_1, size_section_blob_elf_2);
-			BOOST_CHECK_EQUAL(section_elf_1->get_size(), size_section_blob_elf_2);
+			BOOST_CHECK_EQUAL(section_elf_1.get_size(), size_section_blob_elf_2);
 
 			int result = std::memcmp(
-				&(*std::begin(section_elf_1->get_content())),
-				&(*std::begin(section_elf_2->get_content())),
+				&(*std::begin(section_elf_1.get_content())),
+				&(*std::begin(section_elf_2.get_content())),
 				size_section_blob_elf_1);
 
 			BOOST_CHECK_EQUAL(result, 0);
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(remove_section)
 
 	auto index_of_section_to_remove = 6;
 	auto size_of_removed_section_check = 0x289;
-	auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[index_of_section_to_remove]->get_size();
+	auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[index_of_section_to_remove].get_size();
 	BOOST_CHECK_EQUAL(size_of_removed_section_check, size_of_removed_section);
 
 	elf_to_remove_section_from.remove_section(index_of_section_to_remove, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start)
 	for (auto i = 0; i < number_of_sections_in_original_elf; i++)
 	{
 		auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
-		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size_in_file();
+		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0].get_size_in_file();
 
 		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
 
@@ -209,7 +209,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 	auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 
 	BOOST_CHECK_EQUAL(
-		elf_to_remove_section_from._section_table._sections.at(0).get()->get_type()
+		elf_to_remove_section_from._section_table._sections.at(0).get_type()
 		, N_Core::N_Section::Type::SHT_NULL
 	);
 
@@ -217,14 +217,14 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 
 	for (auto const& section : elf_to_remove_section_from._section_table._sections)
 	{
-		if (section->get_offset() + section->get_size() > elf_to_remove_section_from._header.get_section_header_offset())
+		if (section.get_offset() + section.get_size() > elf_to_remove_section_from._header.get_section_header_offset())
 		{
 			auto b = 0;
 		}
 	}
 
 	BOOST_CHECK_EQUAL(
-		elf_to_remove_section_from._section_table._sections.at(0).get()->get_type()
+		elf_to_remove_section_from._section_table._sections.at(0).get_type()
 		, N_Core::N_Section::Type::SHT_PROGBITS
 	);
 	
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 	auto elf_to_remove_section_from_2 = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
 
 	BOOST_CHECK_EQUAL(
-		elf_to_remove_section_from_2._section_table._sections.at(0).get()->get_type()
+		elf_to_remove_section_from_2._section_table._sections.at(0).get_type()
 		, N_Core::N_Section::Type::SHT_PROGBITS
 	);
 }
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start_gap)
 	for (auto i = 0; i < number_of_sections_in_original_elf; i++)
 	{
 		auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
-		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0]->get_size_in_file();
+		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0].get_size_in_file();
 
 		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::GAP);
 

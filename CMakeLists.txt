@@ -55,9 +55,6 @@ add_library(linker_core STATIC
 
 	#section
 	src/core/section/helpers.cpp
-	src/core/section/section.cpp
-	src/core/section/asection.cpp
-	src/core/section/section_table.cpp
 )
 
 add_executable(linker src/main.cpp) 

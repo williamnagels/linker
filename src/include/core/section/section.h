@@ -1,12 +1,6 @@
 #pragma once
-#include "src/include/core/addressable.h"
 #include "src/include/core/general.h"
-#include "src/include/core/symtab/symbol_table.h"
 #include "src/include/core/section/section_member_types.h"
-#include "src/include/core/section/asection.h"
-#include "src/include/core/locatable.h"
-
-#include "cow.h"
 
 #include <variant>
 #include <functional>
@@ -15,9 +9,6 @@
 
 namespace N_Core
 {
-	template <typename V>
-	class Elf;
-	namespace N_Header { class HeaderA;}
 
 	namespace N_Section
 	{
@@ -28,7 +19,7 @@ namespace N_Core
 		*
 		*/
 		template <typename T>
-		class Section: public ASection
+		class Section
 		{
 		private:
 
@@ -48,18 +39,41 @@ namespace N_Core
 		public:
 			MMap::Container<T> _header_entry;
 			MMap::Container<uint8_t> _content;
-
+			/*
 			// @brief Construct a sectionf rom an existing section.
 			// 
 			// @param existing_section existing section to base the new section of
 			//
-			template <typename T>
-			explicit Section(T&& existing_section, std::enable_if_t<std::is_same_v<std::decay_t<T>, Section>, int> = 0) :
-				_header_entry(std::forward<T>(section)._header_entry)
-				,_content(std::forward<T>(section)._content)
+			template <typename V>
+			explicit Section(V&& existing_section, std::enable_if_t<std::is_same_v<std::decay_t<V>, Section<T>>, int> = 0) 
+			//:
+			//	_header_entry(std::forward<V>(existing_section)._header_entry)
+			//	,_content(std::forward<V>(existing_section)._content)
+			//{
+			//}
+			
+			/*explicit Section(Section<T> const& section):
+				_header_entry(section._header_entry)
+				,_content(section._content)
 			{
-			}
 
+			}
+			explicit Section(Section<T> && section) :
+				_header_entry(std::move(section)._header_entry)
+				, _content(std::move(section)._content)
+			{
+
+			}
+			Section& operator=(Section const& other_section)
+			{
+				_header_entry = other_section._header_entry;
+				_content = other_section._content;
+			}
+			Section& operator=(Section&& other_section)
+			{
+				_header_entry = std::move(other_section)._header_entry;
+				_content = std::move(other_section)._content;
+			}*/
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
@@ -83,22 +97,37 @@ namespace N_Core
 
 			}
 
-			uint64_t get_name()const override { return  get(_header_entry, &T::sh_name); }
-			Type get_type() const override { return  get(_header_entry, &T::sh_type); }
-			Flags get_flags()const override { return static_cast<Flags>( get(_header_entry, &T::sh_flags)); }
-			uint64_t get_address()const override { return  get(_header_entry, &T::sh_addr); }
-			uint64_t get_offset()const override { return  get(_header_entry, &T::sh_offset); }
-			void set_offset(uint64_t offset) override { return  set(_header_entry, &T::sh_offset, offset); };
-			uint64_t get_size()const override { return  get(_header_entry, &T::sh_size); }
-			uint64_t get_link()const override { return  get(_header_entry, &T::sh_link); }
-			uint64_t get_info()const override { return  get(_header_entry, &T::sh_info); }
-			uint64_t get_address_alignment()const override { return  get(_header_entry, &T::sh_addralign); }
-			uint64_t get_entry_size()const override { return  get(_header_entry, &T::sh_entsize); }
-			MMap::Container<uint8_t> const& get_content() const override { return _content;}
-			uint64_t get_size_in_file() const override { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
-			std::unique_ptr<ASection> deep_copy() const& override { return std::make_unique<Section>(*this);}
-			std::unique_ptr<ASection> deep_copy() && override { return std::make_unique<Section>(std::move(*this));}
+			uint64_t get_name()const  { return  get(_header_entry, &T::sh_name); }
+			Type get_type() const  { return  get(_header_entry, &T::sh_type); }
+			Flags get_flags()const  { return static_cast<Flags>( get(_header_entry, &T::sh_flags)); }
+			uint64_t get_address()const  { return  get(_header_entry, &T::sh_addr); }
+			uint64_t get_offset()const  { return  get(_header_entry, &T::sh_offset); }
+			void set_offset(uint64_t offset)  { return  set(_header_entry, &T::sh_offset, offset); };
+			uint64_t get_size()const  { return  get(_header_entry, &T::sh_size); }
+			uint64_t get_link()const  { return  get(_header_entry, &T::sh_link); }
+			uint64_t get_info()const  { return  get(_header_entry, &T::sh_info); }
+			uint64_t get_address_alignment()const  { return  get(_header_entry, &T::sh_addralign); }
+			uint64_t get_entry_size()const  { return  get(_header_entry, &T::sh_entsize); }
+			MMap::Container<uint8_t> const& get_content() const  { return _content;}
+			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 		};
+
+		template <typename T>
+		void dump(std::ostream& stream, Section<T> const& section, int section_index)
+		{
+			stream.seekp(std::streamoff(section_index * sizeof(T)), std::ios::cur);
+			stream << section._header_entry;
+			if (section.get_size_in_file())
+			{
+				stream.seekp(section.get_offset());
+				stream << section._content;
+			}
+		}
+		template <typename T>
+		Section<T> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob)
+		{
+			return Section<T>(elf_blob, header_blob);
+		}
 	}
 
 };

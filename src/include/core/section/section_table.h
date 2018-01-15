@@ -1,7 +1,7 @@
 #pragma once
 #include "src/include/core/section/helpers.h"
 #include "src/include/core/section/section_member_types.h"
-#include "src/include/core/section/asection.h"
+#include "src/include/core/section/section.h"
 #include <vector>
 #include <memory>
 #include <utility>
@@ -23,6 +23,7 @@ namespace N_Core
 		// of section objects may change if the capacity of the
 		// vector changes. Do not store references/pointers to sections objects.
 		//
+		template <typename T>
 		class Table
 		{
 		public:
@@ -40,7 +41,10 @@ namespace N_Core
 			// placement of sections in the elf. See get_offset() and get_size()
 			// to find the location of the section in the file.
 			//
-			void add_section(std::unique_ptr<ASection>&& section, Index index = Index::Wildcard);
+			void add_section(Section<T>&& section, Index index = Index::Wildcard)
+			{
+
+			}
 
 			// @brief Swap section at index1 with section at index2
 			//
@@ -50,7 +54,20 @@ namespace N_Core
 			// @throws std::invalid_argument if index1 and index2 are invalid (does not
 			// identify a section).
 			//
-			void swap_section(Index index1, Index index2);
+			void swap_section(Index index1, Index index2)
+			{
+				if (!are_valid_indices<DoesNotSupportWildCard>(index1, index2))
+				{
+					throw std::invalid_argument(invalid_section_index);
+				}
+
+				decltype(_sections)::iterator iterator1 = std::begin(_sections);
+				decltype(_sections)::iterator iterator2 = std::begin(_sections);
+				std::advance(iterator1, index1);
+				std::advance(iterator2, index2);
+
+				std::iter_swap(iterator1, iterator2);
+			}
 
 			// @brief Remove section identified by index from the section table
 			// 
@@ -59,10 +76,30 @@ namespace N_Core
 			//
 			// @throws std::invalid_argument if index is invalid (larger than amount of sections).
 			//
-			void remove_section(Index index, SectionRemovalPolicy policy);
-			std::vector<std::unique_ptr<ASection>> _sections; ///< list of sections assigned to this table.
+			void remove_section(Index index, SectionRemovalPolicy policy)
+			{
+				if (!is_valid_index<DoesNotSupportWildCard>(index))
+				{
+					throw std::range_error(invalid_section_index);
+				}
 
-			~Table();
+				if (policy == SectionRemovalPolicy::COMPACT)
+				{
+					auto offset_to_subtract = _sections.at(index).get_size_in_file();
+
+					std::for_each(
+						_sections.begin() + (index + 1)
+						, _sections.end()
+						, [=](auto& section) { section.set_offset(section.get_offset() - offset_to_subtract); }
+					);
+				}
+
+				auto element_to_delete = _sections.begin() + index;
+				_sections.erase(_sections.begin() + index);
+			}
+			std::vector< Section<T> > _sections; ///< list of sections assigned to this table.
+
+			~Table() {}
 
 			// @brief Create a section table based on an existing section table.
 			// 
@@ -70,46 +107,93 @@ namespace N_Core
 			//
 			// Will move sections from existing_table to the newly created table.
 			//
-			Table(Table&& existing_table);
-			Table& operator=(Table&&);
+			Table(Table&& other_table)
+			{
+				_sections = std::move(other_table)._sections;
+			}
+
+			// @brief Create a section table based on an existing section table.
+			// 
+			// @param existing_table	blueprint for the new table.
+			//
+			// Will move sections from existing_table to the newly created table.
+			//
+			Table& operator=(Table&& other_table)
+			{
+				_sections = std::move(other_table)._sections;
+				return *this;
+			}
+
 			// @brief Create a section table based on an existing section table.
 			// 
 			// @param existing_table	blueprint for the new table.
 			//
 			// Will deep copy sections from existing_table to the newly created table.
 			//
-			Table(Table const& existing_table);
-			Table& operator=(Table const&);
+			Table(Table const& other_table)
+			{
+				for (auto const& section : other_table._sections)
+				{
+					_sections.emplace_back(section);
+				}
+			}
+
+			// @brief Create a section table based on an existing section table.
+			// 
+			// @param existing_table	blueprint for the new table.
+			//
+			// Will deep copy sections from existing_table to the newly created table.
+			//
+			Table& operator=(Table const& other_table)
+			{
+				for (auto const& section : other_table._sections)
+				{
+					_sections.emplace_back(section->deep_copy());
+				}
+				return *this;
+			}
+
 			// @brief Create a new table to store sections in.
 			// 
 			explicit Table() {}
 
-			ASection& get_section_at_index(Index index);
+			Section<T>& get_section_at_index(Index index) { return _sections.at(index); }
 		private:
-			void add_section_to_back(std::unique_ptr<ASection>&& section);
-			void add_section_at_index(std::unique_ptr<ASection>&& section, Index index);
+			void add_section_to_back(Section<T>&& section)
+			{
+				_sections.push_back(std::move(section));
+			}
+			void add_section_at_index(Section<T>&& section, Index index)
+			{
+				if (_sections.size() >= index)
+				{
+					decltype(_sections)::iterator iterator = std::begin(_sections);
+					std::advance(iterator, index);
 
+					_sections.insert(iterator, std::move(section));
+				}
+			}
 			struct SupportsWildcard {};
 			struct DoesNotSupportWildCard {};
-			template <typename T>
-			std::enable_if_t<std::is_same_v<T, DoesNotSupportWildCard>, bool> is_valid_index(Index index)
+			template <typename V>
+			std::enable_if_t<std::is_same_v<V, DoesNotSupportWildCard>, bool> is_valid_index(Index index)
 			{
 				return index < _sections.size();
 			}
 
-			template <typename T>
-			std::enable_if_t<std::is_same_v<T, SupportsWildcard>, bool> is_valid_index(Index index)
+			template <typename V>
+			std::enable_if_t<std::is_same_v<V, SupportsWildcard>, bool> is_valid_index(Index index)
 			{
 				return is_valid_index<DoesNotSupportWildCard>(index) || (index == Index::Wildcard);
 			}
 
-			template <typename T, typename ...G>
+			template <typename V, typename ...G>
 			bool are_valid_indices(G... indices)
 			{
 				bool rc;
 				for (auto&& x : { indices... })
 				{
-					rc |= is_valid_index<T>(x);
+					rc |= is_valid_index<V>(x);
 				}
 				return rc;
 			}
@@ -127,6 +211,17 @@ namespace N_Core
 		//
 		// @precondition	The cursor may be anywhere. Do not assume anything about its position.
 		//					
-		void dump(std::ostream& stream, Table const& table);
+		template <typename T>
+		void dump(std::ostream& stream, Table<T> const& table)
+		{
+			std::streampos start_of_section_table = stream.tellp();
+			int section_index = 0;
+			for (auto const& section : table._sections)
+			{
+				stream.seekp(start_of_section_table);
+				dump(stream, section, section_index);
+				section_index++;
+			}
+		}
 	}
 }

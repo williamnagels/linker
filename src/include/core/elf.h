@@ -1,6 +1,7 @@
 #pragma once
 #include "src/include/core/section/section_table.h"
 #include "src/include/core/header/header.h"
+#include "src/include/core/section/section.h"
 #include "src/include/core/general.h"
 
 #include <boost/interprocess/file_mapping.hpp>
@@ -70,7 +71,7 @@ namespace N_Core
 					auto end_header = begin_header + size_of_entry;
 
 					auto header_range = boost::make_iterator_range(begin_header, end_header);
-					auto section = N_Section::create_section(get_memory_mapped_region(), header_range);
+					auto section = N_Section::create_section<N_Section::Elf64_Shdr>(get_memory_mapped_region(), header_range);
 					_section_table.add_section(std::move(section));
 				}
 			}
@@ -78,7 +79,7 @@ namespace N_Core
 			{
 				for (auto i = 0; i < number_of_entries; i++)
 				{
-					_section_table.add_section(N_Section::create_section(_header.get_class() == N_Core::N_Header::Class::ELFCLASS64));
+					_section_table.add_section(N_Section::Section<N_Section::Elf64_Shdr>());
 				}
 			}
 		}
@@ -99,7 +100,13 @@ namespace N_Core
 			>
 		> _header;
 
-		N_Section::Table _section_table;
+		N_Section::Table<
+			std::conditional_t<
+				std::is_same_v<V, Bit64>
+				, N_Section::Elf64_Shdr
+				, N_Section::Elf32_Shdr
+			>
+		> _section_table;
 
 		// @brief Returns true if the elf is loaded from disk
 		//
@@ -166,7 +173,7 @@ namespace N_Core
 		//
 		void remove_section(uint16_t index, N_Core::N_Section::SectionRemovalPolicy policy)
 		{
-			auto offset_to_subtract = _section_table._sections.at(index)->get_size_in_file();
+			auto offset_to_subtract = _section_table._sections.at(index).get_size_in_file();
 
 			//throws if index is not valid that's why offset must first be retrieved.
 			_section_table.remove_section(index, policy);
