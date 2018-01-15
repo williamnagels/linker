@@ -43,7 +43,14 @@ namespace N_Core
 			//
 			void add_section(Section<T>&& section, Index index = Index::Wildcard)
 			{
-
+				if (is_wildcard(index))
+				{
+					add_section_to_back(std::move(section));
+				}
+				else
+				{
+					add_section_at_index(std::move(section), index);
+				}
 			}
 
 			// @brief Swap section at index1 with section at index2

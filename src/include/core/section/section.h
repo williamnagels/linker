@@ -39,41 +39,7 @@ namespace N_Core
 		public:
 			MMap::Container<T> _header_entry;
 			MMap::Container<uint8_t> _content;
-			/*
-			// @brief Construct a sectionf rom an existing section.
-			// 
-			// @param existing_section existing section to base the new section of
-			//
-			template <typename V>
-			explicit Section(V&& existing_section, std::enable_if_t<std::is_same_v<std::decay_t<V>, Section<T>>, int> = 0) 
-			//:
-			//	_header_entry(std::forward<V>(existing_section)._header_entry)
-			//	,_content(std::forward<V>(existing_section)._content)
-			//{
-			//}
-			
-			/*explicit Section(Section<T> const& section):
-				_header_entry(section._header_entry)
-				,_content(section._content)
-			{
 
-			}
-			explicit Section(Section<T> && section) :
-				_header_entry(std::move(section)._header_entry)
-				, _content(std::move(section)._content)
-			{
-
-			}
-			Section& operator=(Section const& other_section)
-			{
-				_header_entry = other_section._header_entry;
-				_content = other_section._content;
-			}
-			Section& operator=(Section&& other_section)
-			{
-				_header_entry = std::move(other_section)._header_entry;
-				_content = std::move(other_section)._content;
-			}*/
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
