@@ -42,7 +42,7 @@ namespace N_Core
 			// to find the location of the section in the file.
 			//
 			void add_section(Section<T>&& section, Index index = Index::Wildcard)
-			{
+			{ 
 				if (is_wildcard(index))
 				{
 					add_section_to_back(std::move(section));

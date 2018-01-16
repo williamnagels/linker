@@ -92,7 +92,7 @@ namespace N_Core
 		template <typename T>
 		Section<T> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob)
 		{
-			return Section<T>(elf_blob, header_blob);
+			return Section<T>(header_blob, elf_blob);
 		}
 	}
 
