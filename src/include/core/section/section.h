@@ -1,6 +1,7 @@
 #pragma once
 #include "src/include/core/general.h"
 #include "src/include/core/section/section_member_types.h"
+#include "src/include/core/locatable.h"
 
 #include <variant>
 #include <functional>
@@ -40,6 +41,8 @@ namespace N_Core
 			MMap::Container<T> _header_entry;
 			MMap::Container<uint8_t> _content;
 
+			StorageProvider _provider;
+
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
@@ -48,19 +51,20 @@ namespace N_Core
 			// The full memory range of the elf is required because the content may be stored anywhere
 			// in the address range and is unknown until the header has been parsed.
 			//
-			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
+			explicit Section(StorageProvider provider, N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_header_entry(header.begin())
 				, _content(get_content_from_header(elf_blob).begin(), get_content_from_header(elf_blob).end())
+				, _provider(provider)
 			{
 			}
 
 			// @brief Create a new section.
 			// 
-			explicit Section():
+			explicit Section(StorageProvider provider):
 				_header_entry()
 				, _content()
+				, _provider(provider)
 			{
-
 			}
 
 			uint64_t get_name()const  { return  get(_header_entry, &T::sh_name); }
@@ -89,10 +93,11 @@ namespace N_Core
 				stream << section._content;
 			}
 		}
+
 		template <typename T>
-		Section<T> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob)
+		Section<T> create_section(StorageProvider provider, N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob)
 		{
-			return Section<T>(header_blob, elf_blob);
+			return Section<T>(provider, header_blob, elf_blob);
 		}
 	}
 
