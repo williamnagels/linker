@@ -43,6 +43,15 @@
 // Let's say main must be at 0xabcd and is at offset 0x4543 in some segment. Page size = 0x1000
 //
 // virtual address of the first byte of the segment = 0xabcd - 0x4543 = some_value
+//
+// when adding sections to a segment the offset/VA is not relevant. It only becomes relevant
+// when writing to file. Important to know at that point is what segment owns which sections
+// basically:
+// Pile all sections into a segment and copy relocations and symbols along the way
+// Assign offset to each section in a segment when all sections are know
+// Assign VA to segments.
+// Update all symmbols
+// Apply relocations
 
 
 
