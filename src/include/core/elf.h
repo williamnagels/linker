@@ -192,7 +192,7 @@ namespace N_Core
 		// @param index		required index of the new section. Can be wildcard.
 		// @param section	Section to add. Can be default ctor
 		//
-		// @throws std::range_error if index is invalid (larger than amount of sections).
+		// @returns Index of the section. Only usefull if 'index' param is not wildcard else it will be the same.
 		//
 		using X = std::conditional_t<
 			std::is_same_v<V, Bit64>

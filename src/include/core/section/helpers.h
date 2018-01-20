@@ -19,8 +19,13 @@ namespace N_Core
 			T _value;
 			static const T Wildcard = std::numeric_limits<T>::max();
 			operator decltype(_value)(){ return _value; }
+
 			Index(T value) : _value(value) {}
 		};
+
+		Index operator ++(Index& idx, int);
+		Index& operator++(Index& idx);
+
 		// @brief Wether or not the index is the wildcard index.
 		// 
 		// Used in the API to check if the index of some section is the wildcard section.
