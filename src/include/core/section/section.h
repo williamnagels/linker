@@ -69,7 +69,8 @@ namespace N_Core
 			uint64_t get_address()const  { return  get(_header_entry, &T::sh_addr); }
 			uint64_t get_offset()const  { return  get(_header_entry, &T::sh_offset); }
 			void set_offset(uint64_t offset)  { return  set(_header_entry, &T::sh_offset, offset); };
-			uint64_t get_size()const  { return  get(_header_entry, &T::sh_size); }
+			uint64_t get_size() const  { return  get(_header_entry, &T::sh_size); }
+			void set_size(uint64_t size) { return  set(_header_entry, &T::sh_size, size); }
 			uint64_t get_link()const  { return  get(_header_entry, &T::sh_link); }
 			uint64_t get_info()const  { return  get(_header_entry, &T::sh_info); }
 			uint64_t get_address_alignment()const  { return  get(_header_entry, &T::sh_addralign); }
@@ -93,6 +94,13 @@ namespace N_Core
 		Section<T> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob)
 		{
 			return Section<T>(header_blob, elf_blob);
+		}
+
+		template <typename T, typename ItTy>
+		void update(Section<T>& section, ItTy begin,ItTy end)
+		{
+			section._content.resize(end-begin);
+			std::copy(begin, end, std::begin(section._content));
 		}
 	}
 

@@ -41,16 +41,14 @@ namespace N_Core
 			// placement of sections in the elf. See get_offset() and get_size()
 			// to find the location of the section in the file.
 			//
-			void add_section(Section<T>&& section, Index index = Index::Wildcard)
+			Index add_section(Section<T>&& section, Index index = Index::Wildcard)
 			{ 
 				if (is_wildcard(index))
 				{
-					add_section_to_back(std::move(section));
+					return add_section_to_back(std::move(section));
 				}
-				else
-				{
-					add_section_at_index(std::move(section), index);
-				}
+				
+				return add_section_at_index(std::move(section), index);
 			}
 
 			// @brief Swap section at index1 with section at index2
@@ -166,19 +164,20 @@ namespace N_Core
 
 			Section<T>& get_section_at_index(Index index) { return _sections.at(index); }
 		private:
-			void add_section_to_back(Section<T>&& section)
+			Index add_section_to_back(Section<T>&& section)
 			{
 				_sections.push_back(std::move(section));
-			}
-			void add_section_at_index(Section<T>&& section, Index index)
-			{
-				if (_sections.size() >= index)
-				{
-					decltype(_sections)::iterator iterator = std::begin(_sections);
-					std::advance(iterator, index);
 
-					_sections.insert(iterator, std::move(section));
-				}
+				return _sections.size() - 1;
+			}
+			Index add_section_at_index(Section<T>&& section, Index index)
+			{
+				decltype(_sections)::iterator iterator = std::begin(_sections);
+				std::advance(iterator, index);
+
+				_sections.insert(iterator, std::move(section));
+
+				return index;
 			}
 			struct SupportsWildcard {};
 			struct DoesNotSupportWildCard {};

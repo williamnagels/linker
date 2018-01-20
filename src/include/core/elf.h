@@ -185,6 +185,26 @@ namespace N_Core
 				_header.set_section_header_offset(_header.get_section_header_offset() - offset_to_subtract);
 			}
 		}
+		// @brief Add section identified by index from the elf.
+		// 
+		// Will also update elf header to reflect the changes.	
+		//
+		// @param index		required index of the new section. Can be wildcard.
+		// @param section	Section to add. Can be default ctor
+		//
+		// @throws std::range_error if index is invalid (larger than amount of sections).
+		//
+		using X = std::conditional_t<
+			std::is_same_v<V, Bit64>
+			, N_Section::Elf64_Shdr
+			, N_Section::Elf32_Shdr
+		>;
+		N_Core::N_Section::Index add_section(N_Core::N_Section::Section<X>&& section, N_Core::N_Section::Index index)
+		{
+			_header.set_section_header_number_of_entries(_header.get_section_header_number_of_entries() + 1);
+			return _section_table.add_section(std::move(section), index);
+
+		}
 	};
 
 	// @brief create elf from an existing elf
