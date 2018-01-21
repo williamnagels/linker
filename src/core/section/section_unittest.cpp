@@ -290,6 +290,9 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start_gap)
 	);
 
 }
+
+
+
 BOOST_AUTO_TEST_CASE(wildcard_add_section)
 {
 	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
@@ -432,4 +435,49 @@ BOOST_AUTO_TEST_CASE(specific_index_section)
 
 
 }
+BOOST_AUTO_TEST_CASE(get_section_name)
+{
+	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
+
+	auto names =
+	{
+		""
+		, ".interp"
+		, ".note.ABI-tag"
+		, ".note.gnu.build-id"
+		, ".gnu.hash"
+		, ".dynsym"
+		, ".dynstr"
+		, ".gnu.version"
+		, ".gnu.version_r"
+		, ".rela.dyn"
+		, ".rela.plt"
+		, ".init"
+		, ".plt"
+		, ".text"
+		, ".fini"
+		, ".rodata"
+		, ".eh_frame_hdr"
+		, ".eh_frame"
+		, ".init_array"
+		, ".fini_array"
+		, ".jcr"
+		, ".dynamic"
+		, ".got"
+		, ".got.plt"
+		, ".data"
+		, ".bss"
+		, ".shstrtab"
+	};
+
+	auto idx = 0;
+	for (auto const& expected_name : names)
+	{
+		std::string name_in_file = N_Core::get_name(elf, idx++);
+		BOOST_CHECK_EQUAL(name_in_file, expected_name);
+	}
+
+
+}
+
 BOOST_AUTO_TEST_SUITE_END()

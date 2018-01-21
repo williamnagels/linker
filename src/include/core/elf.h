@@ -201,6 +201,7 @@ namespace N_Core
 		>;
 		N_Core::N_Section::Index add_section(N_Core::N_Section::Section<X>&& section, N_Core::N_Section::Index index)
 		{
+
 			_header.set_section_header_number_of_entries(_header.get_section_header_number_of_entries() + 1);
 			return _section_table.add_section(std::move(section), index);
 
@@ -266,4 +267,19 @@ namespace N_Core
 		dump(stream, elf._section_table);
 	}
 
+	// @brief Get name of a section
+	// 
+	// @param elf				Elf from which the section name should be retrieved.
+	// @param index_to_lookup	Index of the section to retrieve.
+	// 
+	template<typename ElfTy>
+	std::string get_name(N_Core::Elf<ElfTy> elf, N_Core::N_Section::Index index_to_lookup)
+	{
+		N_Core::N_Section::Index index = elf._header.get_section_index_that_contains_strings();
+	
+		auto const& buffer = elf._section_table.get_section_at_index(index)._content;
+		std::size_t offset = elf._section_table.get_section_at_index(index_to_lookup).get_name();
+
+		return std::string(reinterpret_cast<char const*>(&buffer[offset]));
+	}
 }
