@@ -64,6 +64,7 @@ namespace N_Core
 			}
 
 			uint64_t get_name()const  { return  get(_header_entry, &T::sh_name); }
+			void set_name(uint64_t offset) { set(_header_entry, &T::sh_name, offset); };
 			Type get_type() const  { return  get(_header_entry, &T::sh_type); }
 			Flags get_flags()const  { return static_cast<Flags>( get(_header_entry, &T::sh_flags)); }
 			uint64_t get_address()const  { return  get(_header_entry, &T::sh_addr); }

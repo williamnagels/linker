@@ -163,7 +163,8 @@ namespace N_Core
 			explicit Table() {}
 
 			Section<T>& get_section_at_index(Index index) { return _sections.at(index); }
-		private:
+			Section<T> const& get_section_at_index(Index index) const { return _sections.at(index); }
+	private:
 			Index add_section_to_back(Section<T>&& section)
 			{
 				_sections.push_back(std::move(section));

@@ -479,5 +479,57 @@ BOOST_AUTO_TEST_CASE(get_section_name)
 
 
 }
+BOOST_AUTO_TEST_CASE(set_section_name_already_exists)
+{
+	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 
+	auto idx = elf._header.get_section_index_that_contains_strings();
+	auto size_in_file = elf._section_table.get_section_at_index(idx).get_size_in_file();
+
+	for (auto i = 0; i < elf._section_table._sections.size(); i++)
+	{
+		N_Core::set_name(elf, i, ".interp");
+		std::string name_in_file = N_Core::get_name(elf, i);
+		BOOST_CHECK_EQUAL(name_in_file, ".interp");
+	}
+	auto size_in_file_2 = elf._section_table.get_section_at_index(idx).get_size_in_file();
+
+	BOOST_CHECK_EQUAL(size_in_file, size_in_file_2);
+
+	N_Core::dump_to_file("testfiles/interpsleep", elf);
+
+	N_Core::Elf<N_Core::Bit64> elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/interpsleep");
+
+	for (auto i = 0; i < elf2._section_table._sections.size(); i++)
+	{
+		std::string name_in_file = N_Core::get_name(elf2, i);
+		BOOST_CHECK_EQUAL(name_in_file, ".interp");
+	}
+}
+
+BOOST_AUTO_TEST_CASE(set_section_new_names)
+{
+	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
+
+	auto idx = elf._header.get_section_index_that_contains_strings();
+	auto size_in_file = elf._section_table.get_section_at_index(idx).get_size_in_file();
+
+	for (auto i = 0; i < elf._section_table._sections.size(); i++)
+	{
+		std::string reversed_name = N_Core::get_name(elf, i);
+		std::reverse(std::begin(reversed_name), std::end(reversed_name));
+		N_Core::set_name(elf, i, reversed_name);
+	}
+
+	N_Core::dump_to_file("testfiles/reversedsleep", elf);
+
+	N_Core::Elf<N_Core::Bit64> elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/reversedsleep");
+
+	for (auto i = 0; i < elf2._section_table._sections.size(); i++)
+	{
+		//std::string origin = N_Core::get_name(elf, i);
+		std::string fresh = N_Core::get_name(elf2, i);
+		//BOOST_CHECK_EQUAL(fresh, origin);
+	}
+}
 BOOST_AUTO_TEST_SUITE_END()

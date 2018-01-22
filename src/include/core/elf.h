@@ -273,7 +273,7 @@ namespace N_Core
 	// @param index_to_lookup	Index of the section to retrieve.
 	// 
 	template<typename ElfTy>
-	std::string get_name(N_Core::Elf<ElfTy> elf, N_Core::N_Section::Index index_to_lookup)
+	std::string get_name(N_Core::Elf<ElfTy> const& elf, N_Core::N_Section::Index index_to_lookup)
 	{
 		N_Core::N_Section::Index index = elf._header.get_section_index_that_contains_strings();
 	
@@ -281,5 +281,50 @@ namespace N_Core
 		std::size_t offset = elf._section_table.get_section_at_index(index_to_lookup).get_name();
 
 		return std::string(reinterpret_cast<char const*>(&buffer[offset]));
+	}
+
+	// @brief change name of a section
+	// 
+	// This function will move the section header if it overlaps with the 
+	// section which contains the section names (if new names are added this section's
+	// content will grow).
+	//
+	// Other sections are not moved.
+	//
+	// @param elf				Elf from which the section name should be changed.
+	// @param index_to_lookup	Index of the section which should've its name changed.
+	// @param new_name			New name of the section.
+	// 
+	template<typename ElfTy>
+	void set_name(N_Core::Elf<ElfTy>& elf, N_Core::N_Section::Index index_to_lookup, std::string new_name)
+	{
+		
+		N_Core::N_Section::Index index = elf._header.get_section_index_that_contains_strings();
+
+		auto& buffer = elf._section_table.get_section_at_index(index)._content;
+
+		auto existing_iterator = std::search(std::begin(buffer), std::end(buffer), std::begin(new_name), std::end(new_name));
+
+		// a section with that name already exists (or part of the name). Avoid adding the name again to the buffer.
+		if (existing_iterator != buffer.end())
+		{
+			return elf._section_table.get_section_at_index(index_to_lookup).set_name(std::distance(std::begin(buffer), existing_iterator));
+		}
+
+		auto destination_iterator = std::end(buffer);
+		buffer.resize(buffer.get_size() + new_name.size());
+
+		std::copy(std::begin(new_name), std::end(new_name), destination_iterator);
+
+		elf._section_table.get_section_at_index(index).set_size(elf._section_table.get_section_at_index(index).get_size() + std::size(new_name));
+
+		auto minimum_offset_for_section_header =
+			elf._section_table.get_section_at_index(index).get_offset() +
+			elf._section_table.get_section_at_index(index).get_size_in_file();
+
+		if (elf._header.get_section_header_offset() <= minimum_offset_for_section_header)
+		{
+			elf._header.set_section_header_offset(minimum_offset_for_section_header + 1);
+		}
 	}
 }
