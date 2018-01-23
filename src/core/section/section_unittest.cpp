@@ -521,15 +521,24 @@ BOOST_AUTO_TEST_CASE(set_section_new_names)
 		N_Core::set_name(elf, i, reversed_name);
 	}
 
+	BOOST_CHECK_EQUAL(N_Core::get_name(elf, 1), ".pretni"); //sanity check
+
 	N_Core::dump_to_file("testfiles/reversedsleep", elf);
 
 	N_Core::Elf<N_Core::Bit64> elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/reversedsleep");
 
 	for (auto i = 0; i < elf2._section_table._sections.size(); i++)
 	{
-		//std::string origin = N_Core::get_name(elf, i);
+		std::string origin = N_Core::get_name(elf, i);
 		std::string fresh = N_Core::get_name(elf2, i);
 		//BOOST_CHECK_EQUAL(fresh, origin);
 	}
 }
+BOOST_AUTO_TEST_CASE(is_valid_layout)
+{
+	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
+
+	N_Core::is_valid_layout(elf);
+}
+
 BOOST_AUTO_TEST_SUITE_END()

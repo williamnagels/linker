@@ -312,11 +312,13 @@ namespace N_Core
 		}
 
 		auto destination_iterator = std::end(buffer);
+		auto offset = buffer.get_size();
 		buffer.resize(buffer.get_size() + new_name.size());
 
 		std::copy(std::begin(new_name), std::end(new_name), destination_iterator);
 
 		elf._section_table.get_section_at_index(index).set_size(elf._section_table.get_section_at_index(index).get_size() + std::size(new_name));
+		elf._section_table.get_section_at_index(index_to_lookup).set_name(offset);
 
 		auto minimum_offset_for_section_header =
 			elf._section_table.get_section_at_index(index).get_offset() +
@@ -326,5 +328,50 @@ namespace N_Core
 		{
 			elf._header.set_section_header_offset(minimum_offset_for_section_header + 1);
 		}
+	}
+
+
+	// @brief get entities containing a section.
+	// 
+	// Multiple segments may overlap and contain the same section.
+	// If the section is not fully contained in a segment, the elf is also returned 
+	// as container.
+	//
+	// An segment contains a section only if its offset + size < offset of the section and offset >= offset section
+	//
+	// @param elf				Elf which should've the containers for a section returned.
+	// @param index_to_lookup	Index of the section which should have its containes returned.
+	//
+	// @returns a list of segments/elf that contain the section.
+	// 
+	template <typename ElfTy>
+	std::vector<std::variant<N_Core::Elf<ElfTy>&>> get_container(N_Core::Elf<ElfTy> const& elf, N_Core::N_Section::Index index_to_lookup)
+	{
+		auto const& section = elf._section_table.get_section_at_index(idx);
+		auto offset_in_file = section.get_offset();
+
+		return { elf };
+	}
+
+	// @brief get entities containing a section.
+	// 
+	// Verifies if no sections overlap.
+	// Segments are allowed to overlap; sections are not allowed to overlap.
+	//
+	// Sections are considered to overlap if Section(a).start + offset >= Section(d).start
+	// index b is not necesserly a increased by one. Order in section table
+	// is not related to order in the elf file.
+	//
+	// @param elf				Elf which should've the section layout validity verified.
+	//
+	// @returns a list of indices that are overlap with the start point of another section.
+	// 
+	template <typename ElfTy>
+	std::vector<N_Core::N_Section::Index> is_valid_layout(N_Core::Elf<ElfTy> const& elf)
+	{
+		std::vector<N_Core::N_Section::Index> indices;
+
+
+		return indices;
 	}
 }
