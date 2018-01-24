@@ -311,13 +311,19 @@ namespace N_Core
 			return elf._section_table.get_section_at_index(index_to_lookup).set_name(std::distance(std::begin(buffer), existing_iterator));
 		}
 
-		auto destination_iterator = std::end(buffer);
 		auto offset = buffer.get_size();
-		buffer.resize(buffer.get_size() + new_name.size());
 
-		std::copy(std::begin(new_name), std::end(new_name), destination_iterator);
 
-		elf._section_table.get_section_at_index(index).set_size(elf._section_table.get_section_at_index(index).get_size() + std::size(new_name));
+		buffer.resize(buffer.get_size() + new_name.size() + 1);
+
+		auto size_of_new_name_with_zero_terminator = new_name.size() + 1;
+		char const* begin_new_name_with_zero_terminator= new_name.c_str();
+		char const* end_new_name_with_zero_terminator = begin_new_name_with_zero_terminator + size_of_new_name_with_zero_terminator;
+
+		std::copy(begin_new_name_with_zero_terminator, end_new_name_with_zero_terminator, existing_iterator);
+		
+		 
+		elf._section_table.get_section_at_index(index).set_size(elf._section_table.get_section_at_index(index).get_size() + size_of_new_name_with_zero_terminator);
 		elf._section_table.get_section_at_index(index_to_lookup).set_name(offset);
 
 		auto minimum_offset_for_section_header =

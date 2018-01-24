@@ -521,7 +521,7 @@ BOOST_AUTO_TEST_CASE(set_section_new_names)
 		N_Core::set_name(elf, i, reversed_name);
 	}
 
-	BOOST_CHECK_EQUAL(N_Core::get_name(elf, 1), ".pretni"); //sanity check
+	BOOST_CHECK_EQUAL(N_Core::get_name(elf, 1), "pretni."); //sanity check
 
 	N_Core::dump_to_file("testfiles/reversedsleep", elf);
 
