@@ -163,7 +163,35 @@ namespace N_Core
 			explicit Table() {}
 
 			Section<T>& get_section_at_index(Index index) { return _sections.at(index); }
+
 			Section<T> const& get_section_at_index(Index index) const { return _sections.at(index); }
+
+			Section<T>  const& get_section_by_offset(uint64_t offset)const
+			{
+				auto it = std::find_if(
+					std::begin(_sections),
+					std::end(_sections),
+					[](auto const& section) {return section.get_offset() == offset; });
+
+				if (it == std::end(_sections))
+				{
+					throw std::invalid_argument("No sections found with offset");
+				}
+
+			}
+
+			Index get_section_index_by_offset(uint64_t offset) const
+			{
+				for (auto i = 0; i < std::size(_sections); i++)
+				{
+					if (get_section_at_index(i).get_offset() == offset)
+					{
+						return i;
+					}
+				}
+				throw std::invalid_argument("No section found with offset");
+			}
+
 	private:
 			Index add_section_to_back(Section<T>&& section)
 			{

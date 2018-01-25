@@ -538,7 +538,7 @@ BOOST_AUTO_TEST_CASE(is_valid_layout)
 {
 	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 
-	N_Core::is_valid_layout(elf);
+	BOOST_CHECK_EQUAL(N_Core::is_valid_layout(elf).empty(), true);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

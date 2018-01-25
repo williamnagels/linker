@@ -359,6 +359,27 @@ namespace N_Core
 		return { elf };
 	}
 
+
+	namespace
+	{
+		template <typename T>
+		struct _TTY
+		{
+			_TTY():_offset(0),_size(0) {}
+			_TTY(T const& t):
+				_offset(t.get_offset())
+				,_size(t.get_size())
+			{
+
+			}
+
+			
+			decltype(std::declval<T>().get_offset()) _offset;
+			decltype(_offset) get_offset() const { return _offset; }
+			decltype(std::declval<T>().get_size()) _size;
+			decltype(_size) get_size() const { return _size; }
+		};
+	}
 	// @brief get entities containing a section.
 	// 
 	// Verifies if no sections overlap.
@@ -375,7 +396,35 @@ namespace N_Core
 	template <typename ElfTy>
 	std::vector<N_Core::N_Section::Index> is_valid_layout(N_Core::Elf<ElfTy> const& elf)
 	{
+		using T = N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr>;
+
+		std::vector<_TTY<T>> vec;
+		vec.reserve(std::size(elf._section_table._sections));
+
 		std::vector<N_Core::N_Section::Index> indices;
+
+		std::partial_sort_copy(
+			std::begin(elf._section_table._sections)
+			, std::end(elf._section_table._sections)
+			, std::begin(vec)
+			, std::end(vec)
+			, [](auto const& a, auto const& b) {return a.get_offset() < b.get_offset(); });
+
+
+		auto it = std::begin(vec);
+		std::vector<N_Section::Index> adjacent_elements;
+		do
+		{
+			it = std::adjacent_find(
+				it,
+				std::end(vec),
+				[](auto const& a, auto const& b) {return a.get_offset() + a.get_size() >= b.get_offset(); });
+
+			if (it != std::end(vec))
+			{
+				adjacent_elements.push_back(elf._section_table.get_section_index_by_offset(it->get_offset()));
+			}
+		} while (it != std::end(vec));
 
 
 		return indices;
