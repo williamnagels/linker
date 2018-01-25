@@ -531,7 +531,7 @@ BOOST_AUTO_TEST_CASE(set_section_new_names)
 	{
 		std::string origin = N_Core::get_name(elf, i);
 		std::string fresh = N_Core::get_name(elf2, i);
-		//BOOST_CHECK_EQUAL(fresh, origin);
+		BOOST_CHECK_EQUAL(fresh, origin);
 	}
 }
 BOOST_AUTO_TEST_CASE(is_valid_layout)
