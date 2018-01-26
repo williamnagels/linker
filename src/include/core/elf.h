@@ -368,7 +368,7 @@ namespace N_Core
 			_TTY():_offset(0),_size(0) {}
 			_TTY(T const& t):
 				_offset(t.get_offset())
-				,_size(t.get_size())
+				,_size(t.get_size_in_file())
 			{
 
 			}
@@ -379,7 +379,14 @@ namespace N_Core
 			decltype(std::declval<T>().get_size()) _size;
 			decltype(_size) get_size() const { return _size; }
 		};
+
+		template <typename T>
+		bool operator < (_TTY<T> const& a, _TTY<T> const& b)
+		{
+			return a.get_offset() < b.get_offset();
+		}
 	}
+
 	// @brief get entities containing a section.
 	// 
 	// Verifies if no sections overlap.
@@ -399,32 +406,35 @@ namespace N_Core
 		using T = N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr>;
 
 		std::vector<_TTY<T>> vec;
-		vec.reserve(std::size(elf._section_table._sections));
-
-		std::vector<N_Core::N_Section::Index> indices;
+		vec.resize(std::size(elf._section_table._sections));
 
 		std::partial_sort_copy(
 			std::begin(elf._section_table._sections)
 			, std::end(elf._section_table._sections)
 			, std::begin(vec)
 			, std::end(vec)
-			, [](auto const& a, auto const& b) {return a.get_offset() < b.get_offset(); });
+			, std::less<_TTY<T>>());
 
 
 		auto it = std::begin(vec);
-		std::vector<N_Section::Index> adjacent_elements;
-		do
+		std::vector<N_Section::Index> indices;
+		while (true)
 		{
 			it = std::adjacent_find(
 				it,
 				std::end(vec),
-				[](auto const& a, auto const& b) {return a.get_offset() + a.get_size() >= b.get_offset(); });
+				[](auto const& a, auto const& b) 
+				{
+					return a.get_size() + a.get_offset() >b.get_offset();
+				});
 
-			if (it != std::end(vec))
+			if (it == std::end(vec))
 			{
-				adjacent_elements.push_back(elf._section_table.get_section_index_by_offset(it->get_offset()));
+				break;
 			}
-		} while (it != std::end(vec));
+			indices.push_back(elf._section_table.get_section_index_by_offset(it->get_offset()));
+			it = std::next(it);
+		} 
 
 
 		return indices;

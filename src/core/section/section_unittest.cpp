@@ -539,6 +539,14 @@ BOOST_AUTO_TEST_CASE(is_valid_layout)
 	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 
 	BOOST_CHECK_EQUAL(N_Core::is_valid_layout(elf).empty(), true);
+
+	std::vector<N_Core::N_Section::Index> invalid_sections = { 0, 1, 6, 8, 10, 24};
+	
+	for (const auto& section : invalid_sections)
+		elf._section_table.get_section_at_index(section).set_size(std::numeric_limits<uint64_t>::max()>>1);
+
+	BOOST_CHECK_EQUAL(N_Core::is_valid_layout(elf), invalid_sections);
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()

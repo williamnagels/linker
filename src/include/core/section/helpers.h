@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include <vector>
 namespace N_Core
 {
 	namespace N_Section
@@ -26,6 +27,11 @@ namespace N_Core
 		Index operator ++(Index& idx, int);
 		Index& operator++(Index& idx);
 
+		using IndexList = std::vector<Index>;
+
+		bool operator==(Index const& a, Index const& b);
+		std::ostream& operator<<(std::ostream& os, Index);
+		std::ostream& operator<<(std::ostream& os, IndexList);
 		// @brief Wether or not the index is the wildcard index.
 		// 
 		// Used in the API to check if the index of some section is the wildcard section.
