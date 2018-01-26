@@ -365,15 +365,19 @@ namespace N_Core
 		template <typename T>
 		struct _TTY
 		{
-			_TTY():_offset(0),_size(0) {}
-			_TTY(T const& t):
+			_TTY():_offset(0),_size(0),_index(0) {}
+
+
+			_TTY(T const& t, N_Core::N_Section::Index index):
 				_offset(t.get_offset())
 				,_size(t.get_size_in_file())
+				,_index(index)
 			{
 
 			}
 
-			
+			N_Core::N_Section::Index _index;
+			decltype(_index) get_index() { return _index; }
 			decltype(std::declval<T>().get_offset()) _offset;
 			decltype(_offset) get_offset() const { return _offset; }
 			decltype(std::declval<T>().get_size()) _size;
@@ -405,34 +409,29 @@ namespace N_Core
 	{
 		using T = N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr>;
 
-		std::vector<_TTY<T>> vec;
-		vec.resize(std::size(elf._section_table._sections));
+		std::vector<_TTY<T>> vec(std::size(elf._section_table._sections), _TTY<T>());
 
-		std::partial_sort_copy(
+		std::vector<N_Section::Index> indices;
+		N_Core::N_Section::Index index(0);
+		std::transform(
 			std::begin(elf._section_table._sections)
 			, std::end(elf._section_table._sections)
-			, std::begin(vec)
-			, std::end(vec)
-			, std::less<_TTY<T>>());
+			, std::back_inserter(vec)
+			, [&index](auto const& t) { return _TTY<T>(t, index++); });
 
+		std::sort(std::begin(indices), std::end(indices));
 
 		auto it = std::begin(vec);
-		std::vector<N_Section::Index> indices;
+		
 		while (true)
 		{
-			it = std::adjacent_find(
-				it,
-				std::end(vec),
-				[](auto const& a, auto const& b) 
-				{
-					return a.get_size() + a.get_offset() >b.get_offset();
-				});
+			it = std::adjacent_find(it, std::end(vec),
+					[](auto const& a, auto const& b) {return a.get_size() + a.get_offset() >b.get_offset();});
 
-			if (it == std::end(vec))
-			{
-				break;
-			}
-			indices.push_back(elf._section_table.get_section_index_by_offset(it->get_offset()));
+			if (it == std::end(vec)) break;
+
+			indices.push_back(it->get_index());
+
 			it = std::next(it);
 		} 
 

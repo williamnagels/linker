@@ -180,18 +180,6 @@ namespace N_Core
 
 			}
 
-			Index get_section_index_by_offset(uint64_t offset) const
-			{
-				for (auto i = 0; i < std::size(_sections); i++)
-				{
-					if (get_section_at_index(i).get_offset() == offset)
-					{
-						return i;
-					}
-				}
-				throw std::invalid_argument("No section found with offset");
-			}
-
 	private:
 			Index add_section_to_back(Section<T>&& section)
 			{
