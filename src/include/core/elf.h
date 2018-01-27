@@ -92,21 +92,11 @@ namespace N_Core
 		// The header is templated because based on type type of elf(64 bit vs 32bit) a different
 		// memory map (different member variables) is selected.
 		//
-		N_Header::Header<
-			std::conditional_t<
-				std::is_same_v<V, Bit64>
-				, N_Header::Elf64_Ehdr
-				, N_Header::Elf32_Ehdr
-			>
-		> _header;
+		using HeaderTy = N_Header::Header< std::conditional_t< std::is_same_v<V, Bit64> , N_Header::Elf64_Ehdr, N_Header::Elf32_Ehdr>>;
+		HeaderTy _header;
 
-		N_Section::Table<
-			std::conditional_t<
-				std::is_same_v<V, Bit64>
-				, N_Section::Elf64_Shdr
-				, N_Section::Elf32_Shdr
-			>
-		> _section_table;
+		using SectionTableTy = N_Section::Table < std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr>>;
+        SectionTableTy _section_table;
 
 		// @brief Returns true if the elf is loaded from disk
 		//
@@ -194,12 +184,7 @@ namespace N_Core
 		//
 		// @returns Index of the section. Only usefull if 'index' param is not wildcard else it will be the same.
 		//
-		using X = std::conditional_t<
-			std::is_same_v<V, Bit64>
-			, N_Section::Elf64_Shdr
-			, N_Section::Elf32_Shdr
-		>;
-		N_Core::N_Section::Index add_section(N_Core::N_Section::Section<X>&& section, N_Core::N_Section::Index index)
+		N_Core::N_Section::Index add_section(typename SectionTableTy::SectionTy && section, N_Core::N_Section::Index index)
 		{
 
 			_header.set_section_header_number_of_entries(_header.get_section_header_number_of_entries() + 1);
@@ -405,19 +390,19 @@ namespace N_Core
 	// @returns a list of indices that are overlap with the start point of another section.
 	// 
 	template <typename ElfTy>
-	std::vector<N_Core::N_Section::Index> is_valid_layout(N_Core::Elf<ElfTy> const& elf)
+	N_Core::N_Section::IndexList is_valid_layout(N_Core::Elf<ElfTy> const& elf)
 	{
-		using T = N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr>;
+		using T = typename _TTY<typename N_Core::Elf<ElfTy>::SectionTableTy::SectionTy>;
 
-		std::vector<_TTY<T>> vec(std::size(elf._section_table._sections), _TTY<T>());
+		std::vector<T> vec(std::size(elf._section_table._sections), T());
 
-		std::vector<N_Section::Index> indices;
+		N_Core::N_Section::IndexList indices;
 		N_Core::N_Section::Index index(0);
 		std::transform(
 			std::begin(elf._section_table._sections)
 			, std::end(elf._section_table._sections)
 			, std::back_inserter(vec)
-			, [&index](auto const& t) { return _TTY<T>(t, index++); });
+			, [&index](auto const& t) { return T(t, index++); });
 
 		std::sort(std::begin(indices), std::end(indices));
 
@@ -429,9 +414,7 @@ namespace N_Core
 					[](auto const& a, auto const& b) {return a.get_size() + a.get_offset() >b.get_offset();});
 
 			if (it == std::end(vec)) break;
-
 			indices.push_back(it->get_index());
-
 			it = std::next(it);
 		} 
 

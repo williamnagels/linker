@@ -27,6 +27,7 @@ namespace N_Core
 		class Table
 		{
 		public:
+			using SectionTy = Section<T>;
 			// @brief Add section to the section table.
 			//
 			// @param index		index of section to add. See create_section(...), 
@@ -41,7 +42,7 @@ namespace N_Core
 			// placement of sections in the elf. See get_offset() and get_size()
 			// to find the location of the section in the file.
 			//
-			Index add_section(Section<T>&& section, Index index = Index::Wildcard)
+			Index add_section(SectionTy&& section, Index index = Index::Wildcard)
 			{ 
 				if (is_wildcard(index))
 				{
@@ -102,7 +103,7 @@ namespace N_Core
 				auto element_to_delete = _sections.begin() + index;
 				_sections.erase(_sections.begin() + index);
 			}
-			std::vector< Section<T> > _sections; ///< list of sections assigned to this table.
+			std::vector<SectionTy> _sections; ///< list of sections assigned to this table.
 
 			~Table() {}
 
@@ -162,32 +163,17 @@ namespace N_Core
 			// 
 			explicit Table() {}
 
-			Section<T>& get_section_at_index(Index index) { return _sections.at(index); }
-
-			Section<T> const& get_section_at_index(Index index) const { return _sections.at(index); }
-
-			Section<T>  const& get_section_by_offset(uint64_t offset)const
-			{
-				auto it = std::find_if(
-					std::begin(_sections),
-					std::end(_sections),
-					[](auto const& section) {return section.get_offset() == offset; });
-
-				if (it == std::end(_sections))
-				{
-					throw std::invalid_argument("No sections found with offset");
-				}
-
-			}
+			SectionTy& get_section_at_index(Index index) { return _sections.at(index); }
+			SectionTy const& get_section_at_index(Index index) const { return _sections.at(index); }
 
 	private:
-			Index add_section_to_back(Section<T>&& section)
+			Index add_section_to_back(SectionTy&& section)
 			{
 				_sections.push_back(std::move(section));
 
 				return _sections.size() - 1;
 			}
-			Index add_section_at_index(Section<T>&& section, Index index)
+			Index add_section_at_index(SectionTy&& section, Index index)
 			{
 				decltype(_sections)::iterator iterator = std::begin(_sections);
 				std::advance(iterator, index);
