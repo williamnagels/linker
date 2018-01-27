@@ -1,6 +1,7 @@
 #pragma once
 #include "src/include/core/general.h"
 #include "src/include/core/section/section_member_types.h"
+#include "src/include/core/symtab/symbol_table.h"
 
 #include <variant>
 #include <functional>
@@ -37,9 +38,12 @@ namespace N_Core
 			}
 
 		public:
+			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Elf64_Shdr>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
+
 			MMap::Container<T> _header_entry;
 			MMap::Container<uint8_t> _content;
 
+			std::variant<BinaryBlob, SymbolTableTy> _interpreted_content;
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
@@ -100,7 +104,7 @@ namespace N_Core
 		template <typename T, typename ItTy>
 		void update(Section<T>& section, ItTy begin,ItTy end)
 		{
-			section._content.resize(end-begin);
+			section._content.resize(std::distance(begin, end));
 			std::copy(begin, end, std::begin(section._content));
 		}
 	}

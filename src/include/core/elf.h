@@ -262,8 +262,8 @@ namespace N_Core
 	{
 		N_Core::N_Section::Index index = elf._header.get_section_index_that_contains_strings();
 	
-		auto const& buffer = elf._section_table.get_section_at_index(index)._content;
-		std::size_t offset = elf._section_table.get_section_at_index(index_to_lookup).get_name();
+		auto const& buffer = elf._section_table[index]._content;
+		std::size_t offset = elf._section_table[index_to_lookup].get_name();
 
 		return std::string(reinterpret_cast<char const*>(&buffer[offset]));
 	}
@@ -286,14 +286,14 @@ namespace N_Core
 		
 		N_Core::N_Section::Index index = elf._header.get_section_index_that_contains_strings();
 
-		auto& buffer = elf._section_table.get_section_at_index(index)._content;
+		auto& buffer = elf._section_table[index]._content;
 
 		auto existing_iterator = std::search(std::begin(buffer), std::end(buffer), std::begin(new_name), std::end(new_name));
 
 		// a section with that name already exists (or part of the name). Avoid adding the name again to the buffer.
 		if (existing_iterator != buffer.end())
 		{
-			return elf._section_table.get_section_at_index(index_to_lookup).set_name(std::distance(std::begin(buffer), existing_iterator));
+			return elf._section_table[index_to_lookup].set_name(std::distance(std::begin(buffer), existing_iterator));
 		}
 
 		auto offset = buffer.get_size();
@@ -308,12 +308,12 @@ namespace N_Core
 		std::copy(begin_new_name_with_zero_terminator, end_new_name_with_zero_terminator, existing_iterator);
 		
 		 
-		elf._section_table.get_section_at_index(index).set_size(elf._section_table.get_section_at_index(index).get_size() + size_of_new_name_with_zero_terminator);
-		elf._section_table.get_section_at_index(index_to_lookup).set_name(offset);
+		elf._section_table[index].set_size(elf._section_table[index].get_size() + size_of_new_name_with_zero_terminator);
+		elf._section_table[index_to_lookup].set_name(offset);
 
 		auto minimum_offset_for_section_header =
-			elf._section_table.get_section_at_index(index).get_offset() +
-			elf._section_table.get_section_at_index(index).get_size_in_file();
+			elf._section_table[index].get_offset() +
+			elf._section_table[index].get_size_in_file();
 
 		if (elf._header.get_section_header_offset() <= minimum_offset_for_section_header)
 		{

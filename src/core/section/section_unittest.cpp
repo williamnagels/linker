@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(size_in_header_and_in_memory_sanity_check)
 	auto size_of_section_21 = 0x1d0;
 	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 	
-	BOOST_CHECK_EQUAL(elf._section_table.get_section_at_index(21).get_size(), size_of_section_21);
+	BOOST_CHECK_EQUAL(elf._section_table[21].get_size(), size_of_section_21);
 	//BOOST_CHECK_EQUAL(elf._section_table._sections[21]->get_content().size(), size_of_section_21);
 }
 
@@ -305,21 +305,21 @@ BOOST_AUTO_TEST_CASE(wildcard_add_section)
 	auto index = elf.add_section(N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr>(), N_Core::N_Section::Index::Wildcard);
 
 	auto additional_offset = 1000;
-	elf._section_table.get_section_at_index(index).set_offset(current_size+ additional_offset);
+	elf._section_table[index].set_offset(current_size+ additional_offset);
 
 	std::array<uint8_t, 1234> content;
 
 	std::iota(std::begin(content), std::end(content), 0);
 
-	elf._section_table.get_section_at_index(index).set_size(content.size());
+	elf._section_table[index].set_size(content.size());
 
-	update(elf._section_table.get_section_at_index(index), std::begin(content), std::end(content));
+	update(elf._section_table[index], std::begin(content), std::end(content));
 
 	std::transform
 	(
 		std::begin(content),
 		std::end(content),
-		std::begin(elf._section_table.get_section_at_index(index)._content),
+		std::begin(elf._section_table[index]._content),
 		N_Core::VoidIterator<>(),
 		[](auto const& element, auto const& element2)
 		{
@@ -339,7 +339,7 @@ BOOST_AUTO_TEST_CASE(wildcard_add_section)
 	BOOST_CHECK_EQUAL(original_section_table_size + 1, elf2._section_table._sections.size());
 	BOOST_CHECK_EQUAL(original_number_of_section_header_entries + 1, elf2._header.get_section_header_number_of_entries());
 
-	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table.get_section_at_index(index);
+	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table[index];
 
 	BOOST_CHECK_EQUAL(std::memcmp(&section._content[0], &content[0], content.size()), 0);
 
@@ -359,21 +359,21 @@ BOOST_AUTO_TEST_CASE(specific_index_section)
 	BOOST_CHECK_EQUAL((int)index, 10);
 
 	auto additional_offset = 1000;
-	elf._section_table.get_section_at_index(index).set_offset(current_size + additional_offset);
+	elf._section_table[index].set_offset(current_size + additional_offset);
 
 	std::array<uint8_t, 7777> content;
 
 	std::iota(std::begin(content), std::end(content), 0);
 
-	elf._section_table.get_section_at_index(index).set_size(content.size());
+	elf._section_table[index].set_size(content.size());
 
-	update(elf._section_table.get_section_at_index(index), std::begin(content), std::end(content));
+	update(elf._section_table[index], std::begin(content), std::end(content));
 
 	std::transform
 	(
 		std::begin(content),
 		std::end(content),
-		std::begin(elf._section_table.get_section_at_index(index)._content),
+		std::begin(elf._section_table[index]._content),
 		N_Core::VoidIterator<>(),
 		[](auto const& element, auto const& element2)
 	{
@@ -397,7 +397,7 @@ BOOST_AUTO_TEST_CASE(specific_index_section)
 	BOOST_CHECK_EQUAL(original_section_table_size + 1, elf2._section_table._sections.size());
 	BOOST_CHECK_EQUAL(original_number_of_section_header_entries + 1, elf2._header.get_section_header_number_of_entries());
 
-	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table.get_section_at_index(index);
+	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table[index];
 
 	BOOST_CHECK_EQUAL(std::memcmp(&section._content[0], &content[0], content.size()), 0);
 
@@ -484,7 +484,7 @@ BOOST_AUTO_TEST_CASE(set_section_name_already_exists)
 	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 
 	auto idx = elf._header.get_section_index_that_contains_strings();
-	auto size_in_file = elf._section_table.get_section_at_index(idx).get_size_in_file();
+	auto size_in_file = elf._section_table[idx].get_size_in_file();
 
 	for (auto i = 0; i < elf._section_table._sections.size(); i++)
 	{
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE(set_section_name_already_exists)
 		std::string name_in_file = N_Core::get_name(elf, i);
 		BOOST_CHECK_EQUAL(name_in_file, ".interp");
 	}
-	auto size_in_file_2 = elf._section_table.get_section_at_index(idx).get_size_in_file();
+	auto size_in_file_2 = elf._section_table[idx].get_size_in_file();
 
 	BOOST_CHECK_EQUAL(size_in_file, size_in_file_2);
 
@@ -512,7 +512,7 @@ BOOST_AUTO_TEST_CASE(set_section_new_names)
 	N_Core::Elf<N_Core::Bit64> elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 
 	auto idx = elf._header.get_section_index_that_contains_strings();
-	auto size_in_file = elf._section_table.get_section_at_index(idx).get_size_in_file();
+	auto size_in_file = elf._section_table[idx].get_size_in_file();
 
 	for (auto i = 0; i < elf._section_table._sections.size(); i++)
 	{
@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE(is_valid_layout)
 	std::vector<N_Core::N_Section::Index> invalid_sections = { 0, 1, 6, 8, 10, 24};
 	
 	for (const auto& section : invalid_sections)
-		elf._section_table.get_section_at_index(section).set_size(std::numeric_limits<uint64_t>::max()>>1);
+		elf._section_table[section].set_size(std::numeric_limits<uint64_t>::max()>>1);
 
 	BOOST_CHECK_EQUAL(N_Core::is_valid_layout(elf), invalid_sections);
 

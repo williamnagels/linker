@@ -163,9 +163,18 @@ namespace N_Core
 			// 
 			explicit Table() {}
 
-			SectionTy& get_section_at_index(Index index) { return _sections.at(index); }
-			SectionTy const& get_section_at_index(Index index) const { return _sections.at(index); }
+			//SectionTy& get_section_at_index(Index index) { return _sections.at(index); }
+			//SectionTy const& get_section_at_index(Index index) const { return _sections.at(index); }
 
+			SectionTy& operator[](Index index)
+			{
+				if (!are_valid_indices<DoesNotSupportWildCard>(index))
+				{
+					throw std::invalid_argument(invalid_section_index);
+				}
+				return _sections.at(index);
+			}
+			SectionTy const& operator[](Index index) const { return const_cast<Table<T>*>(this)->operator[](index); }
 	private:
 			Index add_section_to_back(SectionTy&& section)
 			{
@@ -185,19 +194,19 @@ namespace N_Core
 			struct SupportsWildcard {};
 			struct DoesNotSupportWildCard {};
 			template <typename V>
-			std::enable_if_t<std::is_same_v<V, DoesNotSupportWildCard>, bool> is_valid_index(Index index)
+			std::enable_if_t<std::is_same_v<V, DoesNotSupportWildCard>, bool> is_valid_index(Index index)const
 			{
 				return index < _sections.size();
 			}
 
 			template <typename V>
-			std::enable_if_t<std::is_same_v<V, SupportsWildcard>, bool> is_valid_index(Index index)
+			std::enable_if_t<std::is_same_v<V, SupportsWildcard>, bool> is_valid_index(Index index) const
 			{
 				return is_valid_index<DoesNotSupportWildCard>(index) || (index == Index::Wildcard);
 			}
 
 			template <typename V, typename ...G>
-			bool are_valid_indices(G... indices)
+			bool are_valid_indices(G... indices) const
 			{
 				bool rc;
 				for (auto&& x : { indices... })

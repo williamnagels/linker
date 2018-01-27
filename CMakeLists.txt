@@ -48,10 +48,6 @@ add_library(linker_core STATIC
 	# symbol table
 	src/core/symtab/symbol.cpp
 	src/core/symtab/symbol_table.cpp
-	src/core/symtab/symbol_parse_strategy.cpp
-
-	# header
-	src/core/header/header.cpp
 
 	#section
 	src/core/section/helpers.cpp

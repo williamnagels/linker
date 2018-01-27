@@ -92,4 +92,31 @@ namespace N_Core
 		T * t;
 	};
 
+
+	/*
+	struct SupportsWildcard {};
+	struct DoesNotSupportWildCard {};
+	template <typename ContainerTy, typename V>
+	std::enable_if_t<std::is_same_v<V, DoesNotSupportWildCard>, bool> is_valid_index(ContainerTy container, Index index)const
+	{
+		return index < container.size();
+	}
+
+	template <typename V>
+	std::enable_if_t<std::is_same_v<V, SupportsWildcard>, bool> is_valid_index(Index index) const
+	{
+		return is_valid_index<DoesNotSupportWildCard>(container, index) || (index == Index::Wildcard);
+	}
+
+	template <typename V, typename ...G>
+	bool are_valid_indices(G... indices) const
+	{
+		bool rc;
+		for (auto&& x : { indices... })
+		{
+			rc |= is_valid_index<V>(x);
+		}
+		return rc;
+	}
+	*/
 };
