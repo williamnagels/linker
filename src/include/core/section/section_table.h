@@ -2,6 +2,7 @@
 #include "src/include/core/section/helpers.h"
 #include "src/include/core/section/section_member_types.h"
 #include "src/include/core/section/section.h"
+#include "src/include/core/general.h"
 #include <vector>
 #include <memory>
 #include <utility>
@@ -23,11 +24,26 @@ namespace N_Core
 		// of section objects may change if the capacity of the
 		// vector changes. Do not store references/pointers to sections objects.
 		//
-		template <typename T>
+		template <typename T, typename SectionTy_=Section<T>>
 		class Table
 		{
+		private:
+			using InternalStorageTy = std::vector<SectionTy_>;
+			InternalStorageTy _sections; ///< list of sections assigned to this table.
 		public:
-			using SectionTy = Section<T>;
+			using SectionTy = SectionTy_;
+			// @brief Get numbers of sections in the section table.
+			//
+			// @returns number of sections in the section table
+			//
+			std::size_t size() const { return _sections.size(); }
+
+			typename InternalStorageTy::iterator begin() { return _sections.begin(); }
+			typename InternalStorageTy::iterator end() { return _sections.end(); }
+			typename InternalStorageTy::const_iterator begin() const { return _sections.begin(); }
+			typename InternalStorageTy::const_iterator end() const { return _sections.end(); }
+
+
 			// @brief Add section to the section table.
 			//
 			// @param index		index of section to add. See create_section(...), 
@@ -84,7 +100,7 @@ namespace N_Core
 			//
 			void remove_section(Index index, SectionRemovalPolicy policy)
 			{
-				if (!is_valid_index<DoesNotSupportWildCard>(index))
+				if (!is_valid_index<typename DoesNotSupportWildCard>(_sections, index))
 				{
 					throw std::range_error(invalid_section_index);
 				}
@@ -103,7 +119,6 @@ namespace N_Core
 				auto element_to_delete = _sections.begin() + index;
 				_sections.erase(_sections.begin() + index);
 			}
-			std::vector<SectionTy> _sections; ///< list of sections assigned to this table.
 
 			~Table() {}
 
@@ -163,18 +178,30 @@ namespace N_Core
 			// 
 			explicit Table() {}
 
-			//SectionTy& get_section_at_index(Index index) { return _sections.at(index); }
-			//SectionTy const& get_section_at_index(Index index) const { return _sections.at(index); }
-
+			// @brief Get section at an index
+			// 
+			// @param index	0 is the first section.
+			//
+			// @throws std::invalid_argument if no section with the index exists.
+			//
 			SectionTy& operator[](Index index)
 			{
-				if (!are_valid_indices<DoesNotSupportWildCard>(index))
+				if (!are_valid_indices<typename DoesNotSupportWildCard>(_sections, index))
 				{
 					throw std::invalid_argument(invalid_section_index);
 				}
 				return _sections.at(index);
 			}
+
+			// @brief Get section at an index
+			// 
+			// @param index	0 is the first section.
+			//
+			// @throws std::invalid_argument if no section with the index exists.
+			//
 			SectionTy const& operator[](Index index) const { return const_cast<Table<T>*>(this)->operator[](index); }
+
+
 	private:
 			Index add_section_to_back(SectionTy&& section)
 			{
@@ -190,30 +217,6 @@ namespace N_Core
 				_sections.insert(iterator, std::move(section));
 
 				return index;
-			}
-			struct SupportsWildcard {};
-			struct DoesNotSupportWildCard {};
-			template <typename V>
-			std::enable_if_t<std::is_same_v<V, DoesNotSupportWildCard>, bool> is_valid_index(Index index)const
-			{
-				return index < _sections.size();
-			}
-
-			template <typename V>
-			std::enable_if_t<std::is_same_v<V, SupportsWildcard>, bool> is_valid_index(Index index) const
-			{
-				return is_valid_index<DoesNotSupportWildCard>(index) || (index == Index::Wildcard);
-			}
-
-			template <typename V, typename ...G>
-			bool are_valid_indices(G... indices) const
-			{
-				bool rc;
-				for (auto&& x : { indices... })
-				{
-					rc |= is_valid_index<V>(x);
-				}
-				return rc;
 			}
 		};
 
@@ -234,7 +237,7 @@ namespace N_Core
 		{
 			std::streampos start_of_section_table = stream.tellp();
 			int section_index = 0;
-			for (auto const& section : table._sections)
+			for (auto const& section : table)
 			{
 				stream.seekp(start_of_section_table);
 				dump(stream, section, section_index);

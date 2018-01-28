@@ -163,7 +163,7 @@ namespace N_Core
 		//
 		void remove_section(uint16_t index, N_Core::N_Section::SectionRemovalPolicy policy)
 		{
-			auto offset_to_subtract = _section_table._sections.at(index).get_size_in_file();
+			auto offset_to_subtract = _section_table[index].get_size_in_file();
 
 			//throws if index is not valid that's why offset must first be retrieved.
 			_section_table.remove_section(index, policy);
@@ -184,7 +184,7 @@ namespace N_Core
 		//
 		// @returns Index of the section. Only usefull if 'index' param is not wildcard else it will be the same.
 		//
-		N_Core::N_Section::Index add_section(typename SectionTableTy::SectionTy && section, N_Core::N_Section::Index index)
+		N_Core::Index add_section(typename SectionTableTy::SectionTy && section, N_Core::Index index)
 		{
 
 			_header.set_section_header_number_of_entries(_header.get_section_header_number_of_entries() + 1);
@@ -258,9 +258,9 @@ namespace N_Core
 	// @param index_to_lookup	Index of the section to retrieve.
 	// 
 	template<typename ElfTy>
-	std::string get_name(N_Core::Elf<ElfTy> const& elf, N_Core::N_Section::Index index_to_lookup)
+	std::string get_name(N_Core::Elf<ElfTy> const& elf, N_Core::Index index_to_lookup)
 	{
-		N_Core::N_Section::Index index = elf._header.get_section_index_that_contains_strings();
+		N_Core::Index index = elf._header.get_section_index_that_contains_strings();
 	
 		auto const& buffer = elf._section_table[index]._content;
 		std::size_t offset = elf._section_table[index_to_lookup].get_name();
@@ -281,10 +281,10 @@ namespace N_Core
 	// @param new_name			New name of the section.
 	// 
 	template<typename ElfTy>
-	void set_name(N_Core::Elf<ElfTy>& elf, N_Core::N_Section::Index index_to_lookup, std::string new_name)
+	void set_name(N_Core::Elf<ElfTy>& elf, N_Core::Index index_to_lookup, std::string new_name)
 	{
 		
-		N_Core::N_Section::Index index = elf._header.get_section_index_that_contains_strings();
+		N_Core::Index index = elf._header.get_section_index_that_contains_strings();
 
 		auto& buffer = elf._section_table[index]._content;
 
@@ -336,7 +336,7 @@ namespace N_Core
 	// @returns a list of segments/elf that contain the section.
 	// 
 	template <typename ElfTy>
-	std::vector<std::variant<N_Core::Elf<ElfTy>&>> get_container(N_Core::Elf<ElfTy> const& elf, N_Core::N_Section::Index index_to_lookup)
+	std::vector<std::variant<N_Core::Elf<ElfTy>&>> get_container(N_Core::Elf<ElfTy> const& elf, N_Core::Index index_to_lookup)
 	{
 		auto const& section = elf._section_table.get_section_at_index(idx);
 		auto offset_in_file = section.get_offset();
@@ -353,7 +353,7 @@ namespace N_Core
 			_TTY():_offset(0),_size(0),_index(0) {}
 
 
-			_TTY(T const& t, N_Core::N_Section::Index index):
+			_TTY(T const& t, N_Core::Index index):
 				_offset(t.get_offset())
 				,_size(t.get_size_in_file())
 				,_index(index)
@@ -361,7 +361,7 @@ namespace N_Core
 
 			}
 
-			N_Core::N_Section::Index _index;
+			N_Core::Index _index;
 			decltype(_index) get_index() { return _index; }
 			decltype(std::declval<T>().get_offset()) _offset;
 			decltype(_offset) get_offset() const { return _offset; }
@@ -390,17 +390,17 @@ namespace N_Core
 	// @returns a list of indices that are overlap with the start point of another section.
 	// 
 	template <typename ElfTy>
-	N_Core::N_Section::IndexList is_valid_layout(N_Core::Elf<ElfTy> const& elf)
+	N_Core::IndexList is_valid_layout(N_Core::Elf<ElfTy> const& elf)
 	{
 		using T = typename _TTY<typename N_Core::Elf<ElfTy>::SectionTableTy::SectionTy>;
 
-		std::vector<T> vec(std::size(elf._section_table._sections), T());
+		std::vector<T> vec(std::size(elf._section_table), T());
 
-		N_Core::N_Section::IndexList indices;
-		N_Core::N_Section::Index index(0);
+		N_Core::IndexList indices;
+		N_Core::Index index(0);
 		std::transform(
-			std::begin(elf._section_table._sections)
-			, std::end(elf._section_table._sections)
+			std::begin(elf._section_table)
+			, std::end(elf._section_table)
 			, std::back_inserter(vec)
 			, [&index](auto const& t) { return T(t, index++); });
 

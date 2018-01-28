@@ -93,30 +93,60 @@ namespace N_Core
 	};
 
 
-	/*
+	// @brief Section identifier.
+	// 
+	// Identifies a unique section in the section table. Used in various API functions.
+	//
+	// Note: First section has index 0.
+	//
+	struct Index
+	{
+		using T = uint16_t;
+		T _value;
+		static const T Wildcard = std::numeric_limits<T>::max();
+		operator decltype(_value)(){ return _value; }
+
+			Index(T value) : _value(value) {}
+	};
+
+	Index operator ++(Index& idx, int);
+	Index& operator++(Index& idx);
+
+	using IndexList = std::vector<Index>;
+
+	bool operator==(Index const& a, Index const& b);
+	std::ostream& operator<<(std::ostream& os, Index);
+	std::ostream& operator<<(std::ostream& os, IndexList);
+	// @brief Wether or not the index is the wildcard index.
+	// 
+	// Used in the API to check if the index of some section is the wildcard section.
+	//
+	bool is_wildcard(Index index);
+
+	
 	struct SupportsWildcard {};
 	struct DoesNotSupportWildCard {};
-	template <typename ContainerTy, typename V>
-	std::enable_if_t<std::is_same_v<V, DoesNotSupportWildCard>, bool> is_valid_index(ContainerTy container, Index index)const
+	template <typename V, typename ContainerTy>
+	std::enable_if_t<std::is_same_v<V, DoesNotSupportWildCard>, bool> is_valid_index(ContainerTy const& container, Index index)
 	{
 		return index < container.size();
 	}
 
-	template <typename V>
-	std::enable_if_t<std::is_same_v<V, SupportsWildcard>, bool> is_valid_index(Index index) const
+	template <typename V, typename ContainerTy>
+	std::enable_if_t<std::is_same_v<V, SupportsWildcard>, bool> is_valid_index(ContainerTy const& container, Index index)
 	{
 		return is_valid_index<DoesNotSupportWildCard>(container, index) || (index == Index::Wildcard);
 	}
 
-	template <typename V, typename ...G>
-	bool are_valid_indices(G... indices) const
+	template <typename V, typename ContainerTy, typename ...G>
+	bool are_valid_indices(ContainerTy const& container, G... indices) 
 	{
-		bool rc;
+		bool rc = true;
 		for (auto&& x : { indices... })
 		{
-			rc |= is_valid_index<V>(x);
+			rc |= is_valid_index<V>(container, x);
 		}
 		return rc;
 	}
-	*/
+	
 };

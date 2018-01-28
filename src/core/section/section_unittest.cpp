@@ -10,15 +10,15 @@ BOOST_AUTO_TEST_SUITE(elf_section_table)
 BOOST_AUTO_TEST_CASE(correct_amount_of_sections)
 {
 	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
-	BOOST_CHECK_EQUAL(elf._section_table._sections.size(), 27);
+	BOOST_CHECK_EQUAL(std::size(elf._section_table), 27);
 
 	auto elf2(elf);
-	BOOST_CHECK_EQUAL(elf2._section_table._sections.size(), 27);
+	BOOST_CHECK_EQUAL(std::size(elf2._section_table), 27);
 
 	N_Core::dump_to_file("testfiles/correct_amount_of_sections", elf2);
 	
 	auto elf3 = N_Core::create_elf<N_Core::Bit64>("testfiles/correct_amount_of_sections");
-	BOOST_CHECK_EQUAL(elf3._section_table._sections.size(), 27);
+	BOOST_CHECK_EQUAL(std::size(elf3._section_table), 27);
 
 }
 BOOST_AUTO_TEST_CASE(correct_section_header_after_dump)
@@ -28,9 +28,9 @@ BOOST_AUTO_TEST_CASE(correct_section_header_after_dump)
 	auto elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/correct_header_after_dump");
 
 	std::transform(
-		elf._section_table._sections.begin(),
-		elf._section_table._sections.end(),
-		elf2._section_table._sections.begin(),
+		std::begin(elf._section_table),
+		std::end(elf._section_table),
+		std::begin(elf2._section_table),
 		N_Core::VoidIterator<>(),
 		[](auto const& section_elf_1, auto const& section_elf_2)
 		{
@@ -59,9 +59,9 @@ BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 	BOOST_CHECK_EQUAL(elf._header.get_section_header_number_of_entries(), elf2._header.get_section_header_number_of_entries());
 
 	std::transform(
-		elf._section_table._sections.begin(),
-		elf._section_table._sections.end(),
-		elf2._section_table._sections.begin(),
+		std::begin(elf._section_table),
+		std::end(elf._section_table),
+		std::begin(elf2._section_table),
 		N_Core::VoidIterator<>(),
 		[](auto const& section_elf_1, auto const& section_elf_2)
 		{
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(remove_section)
 
 	auto index_of_section_to_remove = 6;
 	auto size_of_removed_section_check = 0x289;
-	auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[index_of_section_to_remove].get_size();
+	auto size_of_removed_section = elf_to_remove_section_from._section_table[index_of_section_to_remove].get_size();
 	BOOST_CHECK_EQUAL(size_of_removed_section_check, size_of_removed_section);
 
 	elf_to_remove_section_from.remove_section(index_of_section_to_remove, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start)
 	for (auto i = 0; i < number_of_sections_in_original_elf; i++)
 	{
 		auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
-		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0].get_size_in_file();
+		auto size_of_removed_section = elf_to_remove_section_from._section_table[0].get_size_in_file();
 
 		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
 
@@ -209,13 +209,13 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 	auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 
 	BOOST_CHECK_EQUAL(
-		elf_to_remove_section_from._section_table._sections.at(0).get_type()
+		elf_to_remove_section_from._section_table[0].get_type()
 		, N_Core::N_Section::Type::SHT_NULL
 	);
 
 	elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::COMPACT);
 
-	for (auto const& section : elf_to_remove_section_from._section_table._sections)
+	for (auto const& section : elf_to_remove_section_from._section_table)
 	{
 		if (section.get_offset() + section.get_size() > elf_to_remove_section_from._header.get_section_header_offset())
 		{
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 	}
 
 	BOOST_CHECK_EQUAL(
-		elf_to_remove_section_from._section_table._sections.at(0).get_type()
+		elf_to_remove_section_from._section_table[0].get_type()
 		, N_Core::N_Section::Type::SHT_PROGBITS
 	);
 	
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(remove_first_section)
 	auto elf_to_remove_section_from_2 = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
 
 	BOOST_CHECK_EQUAL(
-		elf_to_remove_section_from_2._section_table._sections.at(0).get_type()
+		elf_to_remove_section_from_2._section_table[0].get_type()
 		, N_Core::N_Section::Type::SHT_PROGBITS
 	);
 }
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE(remove_all_sections_from_elf_beginning_at_start_gap)
 	for (auto i = 0; i < number_of_sections_in_original_elf; i++)
 	{
 		auto elf_to_remove_section_from = N_Core::create_elf<N_Core::Bit64>(path_for_this_iteration.c_str());
-		auto size_of_removed_section = elf_to_remove_section_from._section_table._sections[0].get_size_in_file();
+		auto size_of_removed_section = elf_to_remove_section_from._section_table[0].get_size_in_file();
 
 		elf_to_remove_section_from.remove_section(0, N_Core::N_Section::SectionRemovalPolicy::GAP);
 
@@ -299,10 +299,10 @@ BOOST_AUTO_TEST_CASE(wildcard_add_section)
 	auto current_size = boost::filesystem::file_size("testfiles/sleep");
 
 
-	auto original_section_table_size = elf._section_table._sections.size();
+	auto original_section_table_size = std::size(elf._section_table);
 	auto original_number_of_section_header_entries = elf._header.get_section_header_number_of_entries();
 
-	auto index = elf.add_section(N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr>(), N_Core::N_Section::Index::Wildcard);
+	auto index = elf.add_section(N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr>(), N_Core::Index::Wildcard);
 
 	auto additional_offset = 1000;
 	elf._section_table[index].set_offset(current_size+ additional_offset);
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE(wildcard_add_section)
 
 	N_Core::Elf<N_Core::Bit64> elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/with");
 
-	BOOST_CHECK_EQUAL(original_section_table_size + 1, elf2._section_table._sections.size());
+	BOOST_CHECK_EQUAL(original_section_table_size + 1, std::size(elf2._section_table));
 	BOOST_CHECK_EQUAL(original_number_of_section_header_entries + 1, elf2._header.get_section_header_number_of_entries());
 
 	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table[index];
@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE(specific_index_section)
 	auto current_size = boost::filesystem::file_size("testfiles/sleep");
 
 
-	auto original_section_table_size = elf._section_table._sections.size();
+	auto original_section_table_size = std::size(elf._section_table);
 	auto original_number_of_section_header_entries = elf._header.get_section_header_number_of_entries();
 
 	auto index = elf.add_section(N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr>(), 10);
@@ -394,7 +394,7 @@ BOOST_AUTO_TEST_CASE(specific_index_section)
 
 	N_Core::Elf<N_Core::Bit64> elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/with");
 
-	BOOST_CHECK_EQUAL(original_section_table_size + 1, elf2._section_table._sections.size());
+	BOOST_CHECK_EQUAL(original_section_table_size + 1, std::size(elf2._section_table));
 	BOOST_CHECK_EQUAL(original_number_of_section_header_entries + 1, elf2._header.get_section_header_number_of_entries());
 
 	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table[index];
@@ -403,11 +403,11 @@ BOOST_AUTO_TEST_CASE(specific_index_section)
 
 	//Verify if sections before the inserted section are still in tact.
 	N_Core::Elf<N_Core::Bit64> elf_original = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
-	N_Core::N_Section::Index indx = 0;
+	N_Core::Index indx = 0;
 	std::transform(
-		elf_original._section_table._sections.begin(),
-		elf_original._section_table._sections.end(),
-		elf2._section_table._sections.begin(),
+		std::begin(elf_original._section_table),
+		std::end(elf_original._section_table),
+		std::begin(elf2._section_table),
 		N_Core::VoidIterator<>(),
 		[&indx,index](auto const& section_elf_1, auto const& section_elf_2) mutable
 	{
@@ -486,7 +486,7 @@ BOOST_AUTO_TEST_CASE(set_section_name_already_exists)
 	auto idx = elf._header.get_section_index_that_contains_strings();
 	auto size_in_file = elf._section_table[idx].get_size_in_file();
 
-	for (auto i = 0; i < elf._section_table._sections.size(); i++)
+	for (auto i = 0; i < std::size(elf._section_table); i++)
 	{
 		N_Core::set_name(elf, i, ".interp");
 		std::string name_in_file = N_Core::get_name(elf, i);
@@ -500,7 +500,7 @@ BOOST_AUTO_TEST_CASE(set_section_name_already_exists)
 
 	N_Core::Elf<N_Core::Bit64> elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/interpsleep");
 
-	for (auto i = 0; i < elf2._section_table._sections.size(); i++)
+	for (auto i = 0; i < std::size(elf2._section_table); i++)
 	{
 		std::string name_in_file = N_Core::get_name(elf2, i);
 		BOOST_CHECK_EQUAL(name_in_file, ".interp");
@@ -514,7 +514,7 @@ BOOST_AUTO_TEST_CASE(set_section_new_names)
 	auto idx = elf._header.get_section_index_that_contains_strings();
 	auto size_in_file = elf._section_table[idx].get_size_in_file();
 
-	for (auto i = 0; i < elf._section_table._sections.size(); i++)
+	for (auto i = 0; i < std::size(elf._section_table); i++)
 	{
 		std::string reversed_name = N_Core::get_name(elf, i);
 		std::reverse(std::begin(reversed_name), std::end(reversed_name));
@@ -527,7 +527,7 @@ BOOST_AUTO_TEST_CASE(set_section_new_names)
 
 	N_Core::Elf<N_Core::Bit64> elf2 = N_Core::create_elf<N_Core::Bit64>("testfiles/reversedsleep");
 
-	for (auto i = 0; i < elf2._section_table._sections.size(); i++)
+	for (auto i = 0; i < std::size(elf2._section_table); i++)
 	{
 		std::string origin = N_Core::get_name(elf, i);
 		std::string fresh = N_Core::get_name(elf2, i);
@@ -540,7 +540,7 @@ BOOST_AUTO_TEST_CASE(is_valid_layout)
 
 	BOOST_CHECK_EQUAL(N_Core::is_valid_layout(elf).empty(), true);
 
-	std::vector<N_Core::N_Section::Index> invalid_sections = { 0, 1, 6, 8, 10, 24};
+	std::vector<N_Core::Index> invalid_sections = { 0, 1, 6, 8, 10, 24};
 	
 	for (const auto& section : invalid_sections)
 		elf._section_table[section].set_size(std::numeric_limits<uint64_t>::max()>>1);
