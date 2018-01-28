@@ -22,21 +22,6 @@ namespace N_Core
 			COMPACT
 		};
 
-		enum SectionAdditionPolicy
-		{
-			/*
-			When adding a section to a section table which already contains
-			a section with the requested index, increase the index of the 
-			EXISTING section with that index by one.
-			*/
-			INCREASE,
-			/*
-			When adding a section to a section table which already contains
-			a section with the requested index, decrease the index of the
-			EXISTING section with that index by one.
-			*/
-			DECREASE
-		};
 		enum Flags: uint64_t
 		{
 			SHF_WRITE = 0x1,
