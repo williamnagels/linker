@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 			std::size_t size_section_blob_elf_1 = section_elf_1.get_content().get_size();
 			std::size_t size_section_blob_elf_2 = section_elf_2.get_content().get_size();
 
-
+			
 			BOOST_CHECK_EQUAL(section_elf_1.get_size(), section_elf_2.get_size());
 			BOOST_CHECK_EQUAL(size_section_blob_elf_1, size_section_blob_elf_2);
 			BOOST_CHECK_EQUAL(section_elf_1.get_size(), size_section_blob_elf_2);
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE(wildcard_add_section)
 	(
 		std::begin(content),
 		std::end(content),
-		std::begin(elf._section_table[index]._content),
+		std::begin(*elf._section_table[index]._content),
 		N_Core::VoidIterator<>(),
 		[](auto const& element, auto const& element2)
 		{
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(wildcard_add_section)
 
 	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table[index];
 
-	BOOST_CHECK_EQUAL(std::memcmp(&section._content[0], &content[0], content.size()), 0);
+	BOOST_CHECK_EQUAL(std::memcmp(&((*section._content)[0]), &content[0], content.size()), 0);
 
 	
 }
@@ -373,7 +373,7 @@ BOOST_AUTO_TEST_CASE(specific_index_section)
 	(
 		std::begin(content),
 		std::end(content),
-		std::begin(elf._section_table[index]._content),
+		std::begin(*elf._section_table[index]._content),
 		N_Core::VoidIterator<>(),
 		[](auto const& element, auto const& element2)
 	{
@@ -399,7 +399,7 @@ BOOST_AUTO_TEST_CASE(specific_index_section)
 
 	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table[index];
 
-	BOOST_CHECK_EQUAL(std::memcmp(&section._content[0], &content[0], content.size()), 0);
+	BOOST_CHECK_EQUAL(std::memcmp(&(*section._content)[0], &content[0], content.size()), 0);
 
 	//Verify if sections before the inserted section are still in tact.
 	N_Core::Elf<N_Core::Bit64> elf_original = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");

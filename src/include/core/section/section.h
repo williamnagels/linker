@@ -41,7 +41,7 @@ namespace N_Core
 			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Elf64_Shdr>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
 
 			MMap::Container<T> _header_entry;
-			MMap::Container<uint8_t> _content;
+			std::shared_ptr<MMap::Container<uint8_t>> _content;
 
 			std::variant<BinaryBlob, SymbolTableTy> _interpreted_content;
 			// @brief Create a section for a memory mapped elf.
@@ -54,7 +54,7 @@ namespace N_Core
 			//
 			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_header_entry(header.begin())
-				, _content(get_content_from_header(elf_blob).begin(), get_content_from_header(elf_blob).end())
+				, _content(std::make_shared<MMap::Container<uint8_t>>(get_content_from_header(elf_blob).begin(), get_content_from_header(elf_blob).end()))
 			{
 			}
 
@@ -80,7 +80,7 @@ namespace N_Core
 			uint64_t get_info()const  { return  get(_header_entry, &T::sh_info); }
 			uint64_t get_address_alignment()const  { return  get(_header_entry, &T::sh_addralign); }
 			uint64_t get_entry_size()const  { return  get(_header_entry, &T::sh_entsize); }
-			MMap::Container<uint8_t> const& get_content() const  { return _content;}
+			MMap::Container<uint8_t> const& get_content() const  { return *_content;}
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 		};
 
@@ -104,8 +104,8 @@ namespace N_Core
 		template <typename T, typename ItTy>
 		void update(Section<T>& section, ItTy begin,ItTy end)
 		{
-			section._content.resize(std::distance(begin, end));
-			std::copy(begin, end, std::begin(section._content));
+			(*section._content).resize(std::distance(begin, end));
+			std::copy(begin, end, std::begin(*section._content));
 		}
 	}
 
