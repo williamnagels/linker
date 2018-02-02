@@ -239,9 +239,8 @@ namespace N_Core
 			int section_index = 0;
 			for (auto const& section : table)
 			{
-				stream.seekp(start_of_section_table);
-				dump(stream, section, section_index);
-				section_index++;
+				stream.seekp(start_of_section_table + std::streamoff((section_index++) * sizeof(T)), std::ios::beg);
+				dump(stream, section);
 			}
 		}
 	}

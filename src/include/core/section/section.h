@@ -62,7 +62,7 @@ namespace N_Core
 			// 
 			explicit Section():
 				_header_entry()
-				, _content()
+				, _content(std::make_shared<MMap::Container<uint8_t>>())
 			{
 
 			}
@@ -81,18 +81,18 @@ namespace N_Core
 			uint64_t get_address_alignment()const  { return  get(_header_entry, &T::sh_addralign); }
 			uint64_t get_entry_size()const  { return  get(_header_entry, &T::sh_entsize); }
 			MMap::Container<uint8_t> const& get_content() const  { return *_content;}
+			MMap::Container<uint8_t>& get_content() { return *_content; }
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 		};
 
 		template <typename T>
-		void dump(std::ostream& stream, Section<T> const& section, int section_index)
+		void dump(std::ostream& stream, Section<T> const& section)
 		{
-			stream.seekp(std::streamoff(section_index * sizeof(T)), std::ios::cur);
 			stream << section._header_entry;
 			if (section.get_size_in_file())
 			{
 				stream.seekp(section.get_offset());
-				stream << section._content;
+				stream << section.get_content();
 			}
 		}
 		template <typename T>
@@ -104,8 +104,9 @@ namespace N_Core
 		template <typename T, typename ItTy>
 		void update(Section<T>& section, ItTy begin,ItTy end)
 		{
-			(*section._content).resize(std::distance(begin, end));
-			std::copy(begin, end, std::begin(*section._content));
+			section.get_content().resize(std::distance(begin, end));
+
+			std::copy(begin, end, std::begin(section.get_content()));
 		}
 	}
 

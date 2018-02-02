@@ -91,7 +91,6 @@ BOOST_AUTO_TEST_CASE(size_in_header_and_in_memory_sanity_check)
 	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 	
 	BOOST_CHECK_EQUAL(elf._section_table[21].get_size(), size_of_section_21);
-	//BOOST_CHECK_EQUAL(elf._section_table._sections[21]->get_content().size(), size_of_section_21);
 }
 
 
@@ -312,7 +311,7 @@ BOOST_AUTO_TEST_CASE(wildcard_add_section)
 	std::iota(std::begin(content), std::end(content), 0);
 
 	elf._section_table[index].set_size(content.size());
-
+	
 	update(elf._section_table[index], std::begin(content), std::end(content));
 
 	std::transform
@@ -342,7 +341,7 @@ BOOST_AUTO_TEST_CASE(wildcard_add_section)
 	N_Core::N_Section::Section<N_Core::N_Section::Elf64_Shdr> const& section = elf2._section_table[index];
 
 	BOOST_CHECK_EQUAL(std::memcmp(&((*section._content)[0]), &content[0], content.size()), 0);
-
+	
 	
 }
 
