@@ -71,15 +71,15 @@ namespace N_Core
 					auto end_header = begin_header + size_of_entry;
 
 					auto header_range = boost::make_iterator_range(begin_header, end_header);
-					auto section = N_Section::create_section<N_Section::Elf64_Shdr>(get_memory_mapped_region(), header_range);
-					_section_table.add_section(std::move(section));
+
+					_section_table.add_section(SectionTableTy::SectionTy(get_memory_mapped_region(), header_range));
 				}
 			}
 			else
 			{
 				for (auto i = 0; i < number_of_entries; i++)
 				{
-					_section_table.add_section(N_Section::Section<N_Section::Elf64_Shdr>());
+					_section_table.add_section(SectionTableTy::SectionTy());
 				}
 			}
 		}
