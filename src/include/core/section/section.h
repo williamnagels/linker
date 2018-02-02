@@ -37,11 +37,10 @@ namespace N_Core
 				return BinaryBlob(reinterpret_cast<uint8_t*>(elf_blob.begin() + get_offset()), reinterpret_cast<uint8_t*>(elf_blob.begin() + get_offset() + get_size()));
 			}
 
-		public:
-			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Elf64_Shdr>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
-
 			MMap::Container<T> _header_entry;
 			std::shared_ptr<MMap::Container<uint8_t>> _content;
+		public:
+			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Elf64_Shdr>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
 
 			std::variant<BinaryBlob, SymbolTableTy> _interpreted_content;
 			// @brief Create a section for a memory mapped elf.
@@ -83,6 +82,10 @@ namespace N_Core
 			MMap::Container<uint8_t> const& get_content() const  { return *_content;}
 			MMap::Container<uint8_t>& get_content() { return *_content; }
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
+		
+		
+			template <typename T>
+			friend void dump(std::ostream& stream, Section<T> const& section);
 		};
 
 		template <typename T>

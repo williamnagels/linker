@@ -262,7 +262,7 @@ namespace N_Core
 	{
 		N_Core::Index index = elf._header.get_section_index_that_contains_strings();
 	
-		auto const& buffer = *elf._section_table[index]._content;
+		auto const& buffer = elf._section_table[index].get_content();
 		std::size_t offset = elf._section_table[index_to_lookup].get_name();
 
 		return std::string(reinterpret_cast<char const*>(&buffer[offset]));
@@ -286,7 +286,7 @@ namespace N_Core
 		
 		N_Core::Index index = elf._header.get_section_index_that_contains_strings();
 
-		auto& buffer = *elf._section_table[index]._content;
+		auto& buffer = elf._section_table[index].get_content();
 
 		auto existing_iterator = std::search(std::begin(buffer), std::end(buffer), std::begin(new_name), std::end(new_name));
 
