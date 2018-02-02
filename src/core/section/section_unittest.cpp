@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(correct_section_content_after_dump)
 		N_Core::VoidIterator<>(),
 		[](auto const& section_elf_1, auto const& section_elf_2)
 		{
-
+		 
 			std::size_t size_section_blob_elf_1 = section_elf_1.get_content().get_size();
 			std::size_t size_section_blob_elf_2 = section_elf_2.get_content().get_size();
 
