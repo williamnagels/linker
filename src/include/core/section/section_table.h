@@ -205,7 +205,8 @@ namespace N_Core
 	private:
 			Index add_section_to_back(SectionTy&& section)
 			{
-				_sections.push_back(std::move(section));
+				_sections.emplace_back(std::move(section));
+				//_sections.push_back(std::move(section));
 
 				return _sections.size() - 1;
 			}

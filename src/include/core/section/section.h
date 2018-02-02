@@ -88,6 +88,19 @@ namespace N_Core
 			friend void dump(std::ostream& stream, Section<T> const& section);
 		};
 
+		// @brief Dump section to stream.
+		// 
+		// @param stream	stream to which to dump the section.
+		// @param section	Section to dump.
+		//
+		// This expects the current position in the ostream to be
+		// where the section header entry starts in the file (offset).
+		//
+		// Caller can make no guess on what position the stream is
+		// after write.
+		//
+		// Primarly used to save a section to a file.
+		//
 		template <typename T>
 		void dump(std::ostream& stream, Section<T> const& section)
 		{
@@ -98,16 +111,24 @@ namespace N_Core
 				stream << section.get_content();
 			}
 		}
-		template <typename T>
-		Section<T> create_section(N_Core::BinaryBlob elf_blob, N_Core::BinaryBlob header_blob)
-		{
-			return Section<T>(header_blob, elf_blob);
-		}
 
+		// @brief Update content of a section
+		// 
+		// @param section section of which to change content.
+		// @param begin	it of first element to write.
+		// @param end	one past last element to write.
+		//
+		// Will resize the buffer allocated for the section 
+		// to store exactly the new content. 
+		//
+		// Will also update the section header for with the new size.
+		//
 		template <typename T, typename ItTy>
 		void update(Section<T>& section, ItTy begin,ItTy end)
 		{
+			
 			section.get_content().resize(std::distance(begin, end));
+			section.set_size(section.get_content().get_size());
 
 			std::copy(begin, end, std::begin(section.get_content()));
 		}

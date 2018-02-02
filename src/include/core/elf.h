@@ -72,7 +72,7 @@ namespace N_Core
 
 					auto header_range = boost::make_iterator_range(begin_header, end_header);
 
-					_section_table.add_section(SectionTableTy::SectionTy(get_memory_mapped_region(), header_range));
+					_section_table.add_section(SectionTableTy::SectionTy(header_range, get_memory_mapped_region()));
 				}
 			}
 			else
