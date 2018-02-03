@@ -7,7 +7,6 @@
 #include <functional>
 #include <numeric>
 
-
 namespace N_Core
 {
 
@@ -22,8 +21,32 @@ namespace N_Core
 		template <typename T>
 		class Section
 		{
-		private:
+		public: 
+			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Elf64_Shdr>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
+			using InterpretedContentTy = std::variant<MMap::Container<uint8_t>, SymbolTableTy>;
 
+		private:
+			struct get_representation_visitor {
+				MMap::Container<uint8_t>& operator()(MMap::Container<uint8_t>& i) const { return i; }
+				MMap::Container<uint8_t>& operator()(SymbolTableTy&) const { return MMap::Container<uint8_t>(); }
+			};
+			InterpretedContentTy create_interpreted_content(BinaryBlob elf_blob)
+			{
+				auto content_blob = get_content_from_header(elf_blob);
+				InterpretedContentTy interpreted_content;
+				switch (get_type())
+				{
+				case N_Section::Type::SHT_SYMTAB:
+					case N_Section::Type::SHT_SYMTAB_SHNDX
+					interpreted_content = MMap::Container<uint8_t>(content_blob.begin(), content_blob.end()); //SymbolTableTy();
+					break;
+				default:
+					
+					interpreted_content = MMap::Container<uint8_t>(content_blob.begin(), content_blob.end());
+				}
+
+				return interpreted_content;
+			}
 			// @brief Get address range where the content of the section is stored.
 			// 
 			// Helper function used when constructing a section from memory mapped elf.
@@ -38,11 +61,8 @@ namespace N_Core
 			}
 
 			MMap::Container<T> _header_entry;
-			std::shared_ptr<MMap::Container<uint8_t>> _content;
+			InterpretedContentTy _interpreted_content;
 		public:
-			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Elf64_Shdr>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
-
-			std::variant<BinaryBlob, SymbolTableTy> _interpreted_content;
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
@@ -53,7 +73,7 @@ namespace N_Core
 			//
 			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_header_entry(header.begin())
-				, _content(std::make_shared<MMap::Container<uint8_t>>(get_content_from_header(elf_blob).begin(), get_content_from_header(elf_blob).end()))
+				, _interpreted_content(create_interpreted_content(elf_blob))
 			{
 			}
 
@@ -61,7 +81,7 @@ namespace N_Core
 			// 
 			explicit Section():
 				_header_entry()
-				, _content(std::make_shared<MMap::Container<uint8_t>>())
+				, _interpreted_content()
 			{
 
 			}
@@ -79,11 +99,9 @@ namespace N_Core
 			uint64_t get_info()const  { return  get(_header_entry, &T::sh_info); }
 			uint64_t get_address_alignment()const  { return  get(_header_entry, &T::sh_addralign); }
 			uint64_t get_entry_size()const  { return  get(_header_entry, &T::sh_entsize); }
-			MMap::Container<uint8_t> const& get_content() const  { return *_content;}
-			MMap::Container<uint8_t>& get_content() { return *_content; }
+			MMap::Container<uint8_t>& get_content(){ return std::visit(get_representation_visitor{}, _interpreted_content);}
+			MMap::Container<uint8_t> const& get_content() const { return const_cast<Section<T>*>(this)->get_content();}
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
-		
-		
 			template <typename T>
 			friend void dump(std::ostream& stream, Section<T> const& section);
 		};
@@ -126,7 +144,6 @@ namespace N_Core
 		template <typename T, typename ItTy>
 		void update(Section<T>& section, ItTy begin,ItTy end)
 		{
-			
 			section.get_content().resize(std::distance(begin, end));
 			section.set_size(section.get_content().get_size());
 
