@@ -27,8 +27,8 @@ namespace N_Core
 
 		private:
 			struct get_representation_visitor {
-				MMap::Container<uint8_t>& operator()(MMap::Container<uint8_t>& i) const { return i; }
-				MMap::Container<uint8_t>& operator()(SymbolTableTy&) const { return MMap::Container<uint8_t>(); }
+				MMap::Container<uint8_t>& operator()(MMap::Container<uint8_t>& content) const { return content; }
+				MMap::Container<uint8_t>& operator()(SymbolTableTy& symbol_table) const { return symbol_table.get_content(); }
 			};
 			InterpretedContentTy create_interpreted_content(BinaryBlob elf_blob)
 			{
@@ -37,8 +37,7 @@ namespace N_Core
 				switch (get_type())
 				{
 				case N_Section::Type::SHT_SYMTAB:
-					case N_Section::Type::SHT_SYMTAB_SHNDX
-					interpreted_content = MMap::Container<uint8_t>(content_blob.begin(), content_blob.end()); //SymbolTableTy();
+					interpreted_content = SymbolTableTy(content_blob);
 					break;
 				default:
 					

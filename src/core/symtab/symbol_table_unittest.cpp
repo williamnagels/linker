@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp> 
+#include "src/include/core/elf.h"
 
 BOOST_AUTO_TEST_SUITE(symbol_table)
 
@@ -13,9 +14,9 @@ void combined_test()
 	std::for_each(params, params + 5, &single_test);
 }
 
-
+ 
 BOOST_AUTO_TEST_CASE(basic_symbol)
 {
-	combined_test();
+	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/global_and_local_symbol");
 }
 BOOST_AUTO_TEST_SUITE_END()
