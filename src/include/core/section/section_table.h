@@ -24,24 +24,35 @@ namespace N_Core
 		// of section objects may change if the capacity of the
 		// vector changes. Do not store references/pointers to sections objects.
 		//
-		template <typename T, typename SectionTy_=Section<T>>
+		template <typename T, typename _SectionTy=Section<T>>
 		class Table
 		{
 		private:
-			using InternalStorageTy = std::vector<SectionTy_>;
+			using ConstIteratorTy = Iterator<Table, _SectionTy, true>;
+			using IteratorTy = Iterator<Table, _SectionTy, false>;
+
+			using InternalStorageTy = std::vector<_SectionTy>;
 			InternalStorageTy _sections; ///< list of sections assigned to this table.
+			
 		public:
-			using SectionTy = SectionTy_;
+			using SectionTy = _SectionTy;
 			// @brief Get numbers of sections in the section table.
 			//
 			// @returns number of sections in the section table
 			//
 			std::size_t size() const { return _sections.size(); }
 
-			typename InternalStorageTy::iterator begin() { return _sections.begin(); }
-			typename InternalStorageTy::iterator end() { return _sections.end(); }
-			typename InternalStorageTy::const_iterator begin() const { return _sections.begin(); }
-			typename InternalStorageTy::const_iterator end() const { return _sections.end(); }
+			MMap::Container<uint8_t> _map;
+			IteratorTy begin() { return IteratorTy(*this, 0); }
+			IteratorTy end() { return IteratorTy(*this, _map.get_size();); }
+
+			ConstIteratorTy begin() const { return ConstIteratorTy(*this, 0); }
+			ConstIteratorTy end() const { return ConstIteratorTy(*this, _map.get_size()); }
+			
+			//typename InternalStorageTy::iterator begin() { return _sections.begin(); }
+			//typename InternalStorageTy::iterator end() { return _sections.end(); }
+			//typename InternalStorageTy::const_iterator begin() const { return _sections.begin(); }
+			//typename InternalStorageTy::const_iterator end() const { return _sections.end(); }
 
 
 			// @brief Add section to the section table.
