@@ -18,13 +18,5 @@ void combined_test()
 BOOST_AUTO_TEST_CASE(basic_symbol)
 {
 	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/global_and_local_symbol");
-
-	for (auto const& section : elf._section_table)
-	{
-		if (section.get_type() == N_Core::N_Section::SHT_SYMTAB)
-		{
-		}
-	}
-
 }
 BOOST_AUTO_TEST_SUITE_END()
