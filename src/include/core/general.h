@@ -117,7 +117,6 @@ namespace N_Core
 	bool operator==(Index const& a, Index const& b);
 	std::ostream& operator<<(std::ostream& os, Index);
 	std::ostream& operator<<(std::ostream& os, IndexList);
-	
 	// @brief Wether or not the index is the wildcard index.
 	// 
 	// Used in the API to check if the index of some section is the wildcard section.
@@ -150,83 +149,4 @@ namespace N_Core
 		return rc;
 	}
 	
-	// @brief Multipurpose iterator implementation
-	// 
-	// Used to access elements in tables (section, symbol, ...)
-	// using iterators. The idea is that the iterator
-	// points to an element in the table (_container) at position
-	// _index. Incrementing the iterator will move to next
-	// element in the table. May run out-of-bounds; there
-	// are no checks on operator++ or --.
-	// This iterator is bidirectional. The container
-	// may or may not be random access. To retrieve
-	// the element std::advance is used, which is overloaded
-	// for any iterator.
-	//
-	// @note API of container:
-	// From the container an element must be constructable 
-	// using the api: GetElementAt(index). This is a
-	// compile-time enforced constraint.
-	//
-	template <typename ContainerTy, typename T, bool IsConst>
-	class Iterator
-	{
-		uint16_t _current_index;
-		ContainerTy& _container;
-
-	public:
-		Iterator(ContainerTy& container, uint16_t index) :
-			_container(container),
-			_current_index(index) {}
-		Iterator(Iterator const& o) :
-			_current_index(o._current_index),
-			_container(o._container) {};
-
-		bool operator ==(Iterator const& other)
-		{
-			return _current_index == other._current_index;
-		}
-		bool operator!=(Iterator const& other)
-		{
-			return !(*this == other);
-		}
-
-		Iterator& operator++()
-		{
-			_current_index++;
-			return *this;
-		}
-
-		Iterator& operator--()
-		{
-			_current_index--;
-			return *this;
-		}
-		Iterator operator++(int)
-		{
-			auto current_iterator = *this;
-			++*this;
-			return current_iterator;
-		}
-		Iterator operator--(int)
-		{
-			auto current_iterator = *this;
-			--*this;
-			return current_iterator;
-		}
-		using ValueType =
-			std::conditional_t<
-			IsConst
-			, std::add_const_t<T>
-			, T>;
-		ValueType operator*()
-		{
-			auto begin_it = _table.get_content().begin();
-			std::advance(begin_it, index);
-			auto end_it = begin_it;
-			std::advance(end_it, sizeof(T));
-			return ValueType(begin_it, end_it);
-		}
-	};
-
 };
