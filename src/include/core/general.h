@@ -175,7 +175,6 @@ namespace N_Core
 		ContainerTy& _container;
 
 	public:
-		using iterator_category = std::random_access_iterator_tag;
 		Iterator(ContainerTy& container, uint16_t index) :
 			_container(container),
 			_current_index(index) {}
@@ -222,7 +221,11 @@ namespace N_Core
 			, T>;
 		ValueType operator*()
 		{
-			return _container.get_element_at_index(_current_index);
+			auto begin_it = _table.get_content().begin();
+			std::advance(begin_it, index);
+			auto end_it = begin_it;
+			std::advance(end_it, sizeof(T));
+			return ValueType(begin_it, end_it);
 		}
 	};
 

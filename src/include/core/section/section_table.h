@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 #include <utility>
-#include <map>
+
 namespace N_Core
 {
 	template <typename V>
@@ -14,60 +14,6 @@ namespace N_Core
 
 	namespace N_Section
 	{
-		//@brief section table.
-		//
-		// Stores a variable amount of sections.
-		//
-		// A section is a combination of two parts:
-		//		1/ Non optional; fixed size header in the section 
-		//		   table describes the layout and content of the section.
-		//		2/ Actual content of the section. This is optional
-		//		   sections may have a content size of 0.
-		//
-		// A section table supports adding and removing of sections.
-		// Actual sections are stored internally in
-		// some byte array.
-		//
-		// Iterators returned by this class (e.g. begin)
-		// are intended to be used in any std::algorithm
-		// and should support most if not any algorithm provided
-		// by the standard.
-		//
-		template <typename T>
-		class Table
-		{
-		public:
-			using Value = Section<T>;
-			using ConstIteratorType = Iterator<Table, Value, true>;
-			using IteratorType = Iterator<Table, Value, false>;
-
-			IteratorType begin() { return IteratorType(*this, 0); }
-			IteratorType end() { return IteratorType(*this, _map.get_size()); }
-			ConstIteratorType begin() const { return ConstIteratorType(*this, 0); }
-			ConstIteratorType end() const { return ConstIteratorType(*this, _map.get_size()); }
-
-			Value get_element_at_index(uint16_t index)
-			{
-				//if there is some custom section for
-				//that index; return that.
-				auto custom = _custom_sections.find(index);
-				if (custom != _custom_sections.end())
-				{
-					return *custom;
-				}
-				
-				//if there is none - create a new section.
-
-			}
-
-			Table() {}
-		private:
-
-			
-			std::map<uint16_t, Value> _custom_sections; //custom sections are stored here
-			MMap::Container<uint8_t> _byte_buffer; 
-		}
-		/*
 		//class ASection;
 		// @brief Collection of sections forms the section table.
 		// 
@@ -84,9 +30,8 @@ namespace N_Core
 		private:
 			using ConstIteratorTy = Iterator<Table, _SectionTy, true>;
 			using IteratorTy = Iterator<Table, _SectionTy, false>;
-			using ValueTy = _SectionTy;
+
 			using InternalStorageTy = std::vector<_SectionTy>;
-			
 			InternalStorageTy _sections; ///< list of sections assigned to this table.
 			
 		public:
@@ -99,16 +44,11 @@ namespace N_Core
 
 			MMap::Container<uint8_t> _map;
 			IteratorTy begin() { return IteratorTy(*this, 0); }
-			IteratorTy end() { return IteratorTy(*this, _map.get_size()); }
+			IteratorTy end() { return IteratorTy(*this, _map.get_size();); }
 
 			ConstIteratorTy begin() const { return ConstIteratorTy(*this, 0); }
 			ConstIteratorTy end() const { return ConstIteratorTy(*this, _map.get_size()); }
 			
-			ValueTy get_element_at_index(uint16_t index)
-			{
-				return ValueTy();
-			}
-
 			//typename InternalStorageTy::iterator begin() { return _sections.begin(); }
 			//typename InternalStorageTy::iterator end() { return _sections.end(); }
 			//typename InternalStorageTy::const_iterator begin() const { return _sections.begin(); }
@@ -315,5 +255,5 @@ namespace N_Core
 				dump(stream, section);
 			}
 		}
-	}*/
+	}
 }
