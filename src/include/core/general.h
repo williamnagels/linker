@@ -2,6 +2,7 @@
 #include "cow.h"
 
 #include <boost/range.hpp>
+#include <utility>
 #include <vector>
 #include <cstdint>
 namespace N_Core
@@ -9,7 +10,7 @@ namespace N_Core
 	struct Bit64 {};
 	struct Bit32 {};
 
-
+	using AddressRange = std::pair<uint8_t*, uint8_t*>;
 	// Region of memory. Start and end-address range.
 	using BinaryBlob = boost::iterator_range<uint8_t*>;
 

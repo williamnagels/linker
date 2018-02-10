@@ -8,8 +8,6 @@
 #include <boost/interprocess/mapped_region.hpp>
 
 #include <string>
-#include <optional>
-#include <memory>
 #include <fstream>
 
 namespace N_Core
@@ -43,6 +41,8 @@ namespace N_Core
 	class Elf
 	{
 	private:
+		using HeaderTy = N_Header::Header<V>;
+		using SectionTableTy = N_Section::Table<V>;
 		// This shared ptr keeps the memory mapped elf in memory until
 		// it is destructed (and other elfs sharing the counter).
 		// This pointer is only set when elf is sourced by an elf on disk.
@@ -51,51 +51,12 @@ namespace N_Core
 		// When copying an elf the region will be shared.
 		std::shared_ptr<boost::interprocess::mapped_region> _region;
 
-		// @brief Create section table
-		// 
-		// Method works both for memory mapped elfs and customly created elfs. 
-		// The amount of sections as defined in the header will be created.
-		//
-		void create_section_table()
-		{
-			auto number_of_entries = _header.get_section_header_number_of_entries();
-			auto start_of_table = _header.get_section_header_offset();
-			auto size_of_entry = _header.get_section_header_entry_size();
-
-			if (is_memory_mapped())
-			{
-				for (auto i = 0; i < number_of_entries; i++)
-				{
-					auto header_of_section_entry = start_of_table + size_of_entry * i;
-					auto begin_header = get_memory_mapped_region().begin() + header_of_section_entry;
-					auto end_header = begin_header + size_of_entry;
-
-					auto header_range = boost::make_iterator_range(begin_header, end_header);
-
-					_section_table.add_section(SectionTableTy::SectionTy(header_range, get_memory_mapped_region()));
-				}
-			}
-			else
-			{
-				for (auto i = 0; i < number_of_entries; i++)
-				{
-					_section_table.add_section(SectionTableTy::SectionTy());
-				}
-			}
-		}
-
 		constexpr bool is_64bit()
 		{
 			return std::is_same_v<V, Bit64>;
 		}
 	public:
-		// The header is templated because based on type type of elf(64 bit vs 32bit) a different
-		// memory map (different member variables) is selected.
-		//
-		using HeaderTy = N_Header::Header< std::conditional_t< std::is_same_v<V, Bit64> , N_Header::Elf64_Ehdr, N_Header::Elf32_Ehdr>>;
 		HeaderTy _header;
-
-		using SectionTableTy = N_Section::Table < std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr>>;
         SectionTableTy _section_table;
 
 		// @brief Returns true if the elf is loaded from disk
@@ -116,8 +77,8 @@ namespace N_Core
 			{
 				throw std::exception("Cannot");
 			}
-
-			return BinaryBlob(reinterpret_cast<uint8_t*>(_region->get_address()), reinterpret_cast<uint8_t*>(_region->get_address()) + _region->get_size());
+			uint8_t* begin_address = reinterpret_cast<uint8_t*>(_region->get_address());
+			return BinaryBlob(begin_address, begin_address + _region->get_size());
 		}
 
 		// @brief Construct a new elf.
@@ -136,9 +97,8 @@ namespace N_Core
 		explicit Elf(T&& mapped_region) :
 			_region(std::forward<T>(mapped_region))
 			, _header(get_memory_mapped_region())
-			, _section_table()
+			, _section_table(_header, get_memory_mapped_region())
 		{
-			create_section_table();
 		}
 
 		// @brief Construct an elf from an existing elf and write to file on disk.
@@ -149,46 +109,6 @@ namespace N_Core
 			, _header(std::forward<T>(elf)._header)
 			, _section_table(std::forward<T>(elf)._section_table)
 		{
-		}
-
-
-		// @brief Remove section identified by index from the elf.
-		// 
-		// Will also update elf header to reflect the changes.	
-		//
-		// @param index		section to remove. 0 based. remove_section(0) removes the first section from the elf.
-		// @param policy	what the elf should look like after the section is removed. See enum for descriptin of options.
-		//
-		// @throws std::range_error if index is invalid (larger than amount of sections).
-		//
-		void remove_section(uint16_t index, N_Core::N_Section::SectionRemovalPolicy policy)
-		{
-			auto offset_to_subtract = _section_table[index].get_size_in_file();
-
-			//throws if index is not valid that's why offset must first be retrieved.
-			_section_table.remove_section(index, policy);
-
-			_header.set_section_header_number_of_entries(_header.get_section_header_number_of_entries() - 1);
-
-			if (policy == N_Section::SectionRemovalPolicy::COMPACT)
-			{
-				_header.set_section_header_offset(_header.get_section_header_offset() - offset_to_subtract);
-			}
-		}
-		// @brief Add section identified by index from the elf.
-		// 
-		// Will also update elf header to reflect the changes.	
-		//
-		// @param index		required index of the new section. Can be wildcard.
-		// @param section	Section to add. Can be default ctor
-		//
-		// @returns Index of the section. Only usefull if 'index' param is not wildcard else it will be the same.
-		//
-		N_Core::Index add_section(typename SectionTableTy::SectionTy && section, N_Core::Index index)
-		{
-
-			_header.set_section_header_number_of_entries(_header.get_section_header_number_of_entries() + 1);
-			return _section_table.add_section(std::move(section), index);
 
 		}
 	};
@@ -266,159 +186,5 @@ namespace N_Core
 		std::size_t offset = elf._section_table[index_to_lookup].get_name();
 
 		return std::string(reinterpret_cast<char const*>(&buffer[offset]));
-	}
-
-	// @brief change name of a section
-	// 
-	// This function will move the section header if it overlaps with the 
-	// section which contains the section names (if new names are added this section's
-	// content will grow).
-	//
-	// Other sections are not moved.
-	//
-	// @param elf				Elf from which the section name should be changed.
-	// @param index_to_lookup	Index of the section which should've its name changed.
-	// @param new_name			New name of the section.
-	// 
-	template<typename ElfTy>
-	void set_name(N_Core::Elf<ElfTy>& elf, N_Core::Index index_to_lookup, std::string new_name)
-	{
-		
-		N_Core::Index index = elf._header.get_section_index_that_contains_strings();
-
-		auto& buffer = elf._section_table[index].get_content();
-
-		auto existing_iterator = std::search(std::begin(buffer), std::end(buffer), std::begin(new_name), std::end(new_name));
-
-		// a section with that name already exists (or part of the name). Avoid adding the name again to the buffer.
-		if (existing_iterator != buffer.end())
-		{
-			return elf._section_table[index_to_lookup].set_name(std::distance(std::begin(buffer), existing_iterator));
-		}
-
-		auto offset = buffer.get_size();
-
-
-		buffer.resize(buffer.get_size() + new_name.size() + 1);
-
-		auto size_of_new_name_with_zero_terminator = new_name.size() + 1;
-		char const* begin_new_name_with_zero_terminator= new_name.c_str();
-		char const* end_new_name_with_zero_terminator = begin_new_name_with_zero_terminator + size_of_new_name_with_zero_terminator;
-
-		std::copy(begin_new_name_with_zero_terminator, end_new_name_with_zero_terminator, existing_iterator);
-		
-		 
-		elf._section_table[index].set_size(elf._section_table[index].get_size() + size_of_new_name_with_zero_terminator);
-		elf._section_table[index_to_lookup].set_name(offset);
-
-		auto minimum_offset_for_section_header =
-			elf._section_table[index].get_offset() +
-			elf._section_table[index].get_size_in_file();
-
-		if (elf._header.get_section_header_offset() <= minimum_offset_for_section_header)
-		{
-			elf._header.set_section_header_offset(minimum_offset_for_section_header + 1);
-		}
-	}
-
-
-	// @brief get entities containing a section.
-	// 
-	// Multiple segments may overlap and contain the same section.
-	// If the section is not fully contained in a segment, the elf is also returned 
-	// as container.
-	//
-	// An segment contains a section only if its offset + size < offset of the section and offset >= offset section
-	//
-	// @param elf				Elf which should've the containers for a section returned.
-	// @param index_to_lookup	Index of the section which should have its containes returned.
-	//
-	// @returns a list of segments/elf that contain the section.
-	// 
-	template <typename ElfTy>
-	std::vector<std::variant<N_Core::Elf<ElfTy>&>> get_container(N_Core::Elf<ElfTy> const& elf, N_Core::Index index_to_lookup)
-	{
-		auto const& section = elf._section_table.get_section_at_index(idx);
-		auto offset_in_file = section.get_offset();
-
-		return { elf };
-	}
-
-
-	namespace
-	{
-		template <typename T>
-		struct _TTY
-		{
-			_TTY():_offset(0),_size(0),_index(0) {}
-
-
-			_TTY(T const& t, N_Core::Index index):
-				_offset(t.get_offset())
-				,_size(t.get_size_in_file())
-				,_index(index)
-			{
-
-			}
-
-			N_Core::Index _index;
-			decltype(_index) get_index() { return _index; }
-			decltype(std::declval<T>().get_offset()) _offset;
-			decltype(_offset) get_offset() const { return _offset; }
-			decltype(std::declval<T>().get_size()) _size;
-			decltype(_size) get_size() const { return _size; }
-		};
-
-		template <typename T>
-		bool operator < (_TTY<T> const& a, _TTY<T> const& b)
-		{
-			return a.get_offset() < b.get_offset();
-		}
-	}
-
-	// @brief get entities containing a section.
-	// 
-	// Verifies if no sections overlap.
-	// Segments are allowed to overlap; sections are not allowed to overlap.
-	//
-	// Sections are considered to overlap if Section(a).start + offset >= Section(d).start
-	// index b is not necesserly a increased by one. Order in section table
-	// is not related to order in the elf file.
-	//
-	// @param elf				Elf which should've the section layout validity verified.
-	//
-	// @returns a list of indices that are overlap with the start point of another section.
-	// 
-	template <typename ElfTy>
-	N_Core::IndexList is_valid_layout(N_Core::Elf<ElfTy> const& elf)
-	{
-		using T = typename _TTY<typename N_Core::Elf<ElfTy>::SectionTableTy::SectionTy>;
-
-		std::vector<T> vec(std::size(elf._section_table), T());
-
-		N_Core::IndexList indices;
-		N_Core::Index index(0);
-		std::transform(
-			std::begin(elf._section_table)
-			, std::end(elf._section_table)
-			, std::back_inserter(vec)
-			, [&index](auto const& t) { return T(t, index++); });
-
-		std::sort(std::begin(indices), std::end(indices));
-
-		auto it = std::begin(vec);
-		
-		while (true)
-		{
-			it = std::adjacent_find(it, std::end(vec),
-					[](auto const& a, auto const& b) {return a.get_size() + a.get_offset() >b.get_offset();});
-
-			if (it == std::end(vec)) break;
-			indices.push_back(it->get_index());
-			it = std::next(it);
-		} 
-
-
-		return indices;
 	}
 }

@@ -2,6 +2,7 @@
 #include "src/include/core/section/helpers.h"
 #include "src/include/core/section/section_member_types.h"
 #include "src/include/core/section/section.h"
+#include "src/include/core/header/header.h"
 #include "src/include/core/general.h"
 #include <vector>
 #include <memory>
@@ -24,14 +25,14 @@ namespace N_Core
 		// of section objects may change if the capacity of the
 		// vector changes. Do not store references/pointers to sections objects.
 		//
-		template <typename T, typename SectionTy_=Section<T>>
+		template <typename V>
 		class Table
 		{
-		private:
-			using InternalStorageTy = std::vector<SectionTy_>;
-			InternalStorageTy _sections; ///< list of sections assigned to this table.
+			using T = std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr >;
+			using SectionTy = Section<T>;
+			using InternalStorageTy = std::vector<SectionTy>;
+			InternalStorageTy _sections; ///< list of sections assigned to this table.	
 		public:
-			using SectionTy = SectionTy_;
 			// @brief Get numbers of sections in the section table.
 			//
 			// @returns number of sections in the section table
@@ -174,9 +175,35 @@ namespace N_Core
 				return *this;
 			}
 
+			explicit Table() {}
+			explicit Table(std::size_t number_of_entries) 
+			{
+				for (auto i = 0; i < number_of_entries; i++)
+				{
+					add_section({});
+				}
+			}
+
 			// @brief Create a new table to store sections in.
 			// 
-			explicit Table() {}
+			explicit Table(N_Header::Header<V> const& header, BinaryBlob memory_region)
+			{
+				auto number_of_entries = header.get_section_header_number_of_entries();
+				auto start_of_table = header.get_section_header_offset();
+				auto size_of_entry = header.get_section_header_entry_size();
+
+
+				for (auto i = 0; i < number_of_entries; i++)
+				{
+					auto header_of_section_entry = start_of_table + size_of_entry * i;
+					auto begin_header = memory_region.begin() + header_of_section_entry;
+					auto end_header = begin_header + size_of_entry;
+
+					add_section(SectionTy(BinaryBlob(begin_header, end_header), memory_region));
+				}
+
+
+			}
 
 			// @brief Get section at an index
 			// 

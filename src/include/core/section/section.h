@@ -22,14 +22,10 @@ namespace N_Core
 		class Section
 		{
 		public: 
-			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Elf64_Shdr>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
+			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Bit64>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
 			using InterpretedContentTy = std::variant<MMap::Container<uint8_t>, SymbolTableTy>;
 
 		private:
-			struct get_representation_visitor {
-				MMap::Container<uint8_t>& operator()(MMap::Container<uint8_t>& content) const { return content; }
-				MMap::Container<uint8_t>& operator()(SymbolTableTy& symbol_table) const { return symbol_table.get_content(); }
-			};
 			InterpretedContentTy create_interpreted_content(BinaryBlob elf_blob)
 			{
 				auto content_blob = get_content_from_header(elf_blob);
@@ -98,13 +94,30 @@ namespace N_Core
 			uint64_t get_info()const  { return  get(_header_entry, &T::sh_info); }
 			uint64_t get_address_alignment()const  { return  get(_header_entry, &T::sh_addralign); }
 			uint64_t get_entry_size()const  { return  get(_header_entry, &T::sh_entsize); }
-			MMap::Container<uint8_t>& get_content(){ return std::visit(get_representation_visitor{}, _interpreted_content);}
-			MMap::Container<uint8_t> const& get_content() const { return const_cast<Section<T>*>(this)->get_content();}
+			InterpretedContentTy const& get_content() const{ return _interpreted_content; }
+			InterpretedContentTy& get_content() { return _interpreted_content; }
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 			template <typename T>
 			friend void dump(std::ostream& stream, Section<T> const& section);
 		};
+		namespace
+		{
+			template <typename T>
+			struct get_representation_visitor 
+			{
+				std::ostream& operator()(MMap::Container<uint8_t>& content) const { return (stream << content); }
+				std::ostream& operator()(typename Section<T>::SymbolTableTy& symbol_table) const {
+					return (stream << "symbol tab");
+				}
 
+			};
+		}
+		template <typename T>
+		std::ostream& operator<<(std::ostream& stream, typename Section<T>::InterpretedContentTy const& content)
+		{
+			get_representation_visitor visitor{};
+			std::visit(content, visitor);
+		}
 		// @brief Dump section to stream.
 		// 
 		// @param stream	stream to which to dump the section.

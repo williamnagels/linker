@@ -17,6 +17,5 @@ void combined_test()
  
 BOOST_AUTO_TEST_CASE(basic_symbol)
 {
-	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/global_and_local_symbol");
 }
 BOOST_AUTO_TEST_SUITE_END()

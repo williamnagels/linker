@@ -30,11 +30,10 @@ namespace N_Core
 		// Template parameter 'T' identifies if it is a 32-bit or 64-bit header.
 		// Expecting Elf64_Ehdr or Elf32_Ehdr
 		//
-		template <typename T>
+		template <typename V>
 		class Header
-		{
-		private:	
-
+		{	
+			using T = std::conditional_t< std::is_same_v<V, Bit64>, N_Header::Elf64_Ehdr, N_Header::Elf32_Ehdr>;
 			// @brief Checks if first 4 bytes of an elf are set to 0x7F, 'E', 'L' and 'F'
 			// 
 			// @returns true if magic bytes are correct.
@@ -67,6 +66,7 @@ namespace N_Core
 			}
 
 		public:		
+
 			MMap::Container<T> _header_content; ///< Memory blob with some map applied to it.
 
 			uint8_t get_magic_byte_0() const  { return get(_header_content, &T::e_magic_byte_0); }
@@ -144,8 +144,8 @@ namespace N_Core
 			// 
 			// @throws std::invalid_argument if the magic bytes are not set.
 			//
-			explicit Header(N_Core::BinaryBlob header_memory_blob) :
-				_header_content(header_memory_blob.begin())
+			explicit Header(BinaryBlob memory_mapped_region) :
+				_header_content(memory_mapped_region.begin(), memory_mapped_region.end())
 			{
 				if (!are_magic_bytes_correct())
 				{
