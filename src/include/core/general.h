@@ -22,9 +22,10 @@ namespace N_Core
 	void dump(std::ostream& stream, BinaryBlob blob);
 
 	template <typename T>
-	void dump(std::ostream& stream, MMap::Container<T> const& container)
+	std::ostream& operator<<(std::ostream& stream, MMap::Container<T> const& container)
 	{
 		stream.write(reinterpret_cast<char const*>(container._ptr), container.get_size());
+		return stream;
 	}
 	
 	struct Math {}; ///< Tag to dispatch math branch overload.

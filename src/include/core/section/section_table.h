@@ -29,7 +29,7 @@ namespace N_Core
 		class Table
 		{
 			using T = std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr >;
-			using SectionTy = Section<T>;
+			using SectionTy = Section<V>;
 			using InternalStorageTy = std::vector<SectionTy>;
 			InternalStorageTy _sections; ///< list of sections assigned to this table.	
 		public:
@@ -261,14 +261,15 @@ namespace N_Core
 		// @precondition	The cursor may be anywhere. Do not assume anything about its position.
 		//					
 		template <typename T>
-		void dump(std::ostream& stream, Table<T> const& table)
+		std::ostream& operator<<(std::ostream& stream, Table<T> const& table)
 		{
 			std::streampos start_of_section_table = stream.tellp();
 			int section_index = 0;
 			for (auto const& section : table)
 			{
 				stream.seekp(start_of_section_table + std::streamoff((section_index++) * sizeof(T)), std::ios::beg);
-				dump(stream, section);
+				stream << section;
+				return stream;
 			}
 		}
 	}

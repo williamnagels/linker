@@ -24,6 +24,10 @@ namespace N_Core
 
 			Table(BinaryBlob blob) {}
 
+			friend std::ostream& operator<<(std::ostream& stream, Table const& table)
+			{
+				return stream;
+			}
 		private:
 			std::vector<SymbolTy> _entries; ///< index in the vector is the 'symbol index' as used in elf.
 		};

@@ -155,7 +155,7 @@ namespace N_Core
 	{
 		std::ofstream output_file;
 		output_file.open(std::forward<T>(path), std::ios::out | std::ios::binary);
-		dump(output_file, elf);
+		output_file << elf;
 		output_file.close();
 	}
 
@@ -165,11 +165,12 @@ namespace N_Core
 	// @param elf		The elf to write to output stream.
 	// 
 	template <typename V>
-	void dump(std::ostream& stream, N_Core::Elf<V> const& elf)
+	std::ostream& operator<<(std::ostream& stream, N_Core::Elf<V> const& elf)
 	{
-		dump(stream, elf._header);
+		stream << elf._header;
 		stream.seekp(elf._header.get_section_header_offset());
-		dump(stream, elf._section_table);
+		stream << elf._section_table;
+		return stream;
 	}
 
 	// @brief Get name of a section

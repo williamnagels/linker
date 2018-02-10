@@ -169,9 +169,10 @@ namespace N_Core
 		// @param	header	header to dump.
 		//
 		template <typename T>
-		void dump(std::ostream& stream, Header<T> const& header)
+		std::ostream& operator<<(std::ostream& stream, Header<T> const& header)
 		{
 			stream << header._header_content;
+			return stream;
 		}
 	}
 }

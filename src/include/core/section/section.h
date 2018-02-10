@@ -18,11 +18,12 @@ namespace N_Core
 		*
 		*
 		*/
-		template <typename T>
+		template <typename V>
 		class Section
 		{
 		public: 
-			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<T, Bit64>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
+			using T = std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr >;
+			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<V, Bit64>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>>;
 			using InterpretedContentTy = std::variant<MMap::Container<uint8_t>, SymbolTableTy>;
 
 		private:
@@ -97,27 +98,22 @@ namespace N_Core
 			InterpretedContentTy const& get_content() const{ return _interpreted_content; }
 			InterpretedContentTy& get_content() { return _interpreted_content; }
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
+			
 			template <typename T>
-			friend void dump(std::ostream& stream, Section<T> const& section);
+			friend std::ostream& operator<<(std::ostream& stream, Section<T> const& section);
 		};
 		namespace
 		{
 			template <typename T>
 			struct get_representation_visitor 
 			{
-				std::ostream& operator()(MMap::Container<uint8_t>& content) const { return (stream << content); }
-				std::ostream& operator()(typename Section<T>::SymbolTableTy& symbol_table) const {
-					return (stream << "symbol tab");
-				}
-
+				std::ostream& _stream;
+				get_representation_visitor(std::ostream& stream) :_stream(stream) {}
+				void operator()(MMap::Container<uint8_t> const& content) const { _stream << content; }
+				void operator()(typename Section<T>::SymbolTableTy const& symbol_table) const { _stream << symbol_table;}
 			};
 		}
-		template <typename T>
-		std::ostream& operator<<(std::ostream& stream, typename Section<T>::InterpretedContentTy const& content)
-		{
-			get_representation_visitor visitor{};
-			std::visit(content, visitor);
-		}
+
 		// @brief Dump section to stream.
 		// 
 		// @param stream	stream to which to dump the section.
@@ -132,14 +128,18 @@ namespace N_Core
 		// Primarly used to save a section to a file.
 		//
 		template <typename T>
-		void dump(std::ostream& stream, Section<T> const& section)
+		std::ostream& operator<<(std::ostream& stream, Section<T> const& section)
 		{
 			stream << section._header_entry;
 			if (section.get_size_in_file())
 			{
 				stream.seekp(section.get_offset());
-				stream << section.get_content();
+
+				get_representation_visitor<T> visitor(stream);
+				std::visit(visitor, section.get_content());
 			}
+
+			return stream;
 		}
 
 		// @brief Update content of a section
