@@ -39,20 +39,21 @@ namespace N_Core
 			{
 				bool operator()(SectionTy const& section) 
 				{ 
-					return section.get_type() == Type::SHT_PROGBITS && section.get_flags().SHF_EXECINSTR;
+					return section.get_type() == Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && section.get_flags().SHF_EXECINSTR;
 				}
 			};
 			struct DataSectionIdentifier 
 			{
 				bool operator()(SectionTy const& section)
 				{
-					return section.get_type() == Type::SHT_PROGBITS && !section.get_flags().SHF_EXECINSTR;
+					return section.get_type() == Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && !section.get_flags().SHF_EXECINSTR;
 				}
 			};
 			using ConstCodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename InternalStorageTy::const_iterator>;
 			using ConstDataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename InternalStorageTy::const_iterator>;
 			using CodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename InternalStorageTy::iterator>;
 			using DataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename InternalStorageTy::iterator>;
+		
 		public:
 			// @brief Get numbers of sections in the section table.
 			//
@@ -64,10 +65,15 @@ namespace N_Core
 			typename InternalStorageTy::iterator end() { return _sections.end(); }
 			typename InternalStorageTy::const_iterator begin() const { return _sections.begin(); }
 			typename InternalStorageTy::const_iterator end() const { return _sections.end(); }
-			ConstCodeSectionIterator get_code_sections() const { return ConstCodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
-			ConstDataSectionIterator get_data_sections() const { return ConstDataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
-			CodeSectionIterator get_code_sections() { return CodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
-			DataSectionIterator get_data_sections() { return DataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
+			
+			ConstCodeSectionIterator begin_code() const { return ConstCodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
+			ConstCodeSectionIterator end_code() const { return ConstCodeSectionIterator(CodeSectionIdentifier{}, end(), end()); }
+			CodeSectionIterator begin_code() { return CodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
+			CodeSectionIterator end_code() { return CodeSectionIterator(CodeSectionIdentifier{}, end(), end()); }
+			ConstDataSectionIterator begin_data() const { return ConstDataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
+			ConstDataSectionIterator end_data() const { return ConstDataSectionIterator(DataSectionIdentifier{}, end(), end()); }
+			DataSectionIterator begin_data() { return DataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
+			DataSectionIterator end_data() { return DataSectionIterator(DataSectionIdentifier{}, end(), end()); }
 			
 			// @brief Add section to the section table.
 			//
