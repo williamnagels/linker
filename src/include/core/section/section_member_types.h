@@ -22,11 +22,17 @@ namespace N_Core
 			COMPACT
 		};
 
-		enum Flags: uint64_t
+		struct Flags
 		{
-			SHF_WRITE = 0x1,
-			SHF_ALLOC = 0x2,
-			SHF_EXECINSTR = 0x4,
+			uint8_t SHF_WRITE : 1;
+			uint8_t SHF_ALLOC : 1;
+			uint8_t SHF_EXECINSTR : 1;
+		};
+		/*enum Flags: uint64_t
+		{
+			SHF_WRITE = 0x1, // can be written to during execution
+			SHF_ALLOC = 0x2, // occupies memory during execution
+			SHF_EXECINSTR = 0x4, // instructions
 			SHF_MERGE = 0x10,
 			SHF_STRINGS = 0x20,
 			SHF_INFO_LINK = 0x40,
@@ -38,7 +44,7 @@ namespace N_Core
 			SHF_ORDERED = 0x40000000,
 			SHF_EXCLUDE = 0x80000000,
 			SHF_MASKPROC = 0xf0000000
-		};
+		};*/
 
 
 

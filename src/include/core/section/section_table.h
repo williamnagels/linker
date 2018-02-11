@@ -8,6 +8,8 @@
 #include <memory>
 #include <utility>
 
+#include <boost/iterator/filter_iterator.hpp>
+
 namespace N_Core
 {
 	template <typename V>
@@ -32,6 +34,25 @@ namespace N_Core
 			using SectionTy = Section<V>;
 			using InternalStorageTy = std::vector<SectionTy>;
 			InternalStorageTy _sections; ///< list of sections assigned to this table.	
+
+			struct CodeSectionIdentifier 
+			{
+				bool operator()(SectionTy const& section) 
+				{ 
+					return section.get_type() == Type::SHT_PROGBITS && section.get_flags().SHF_EXECINSTR;
+				}
+			};
+			struct DataSectionIdentifier 
+			{
+				bool operator()(SectionTy const& section)
+				{
+					return section.get_type() == Type::SHT_PROGBITS && !section.get_flags().SHF_EXECINSTR;
+				}
+			};
+			using ConstCodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename InternalStorageTy::const_iterator>;
+			using ConstDataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename InternalStorageTy::const_iterator>;
+			using CodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename InternalStorageTy::iterator>;
+			using DataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename InternalStorageTy::iterator>;
 		public:
 			// @brief Get numbers of sections in the section table.
 			//
@@ -43,8 +64,11 @@ namespace N_Core
 			typename InternalStorageTy::iterator end() { return _sections.end(); }
 			typename InternalStorageTy::const_iterator begin() const { return _sections.begin(); }
 			typename InternalStorageTy::const_iterator end() const { return _sections.end(); }
-
-
+			ConstCodeSectionIterator get_code_sections() const { return ConstCodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
+			ConstDataSectionIterator get_data_sections() const { return ConstDataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
+			CodeSectionIterator get_code_sections() { return CodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
+			DataSectionIterator get_data_sections() { return DataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
+			
 			// @brief Add section to the section table.
 			//
 			// @param index		index of section to add. See create_section(...), 
@@ -233,8 +257,6 @@ namespace N_Core
 			Index add_section_to_back(SectionTy&& section)
 			{
 				_sections.emplace_back(std::move(section));
-				//_sections.push_back(std::move(section));
-
 				return _sections.size() - 1;
 			}
 			Index add_section_at_index(SectionTy&& section, Index index)

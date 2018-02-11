@@ -552,4 +552,10 @@ BOOST_AUTO_TEST_CASE(section_table_is_of_valid_size)
 	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
 	BOOST_CHECK_EQUAL(std::size(elf._section_table), 27);
 }
+BOOST_AUTO_TEST_CASE(iterate_over_code_sections)
+{
+	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
+	
+	auto begin = elf._section_table.get_code_sections();
+}
 BOOST_AUTO_TEST_SUITE_END()

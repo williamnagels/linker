@@ -4,12 +4,9 @@
 #include "src/include/core/symtab/symbol_table.h"
 
 #include <variant>
-#include <functional>
-#include <numeric>
 
 namespace N_Core
 {
-
 	namespace N_Section
 	{
 		/*@brief ELF Section representation.
@@ -85,7 +82,7 @@ namespace N_Core
 			uint64_t get_name()const  { return  get(_header_entry, &T::sh_name); }
 			void set_name(uint64_t offset) { set(_header_entry, &T::sh_name, offset); };
 			Type get_type() const  { return  get(_header_entry, &T::sh_type); }
-			Flags get_flags()const  { return static_cast<Flags>( get(_header_entry, &T::sh_flags)); }
+			Flags get_flags()const { auto i = get(_header_entry, &T::sh_flags); return *reinterpret_cast<Flags*>(&i); }
 			uint64_t get_address()const  { return  get(_header_entry, &T::sh_addr); }
 			uint64_t get_offset()const  { return  get(_header_entry, &T::sh_offset); }
 			void set_offset(uint64_t offset)  { return  set(_header_entry, &T::sh_offset, offset); };
@@ -95,8 +92,6 @@ namespace N_Core
 			uint64_t get_info()const  { return  get(_header_entry, &T::sh_info); }
 			uint64_t get_address_alignment()const  { return  get(_header_entry, &T::sh_addralign); }
 			uint64_t get_entry_size()const  { return  get(_header_entry, &T::sh_entsize); }
-			InterpretedContentTy const& get_content() const{ return _interpreted_content; }
-			InterpretedContentTy& get_content() { return _interpreted_content; }
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 			
 			template <typename T>
@@ -105,10 +100,10 @@ namespace N_Core
 		namespace
 		{
 			template <typename T>
-			struct get_representation_visitor 
+			struct ostream_visitor
 			{
 				std::ostream& _stream;
-				get_representation_visitor(std::ostream& stream) :_stream(stream) {}
+				ostream_visitor(std::ostream& stream) :_stream(stream) {}
 				void operator()(MMap::Container<uint8_t> const& content) const { _stream << content; }
 				void operator()(typename Section<T>::SymbolTableTy const& symbol_table) const { _stream << symbol_table;}
 			};
@@ -123,7 +118,7 @@ namespace N_Core
 		// where the section header entry starts in the file (offset).
 		//
 		// Caller can make no guess on what position the stream is
-		// after write.
+		// at, when this function returns.
 		//
 		// Primarly used to save a section to a file.
 		//
@@ -135,31 +130,11 @@ namespace N_Core
 			{
 				stream.seekp(section.get_offset());
 
-				get_representation_visitor<T> visitor(stream);
-				std::visit(visitor, section.get_content());
+				ostream_visitor<T> visitor(stream);
+				std::visit(visitor, section._interpreted_content);
 			}
 
 			return stream;
-		}
-
-		// @brief Update content of a section
-		// 
-		// @param section section of which to change content.
-		// @param begin	it of first element to write.
-		// @param end	one past last element to write.
-		//
-		// Will resize the buffer allocated for the section 
-		// to store exactly the new content. 
-		//
-		// Will also update the section header for with the new size.
-		//
-		template <typename T, typename ItTy>
-		void update(Section<T>& section, ItTy begin,ItTy end)
-		{
-			section.get_content().resize(std::distance(begin, end));
-			section.set_size(section.get_content().get_size());
-
-			std::copy(begin, end, std::begin(section.get_content()));
 		}
 	}
 
