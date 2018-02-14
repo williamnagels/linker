@@ -58,7 +58,7 @@ namespace N_Core
 
 			}
 
-			uint64_t get_virtual_address()
+			uint64_t get_virtual_address() const
 			{
 				return _base_virtual_address + _section.get_offset() - _base_offset;
 			};
