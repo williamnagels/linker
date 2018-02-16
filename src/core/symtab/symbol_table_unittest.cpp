@@ -3,19 +3,11 @@
 
 BOOST_AUTO_TEST_SUITE(symbol_table)
 
-void single_test(int i)
-{
-	BOOST_TEST( 1 == 1);
-}
-
-void combined_test()
-{
-	int params[] = { 1, 2, 3, 4, 5 };
-	std::for_each(params, params + 5, &single_test);
-}
-
  
-BOOST_AUTO_TEST_CASE(basic_symbol)
+BOOST_AUTO_TEST_CASE(single_symbol_table_parse)
 {
+	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/data_empty_bss_global_and_local_symbol");
+
+	auto i = 0;
 }
 BOOST_AUTO_TEST_SUITE_END()

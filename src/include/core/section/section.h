@@ -2,9 +2,9 @@
 #include "src/include/core/general.h"
 #include "src/include/core/section/section_member_types.h"
 #include "src/include/core/symtab/symbol_table.h"
-
 #include <variant>
-
+#include <optional>
+#include <functional>
 namespace N_Core
 {
 	namespace N_Section
@@ -55,7 +55,15 @@ namespace N_Core
 
 			MMap::Container<T> _header_entry;
 			InterpretedContentTy _interpreted_content;
+			Section const* _linked_section;
 		public:
+
+			// @brief Set Linked section
+			void set_linked_section(Section const& section)
+			{
+				_linked_section = &section;
+			}
+
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
@@ -67,6 +75,7 @@ namespace N_Core
 			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_header_entry(header.begin())
 				, _interpreted_content(create_interpreted_content(elf_blob))
+				, _linked_section(nullptr)
 			{
 			}
 
@@ -75,8 +84,8 @@ namespace N_Core
 			explicit Section():
 				_header_entry()
 				, _interpreted_content()
+				, _linked_section(nullptr)
 			{
-
 			}
 
 			uint64_t get_name()const  { return  get(_header_entry, &T::sh_name); }
@@ -97,6 +106,8 @@ namespace N_Core
 			template <typename T>
 			friend std::ostream& operator<<(std::ostream& stream, Section<T> const& section);
 		};
+
+
 		namespace
 		{
 			template <typename T>

@@ -14,6 +14,7 @@ namespace N_Core
 	// Region of memory. Start and end-address range.
 	using BinaryBlob = boost::iterator_range<uint8_t*>;
 
+	using OptionalNonOwningMemory = std::optional < std::reference_wrapper<MMap::Container<uint8_t>>>;
 	// @brief Helper function to dump a region of memory to an output stream
 	// 
 	// @param stream	Output stream to write memory region to.

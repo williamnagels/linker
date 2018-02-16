@@ -17,7 +17,7 @@ namespace N_Core
 
 	namespace N_Section
 	{
-		//class ASection;
+
 		// @brief Collection of sections forms the section table.
 		// 
 		// This class is essentially a wrapper around std::vector
@@ -229,8 +229,18 @@ namespace N_Core
 					auto begin_header = memory_region.begin() + header_of_section_entry;
 					auto end_header = begin_header + size_of_entry;
 
-					add_section(SectionTy(BinaryBlob(begin_header, end_header), memory_region));
+					Index index = add_section(SectionTy(BinaryBlob(begin_header, end_header), memory_region));
 				}
+				for (auto i = 0; i < number_of_entries; i++)
+				{
+					Index linked_section_index = _sections[i].get_link();
+
+					if (linked_section_index)
+					{
+						_sections[i].set_linked_section(_sections[linked_section_index]);
+					}
+				}
+				
 
 
 			}
