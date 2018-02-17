@@ -49,11 +49,19 @@ namespace N_Core
 					return section.get_type() == Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && !section.get_flags().SHF_EXECINSTR;
 				}
 			};
+			struct SymbolTableIdentifier
+			{
+				bool operator()(SectionTy const& section)
+				{
+					return section.get_type() == Type::SHT_SYMTAB;
+				}
+			};
 			using ConstCodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename InternalStorageTy::const_iterator>;
 			using ConstDataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename InternalStorageTy::const_iterator>;
 			using CodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename InternalStorageTy::iterator>;
 			using DataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename InternalStorageTy::iterator>;
-		
+			using ConstSymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename InternalStorageTy::const_iterator>;
+			using SymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename InternalStorageTy::const_iterator>;
 		public:
 			// @brief Get numbers of sections in the section table.
 			//
@@ -75,6 +83,12 @@ namespace N_Core
 			DataSectionIterator begin_data() { return DataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
 			DataSectionIterator end_data() { return DataSectionIterator(DataSectionIdentifier{}, end(), end()); }
 			
+			ConstSymbolTableIterator begin_symbol_table() const {return ConstSymbolTableIterator(SymbolTableIdentifier{}, begin(), end());}
+			ConstSymbolTableIterator end_symbol_table() const { return ConstSymbolTableIterator(SymbolTableIdentifier{}, end(), end()); }
+			SymbolTableIterator begin_symbol_table() { return SymbolTableIterator(SymbolTableIdentifier{}, begin(), end()); }
+			SymbolTableIterator end_symbol_table() { return SymbolTableIterator(SymbolTableIdentifier{}, end(), end()); }
+
+
 			// @brief Add section to the section table.
 			//
 			// @param index		index of section to add. See create_section(...), 

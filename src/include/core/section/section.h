@@ -31,7 +31,18 @@ namespace N_Core
 				switch (get_type())
 				{
 				case N_Section::Type::SHT_SYMTAB:
-					interpreted_content = SymbolTableTy(content_blob);
+
+					if (_linked_section)
+					{
+						Section const& interp = (*_linked_section);
+						OptionalNonOwningMemory mem = std::get<0>(interp.get_interpreted_content());
+						interpreted_content = SymbolTableTy(content_blob, mem);
+					}
+					else
+					{
+						interpreted_content = SymbolTableTy(content_blob, std::nullopt);
+					}
+					
 					break;
 				default:
 					
@@ -55,13 +66,15 @@ namespace N_Core
 
 			MMap::Container<T> _header_entry;
 			InterpretedContentTy _interpreted_content;
-			Section const* _linked_section;
+			std::optional<std::reference_wrapper<const Section>> _linked_section;
+			BinaryBlob _elf_blob;
 		public:
 
 			// @brief Set Linked section
 			void set_linked_section(Section const& section)
 			{
-				_linked_section = &section;
+				_linked_section = section;
+				_interpreted_content = create_interpreted_content(_elf_blob);
 			}
 
 			// @brief Create a section for a memory mapped elf.
@@ -75,9 +88,11 @@ namespace N_Core
 			explicit Section(N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_header_entry(header.begin())
 				, _interpreted_content(create_interpreted_content(elf_blob))
-				, _linked_section(nullptr)
+				, _linked_section()
+				, _elf_blob(elf_blob)
 			{
 			}
+
 
 			// @brief Create a new section.
 			// 
@@ -102,7 +117,7 @@ namespace N_Core
 			uint64_t get_address_alignment()const  { return  get(_header_entry, &T::sh_addralign); }
 			uint64_t get_entry_size()const  { return  get(_header_entry, &T::sh_entsize); }
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
-			
+			InterpretedContentTy const& get_interpreted_content() const { return _interpreted_content; }
 			template <typename T>
 			friend std::ostream& operator<<(std::ostream& stream, Section<T> const& section);
 		};

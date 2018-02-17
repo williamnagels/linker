@@ -15,6 +15,7 @@ namespace N_Core
 		class Table
 		{
 		private:
+			OptionalNonOwningMemory _names;
 			void build_table(BinaryBlob blob)
 			{
 				auto number_of_entries = blob.size() / sizeof(T);
@@ -24,40 +25,29 @@ namespace N_Core
 					uint8_t* begin = blob.begin() + i * sizeof(T);
 					uint8_t* end = begin + sizeof(T);
 
-					_symbols.emplace_back(BinaryBlob(begin, end));
+					_symbols.emplace_back(BinaryBlob(begin, end), _names);
 				}
 			}
 
 
 		public:
 
-			using NameBufferTy = std::optional < std::reference_wrapper<MMap::Container<uint8_t>>;
-			NameBufferTy _names;
 
 			using SymbolTy = typename Symbol<T>;
 			SymbolTy static create_symbol(BinaryBlob header, BinaryBlob content) { SymbolTy(header, content); }
 			using InternalStorageTy = std::vector<SymbolTy>;
 			InternalStorageTy _symbols; ///< list of sections assigned to this table.
 
-			typename InternalStorageTy::iterator begin() { return _entries.begin(); }
-			typename InternalStorageTy::iterator end() { return _entries.end(); }
-			typename InternalStorageTy::const_iterator begin() const { return _entries.begin(); }
-			typename InternalStorageTy::const_iterator end() const { return _entries.end(); }
+			typename InternalStorageTy::iterator begin() { return _symbols.begin(); }
+			typename InternalStorageTy::iterator end() { return _symbols.end(); }
+			typename InternalStorageTy::const_iterator begin() const { return _symbols.begin(); }
+			typename InternalStorageTy::const_iterator end() const { return _symbols.end(); }
 
-			Table(BinaryBlob blob, MMap::Container<uint8_t> const& linked_section):
-				,Table(blob)
-				,_names(linked_section)
+			Table(BinaryBlob blob, OptionalNonOwningMemory symbol_names):
+				_names(symbol_names)
 			{
 				build_table(blob);
 			}
-			Table(BinaryBlob blob) 
-			{
-				build_table(blob);
-			}
-
-	
-		private:
-			std::vector<SymbolTy> _entries; ///< index in the vector is the 'symbol index' as used in elf.
 		};
 		template <typename T>
 		std::ostream& operator<<(std::ostream& stream, Table<T> const& table)
