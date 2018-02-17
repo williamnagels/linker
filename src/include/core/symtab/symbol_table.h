@@ -11,10 +11,11 @@ namespace N_Core
 {
 	namespace N_Symbol
 	{
-		template <typename T>
+		template <typename T, typename C>
 		class Table
 		{
 		private:
+			std::reference_wrapper<const C> _container;
 			OptionalNonOwningMemory _names;
 			void build_table(BinaryBlob blob)
 			{
@@ -25,7 +26,7 @@ namespace N_Core
 					uint8_t* begin = blob.begin() + i * sizeof(T);
 					uint8_t* end = begin + sizeof(T);
 
-					_symbols.emplace_back(BinaryBlob(begin, end), _names);
+					_symbols.emplace_back(*this, BinaryBlob(begin, end), _names);
 				}
 			}
 
@@ -33,7 +34,7 @@ namespace N_Core
 		public:
 
 
-			using SymbolTy = typename Symbol<T>;
+			using SymbolTy = typename Symbol<T, Table>;
 			SymbolTy static create_symbol(BinaryBlob header, BinaryBlob content) { SymbolTy(header, content); }
 			using InternalStorageTy = std::vector<SymbolTy>;
 			InternalStorageTy _symbols; ///< list of sections assigned to this table.
@@ -43,14 +44,15 @@ namespace N_Core
 			typename InternalStorageTy::const_iterator begin() const { return _symbols.begin(); }
 			typename InternalStorageTy::const_iterator end() const { return _symbols.end(); }
 
-			Table(BinaryBlob blob, OptionalNonOwningMemory symbol_names):
-				_names(symbol_names)
+			Table(C const& container, BinaryBlob blob, OptionalNonOwningMemory symbol_names):
+				_container(container)
+				,_names(symbol_names)
 			{
 				build_table(blob);
 			}
 		};
-		template <typename T>
-		std::ostream& operator<<(std::ostream& stream, Table<T> const& table)
+		template <typename T, typename C>
+		std::ostream& operator<<(std::ostream& stream, Table<T, C> const& table)
 		{
 			std::for_each(table.begin(), table.end(), [&](auto const& symbol) {stream << symbol; });
 			return stream;

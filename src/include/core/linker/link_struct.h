@@ -40,7 +40,7 @@ namespace N_Core
 		// to find the correct virtual address to be used in 
 		// relocations after all sections have been put into segments.
 		//
-		template <typename DataWidthTy>
+		/*template <typename DataWidthTy, typename ContainerTy>
 		class Placement
 		{
 			uint64_t const& _base_virtual_address;
@@ -65,6 +65,6 @@ namespace N_Core
 		};
 
 		template <typename T>
-		using GlobalSymbolTable = std::map<std::string, Placement<T>>;
+		using GlobalSymbolTable = std::map<std::string, Placement<T>>;*/
 	}
 }

@@ -31,7 +31,7 @@ namespace N_Core
 		class Table
 		{
 			using T = std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr >;
-			using SectionTy = Section<V>;
+			using SectionTy = Section<V, Table>;
 			using InternalStorageTy = std::vector<SectionTy>;
 			InternalStorageTy _sections; ///< list of sections assigned to this table.	
 
@@ -243,7 +243,7 @@ namespace N_Core
 					auto begin_header = memory_region.begin() + header_of_section_entry;
 					auto end_header = begin_header + size_of_entry;
 
-					Index index = add_section(SectionTy(BinaryBlob(begin_header, end_header), memory_region));
+					Index index = add_section(SectionTy(*this,BinaryBlob(begin_header, end_header), memory_region));
 				}
 				for (auto i = 0; i < number_of_entries; i++)
 				{
