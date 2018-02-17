@@ -19,6 +19,7 @@ namespace N_Core
 			void build_table(BinaryBlob blob)
 			{
 				auto number_of_entries = blob.size() / sizeof(T);
+				_symbols.reserve(number_of_entries);
 
 				for (auto i = 0; i < number_of_entries; i++)
 				{

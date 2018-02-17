@@ -26,18 +26,13 @@ namespace N_Core
 			InterpretedContentTy create_interpreted_content(BinaryBlob elf_blob)
 			{
 				auto content_blob = get_content_from_header(elf_blob);
-				InterpretedContentTy interpreted_content;
 				switch (get_type())
 				{
 				case N_Section::Type::SHT_SYMTAB:
-					interpreted_content = SymbolTableTy(*this, content_blob);					
-					break;
+					return SymbolTableTy(*this, content_blob);					
 				default:
-					
-					interpreted_content = MMap::Container<uint8_t>(content_blob.begin(), content_blob.end());
+					return MMap::Container<uint8_t>(content_blob.begin(), content_blob.end());
 				}
-
-				return interpreted_content;
 			}
 			// @brief Get address range where the content of the section is stored.
 			// 
@@ -54,17 +49,8 @@ namespace N_Core
 			std::reference_wrapper<const ContainerTy> _container;
 			MMap::Container<T> _header_entry;
 			InterpretedContentTy _interpreted_content;
-			std::optional<std::reference_wrapper<const Section>> _linked_section;
-			BinaryBlob _elf_blob;
+
 		public:
-
-			// @brief Set Linked section
-			void set_linked_section(Section const& section)
-			{
-				_linked_section = section;
-				_interpreted_content = create_interpreted_content(_elf_blob);
-			}
-
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
@@ -77,8 +63,6 @@ namespace N_Core
 				_container(container)
 				,_header_entry(header.begin())
 				, _interpreted_content(create_interpreted_content(elf_blob))
-				, _linked_section()
-				, _elf_blob(elf_blob)
 			{
 			}
 
@@ -88,7 +72,6 @@ namespace N_Core
 			explicit Section():
 				_header_entry()
 				, _interpreted_content()
-				, _linked_section(nullptr)
 			{
 			}
 

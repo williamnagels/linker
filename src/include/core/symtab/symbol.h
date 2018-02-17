@@ -27,13 +27,15 @@ namespace N_Core
 			C const& get_parent()const { return _container; }
 			std::optional<std::string> get_name_as_string() const 
 			{ 
-				Index index = get_parent().get_parent().get_info();
+				Index index = get_parent().get_parent().get_link();
 
-				/*if (_names)
+				if (index)
 				{
-					uint8_t const* base = &(*_names->get().begin());
-					return std::string(reinterpret_cast<char const*>(base+get_name()));
-				}*/
+					auto const& linked_content = get_parent().get_parent().get_parent()[index];
+					
+					//uint8_t const* base = &(*std::get<0>(linked_content.get_interpreted_content()).begin());
+					//return std::string(reinterpret_cast<char const*>(base+get_name()));
+				}
 				
 				return std::optional<std::string>();
 			}

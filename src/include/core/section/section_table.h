@@ -233,9 +233,9 @@ namespace N_Core
 			explicit Table(N_Header::Header<V> const& header, BinaryBlob memory_region)
 			{
 				auto number_of_entries = header.get_section_header_number_of_entries();
+				_sections.reserve(number_of_entries);
 				auto start_of_table = header.get_section_header_offset();
 				auto size_of_entry = header.get_section_header_entry_size();
-
 
 				for (auto i = 0; i < number_of_entries; i++)
 				{
@@ -243,7 +243,7 @@ namespace N_Core
 					auto begin_header = memory_region.begin() + header_of_section_entry;
 					auto end_header = begin_header + size_of_entry;
 
-					Index index = add_section(SectionTy(*this,BinaryBlob(begin_header, end_header), memory_region));
+					_sections.emplace_back(*this, BinaryBlob(begin_header, end_header), memory_region);
 				}
 			}
 
@@ -268,7 +268,7 @@ namespace N_Core
 			//
 			// @throws std::invalid_argument if no section with the index exists.
 			//
-			SectionTy const& operator[](Index index) const { return const_cast<Table<T>*>(this)->operator[](index); }
+			SectionTy const& operator[](Index index) const { return const_cast<Table*>(this)->operator[](index); }
 
 
 	private:
