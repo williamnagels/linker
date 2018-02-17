@@ -16,7 +16,6 @@ namespace N_Core
 		{
 		private:
 			std::reference_wrapper<const C> _container;
-			OptionalNonOwningMemory _names;
 			void build_table(BinaryBlob blob)
 			{
 				auto number_of_entries = blob.size() / sizeof(T);
@@ -26,14 +25,14 @@ namespace N_Core
 					uint8_t* begin = blob.begin() + i * sizeof(T);
 					uint8_t* end = begin + sizeof(T);
 
-					_symbols.emplace_back(*this, BinaryBlob(begin, end), _names);
+					_symbols.emplace_back(*this, BinaryBlob(begin, end));
 				}
 			}
 
 
 		public:
 
-
+			C const& get_parent()const { return _container; }
 			using SymbolTy = typename Symbol<T, Table>;
 			SymbolTy static create_symbol(BinaryBlob header, BinaryBlob content) { SymbolTy(header, content); }
 			using InternalStorageTy = std::vector<SymbolTy>;
@@ -44,9 +43,8 @@ namespace N_Core
 			typename InternalStorageTy::const_iterator begin() const { return _symbols.begin(); }
 			typename InternalStorageTy::const_iterator end() const { return _symbols.end(); }
 
-			Table(C const& container, BinaryBlob blob, OptionalNonOwningMemory symbol_names):
+			Table(C const& container, BinaryBlob blob):
 				_container(container)
-				,_names(symbol_names)
 			{
 				build_table(blob);
 			}

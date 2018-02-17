@@ -245,18 +245,6 @@ namespace N_Core
 
 					Index index = add_section(SectionTy(*this,BinaryBlob(begin_header, end_header), memory_region));
 				}
-				for (auto i = 0; i < number_of_entries; i++)
-				{
-					Index linked_section_index = _sections[i].get_link();
-
-					if (linked_section_index)
-					{
-						_sections[i].set_linked_section(_sections[linked_section_index]);
-					}
-				}
-				
-
-
 			}
 
 			// @brief Get section at an index
