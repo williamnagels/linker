@@ -47,4 +47,15 @@ namespace N_Core
 		idx._value++;
 		return idx;
 	}
+	Index operator--(Index& idx, int)
+	{
+		Index old = idx;
+		idx._value--;
+		return old;
+	}
+	Index& operator--(Index& idx)
+	{
+		idx._value--;
+		return idx;
+	}
 }

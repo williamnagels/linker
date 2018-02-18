@@ -23,6 +23,18 @@ namespace N_Core
 			using InterpretedContentTy = std::variant<MMap::Container<uint8_t>, SymbolTableTy>;
 			using ContainerTy = C;
 		private:
+			void create_interpreted_content(InterpretedContentTy &elem, BinaryBlob elf_blob)
+			{
+				auto content_blob = get_content_from_header(elf_blob);
+				switch (get_type())
+				{
+				case N_Section::Type::SHT_SYMTAB:
+					elem.emplace<SymbolTableTy>(*this, content_blob);
+					break;
+				default:
+					elem.emplace<MMap::Container<uint8_t>>(content_blob.begin(), content_blob.end());
+				}
+			}
 			InterpretedContentTy create_interpreted_content(BinaryBlob elf_blob)
 			{
 				auto content_blob = get_content_from_header(elf_blob);
@@ -46,7 +58,7 @@ namespace N_Core
 			{
 				return BinaryBlob(reinterpret_cast<uint8_t*>(elf_blob.begin() + get_offset()), reinterpret_cast<uint8_t*>(elf_blob.begin() + get_offset() + get_size()));
 			}
-			std::reference_wrapper<const ContainerTy> _container;
+			ContainerTy const& _container;
 			MMap::Container<T> _header_entry;
 			InterpretedContentTy _interpreted_content;
 
@@ -62,18 +74,12 @@ namespace N_Core
 			explicit Section(ContainerTy const& container, N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_container(container)
 				,_header_entry(header.begin())
-				, _interpreted_content(create_interpreted_content(elf_blob))
-			{
-			}
-
-
-			// @brief Create a new section.
-			// 
-			explicit Section():
-				_header_entry()
 				, _interpreted_content()
 			{
+				create_interpreted_content(_interpreted_content, elf_blob);
 			}
+			Section(Section const&) = delete;
+			Section(Section&&) = delete;
 
 			uint64_t get_name()const  { return  get(_header_entry, &T::sh_name); }
 			void set_name(uint64_t offset) { set(_header_entry, &T::sh_name, offset); };

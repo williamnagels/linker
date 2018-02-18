@@ -547,21 +547,21 @@ BOOST_AUTO_TEST_CASE(is_valid_layout)
 	BOOST_CHECK_EQUAL(N_Core::is_valid_layout(elf), invalid_sections);
 
 }*/
-BOOST_AUTO_TEST_CASE(section_table_is_of_valid_size)
-{
-	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
-	BOOST_CHECK_EQUAL(std::size(elf._section_table), 27);
-}
-BOOST_AUTO_TEST_CASE(iterate_over_code_and_data_sections)
-{
-	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/data_empty_bss_global_and_local_symbol");
-	
-
-	auto number_of_code_sections = std::distance(elf._section_table.begin_code(), elf._section_table.end_code());
-	auto number_of_data_sections = std::distance(elf._section_table.begin_data(), elf._section_table.end_data());
-
-	BOOST_CHECK_EQUAL(number_of_code_sections, 1); //.text
-	BOOST_CHECK_EQUAL(number_of_data_sections, 2); //.data and .bss
-
-}
+//BOOST_AUTO_TEST_CASE(section_table_is_of_valid_size)
+//{
+//	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/sleep");
+//	BOOST_CHECK_EQUAL(std::size(elf._section_table), 27);
+//}
+//BOOST_AUTO_TEST_CASE(iterate_over_code_and_data_sections)
+//{
+//	auto elf = N_Core::create_elf<N_Core::Bit64>("testfiles/data_empty_bss_global_and_local_symbol");
+//	
+//
+//	auto number_of_code_sections = std::distance(elf._section_table.begin_code(), elf._section_table.end_code());
+//	auto number_of_data_sections = std::distance(elf._section_table.begin_data(), elf._section_table.end_data());
+//
+//	BOOST_CHECK_EQUAL(number_of_code_sections, 1); //.text
+//	BOOST_CHECK_EQUAL(number_of_data_sections, 2); //.data and .bss
+//
+//}
 BOOST_AUTO_TEST_SUITE_END()

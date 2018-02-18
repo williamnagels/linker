@@ -32,7 +32,8 @@ namespace N_Core
 		{
 			using T = std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr >;
 			using SectionTy = Section<V, Table>;
-			using InternalStorageTy = std::vector<SectionTy>;
+			using InternalStorageTy = std::list<SectionTy>;
+
 			InternalStorageTy _sections; ///< list of sections assigned to this table.	
 
 			struct CodeSectionIdentifier 
@@ -61,7 +62,9 @@ namespace N_Core
 			using CodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename InternalStorageTy::iterator>;
 			using DataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename InternalStorageTy::iterator>;
 			using ConstSymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename InternalStorageTy::const_iterator>;
-			using SymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename InternalStorageTy::const_iterator>;
+			using SymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename InternalStorageTy::iterator>;
+		
+			using SymbolIterator = Iterator<typename SectionTy::SymbolTableTy::SymbolTy, typename SymbolTableIterator, typename SectionTy::SymbolTableTy::Iterator>;
 		public:
 			// @brief Get numbers of sections in the section table.
 			//
@@ -88,30 +91,31 @@ namespace N_Core
 			SymbolTableIterator begin_symbol_table() { return SymbolTableIterator(SymbolTableIdentifier{}, begin(), end()); }
 			SymbolTableIterator end_symbol_table() { return SymbolTableIterator(SymbolTableIdentifier{}, end(), end()); }
 
-
-			// @brief Add section to the section table.
-			//
-			// @param index		index of section to add. See create_section(...), 
-			//   use N_Section::WildcardIndex if index doesnt matter;
-			//
-			// @param section	section to add to the table
-			//
-			// Note 1: if a section already exists for the index, that section
-			// has its index increased.
-			//
-			// Note 2: the ordering of section has nothing to do with the
-			// placement of sections in the elf. See get_offset() and get_size()
-			// to find the location of the section in the file.
-			//
-			Index add_section(SectionTy&& section, Index index = Index::Wildcard)
-			{ 
-				if (is_wildcard(index))
-				{
-					return add_section_to_back(std::move(section));
-				}
-				
-				return add_section_at_index(std::move(section), index);
-			}
+			SymbolIterator begin_symbol() { return SymbolIterator(); /*begin_symbol_table(), end_symbol_table()*/}
+			SymbolIterator end_symbol() { return SymbolIterator(); }
+			//// @brief Add section to the section table.
+			////
+			//// @param index		index of section to add. See create_section(...), 
+			////   use N_Section::WildcardIndex if index doesnt matter;
+			////
+			//// @param section	section to add to the table
+			////
+			//// Note 1: if a section already exists for the index, that section
+			//// has its index increased.
+			////
+			//// Note 2: the ordering of section has nothing to do with the
+			//// placement of sections in the elf. See get_offset() and get_size()
+			//// to find the location of the section in the file.
+			////
+			//Index add_section(SectionTy&& section, Index index = Index::Wildcard)
+			//{ 
+			//	if (is_wildcard(index))
+			//	{
+			//		return add_section_to_back(std::move(section));
+			//	}
+			//	
+			//	return add_section_at_index(std::move(section), index);
+			//}
 
 			// @brief Swap section at index1 with section at index2
 			//
@@ -121,20 +125,20 @@ namespace N_Core
 			// @throws std::invalid_argument if index1 and index2 are invalid (does not
 			// identify a section).
 			//
-			void swap_section(Index index1, Index index2)
-			{
-				if (!are_valid_indices<DoesNotSupportWildCard>(index1, index2))
-				{
-					throw std::invalid_argument(invalid_section_index);
-				}
+			//void swap_section(Index index1, Index index2)
+			//{
+			//	if (!are_valid_indices<DoesNotSupportWildCard>(index1, index2))
+			//	{
+			//		throw std::invalid_argument(invalid_section_index);
+			//	}
 
-				decltype(_sections)::iterator iterator1 = std::begin(_sections);
-				decltype(_sections)::iterator iterator2 = std::begin(_sections);
-				std::advance(iterator1, index1);
-				std::advance(iterator2, index2);
+			//	decltype(_sections)::iterator iterator1 = std::begin(_sections);
+			//	decltype(_sections)::iterator iterator2 = std::begin(_sections);
+			//	std::advance(iterator1, index1);
+			//	std::advance(iterator2, index2);
 
-				std::iter_swap(iterator1, iterator2);
-			}
+			//	std::iter_swap(iterator1, iterator2);
+			//}
 
 			// @brief Remove section identified by index from the section table
 			// 
@@ -143,29 +147,41 @@ namespace N_Core
 			//
 			// @throws std::invalid_argument if index is invalid (larger than amount of sections).
 			//
-			void remove_section(Index index, SectionRemovalPolicy policy)
-			{
-				if (!is_valid_index<typename DoesNotSupportWildCard>(_sections, index))
-				{
-					throw std::range_error(invalid_section_index);
-				}
+			//void remove_section(Index index, SectionRemovalPolicy policy)
+			//{
+			//	if (!is_valid_index<typename DoesNotSupportWildCard>(_sections, index))
+			//	{
+			//		throw std::range_error(invalid_section_index);
+			//	}
 
-				if (policy == SectionRemovalPolicy::COMPACT)
-				{
-					auto offset_to_subtract = _sections.at(index).get_size_in_file();
+			//	if (policy == SectionRemovalPolicy::COMPACT)
+			//	{
+			//		auto offset_to_subtract = _sections.at(index).get_size_in_file();
 
-					std::for_each(
-						_sections.begin() + (index + 1)
-						, _sections.end()
-						, [=](auto& section) { section.set_offset(section.get_offset() - offset_to_subtract); }
-					);
-				}
+			//		std::for_each(
+			//			_sections.begin() + (index + 1)
+			//			, _sections.end()
+			//			, [=](auto& section) { section.set_offset(section.get_offset() - offset_to_subtract); }
+			//		);
+			//	}
 
-				auto element_to_delete = _sections.begin() + index;
-				_sections.erase(_sections.begin() + index);
-			}
+			//	auto element_to_delete = _sections.begin() + index;
+			//	_sections.erase(_sections.begin() + index);
+			//}
 
 			~Table() {}
+			Table(Table const&) = delete;
+			Table(Table&&) = delete;
+			// @brief Create a section table based on an existing section table.
+			// 
+			// @param existing_table	blueprint for the new table.
+			//
+			// Will move sections from existing_table to the newly created table.
+			//
+			//Table(Table&& other_table)
+			//{
+			//	_sections = std::move(other_table)._sections;
+			//}
 
 			// @brief Create a section table based on an existing section table.
 			// 
@@ -173,22 +189,11 @@ namespace N_Core
 			//
 			// Will move sections from existing_table to the newly created table.
 			//
-			Table(Table&& other_table)
-			{
-				_sections = std::move(other_table)._sections;
-			}
-
-			// @brief Create a section table based on an existing section table.
-			// 
-			// @param existing_table	blueprint for the new table.
-			//
-			// Will move sections from existing_table to the newly created table.
-			//
-			Table& operator=(Table&& other_table)
-			{
-				_sections = std::move(other_table)._sections;
-				return *this;
-			}
+			//Table& operator=(Table&& other_table)
+			//{
+			//	_sections = std::move(other_table)._sections;
+			//	return *this;
+			//}
 
 			// @brief Create a section table based on an existing section table.
 			// 
@@ -196,13 +201,13 @@ namespace N_Core
 			//
 			// Will deep copy sections from existing_table to the newly created table.
 			//
-			Table(Table const& other_table)
-			{
-				for (auto const& section : other_table._sections)
-				{
-					_sections.emplace_back(section);
-				}
-			}
+			//Table(Table const& other_table)
+			//{
+			//	for (auto const& section : other_table._sections)
+			//	{
+			//		_sections.emplace_back(section);
+			//	}
+			//}
 
 			// @brief Create a section table based on an existing section table.
 			// 
@@ -210,30 +215,33 @@ namespace N_Core
 			//
 			// Will deep copy sections from existing_table to the newly created table.
 			//
-			Table& operator=(Table const& other_table)
-			{
-				for (auto const& section : other_table._sections)
-				{
-					_sections.emplace_back(section->deep_copy());
-				}
-				return *this;
-			}
+			//Table& operator=(Table const& other_table)
+			//{
+			//	for (auto const& section : other_table._sections)
+			//	{
+			//		_sections.emplace_back(section->deep_copy());
+			//	}
+			//	return *this;
+			//}
 
 			explicit Table() {}
-			explicit Table(std::size_t number_of_entries) 
-			{
-				for (auto i = 0; i < number_of_entries; i++)
-				{
-					add_section({});
-				}
-			}
+			//explicit Table(std::size_t number_of_entries) 
+			//{
+			//	for (auto i = 0; i < number_of_entries; i++)
+			//	{
+			//		add_section({});
+			//	}
+			//}
 
 			// @brief Create a new table to store sections in.
 			// 
 			explicit Table(N_Header::Header<V> const& header, BinaryBlob memory_region)
 			{
+				
 				auto number_of_entries = header.get_section_header_number_of_entries();
-				_sections.reserve(number_of_entries);
+				//avoid invalidation  of references.
+				//_sections.reserve(number_of_entries); 
+
 				auto start_of_table = header.get_section_header_offset();
 				auto size_of_entry = header.get_section_header_entry_size();
 
@@ -259,7 +267,9 @@ namespace N_Core
 				{
 					throw std::invalid_argument(invalid_section_index);
 				}
-				return _sections.at(index);
+				auto iterator = _sections.begin();
+				std::advance(iterator, index);
+				return *iterator;
 			}
 
 			// @brief Get section at an index
@@ -272,20 +282,20 @@ namespace N_Core
 
 
 	private:
-			Index add_section_to_back(SectionTy&& section)
-			{
-				_sections.emplace_back(std::move(section));
-				return _sections.size() - 1;
-			}
-			Index add_section_at_index(SectionTy&& section, Index index)
-			{
-				decltype(_sections)::iterator iterator = std::begin(_sections);
-				std::advance(iterator, index);
+			//Index add_section_to_back(SectionTy&& section)
+			//{
+			//	_sections.emplace_back(std::move(section));
+			//	return _sections.size() - 1;
+			//}
+			//Index add_section_at_index(SectionTy&& section, Index index)
+			//{
+			//	decltype(_sections)::iterator iterator = std::begin(_sections);
+			//	std::advance(iterator, index);
 
-				_sections.insert(iterator, std::move(section));
+			//	_sections.insert(iterator, std::move(section));
 
-				return index;
-			}
+			//	return index;
+			//}
 		};
 
 

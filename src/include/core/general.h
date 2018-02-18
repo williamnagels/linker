@@ -116,7 +116,8 @@ namespace N_Core
 
 	Index operator ++(Index& idx, int);
 	Index& operator++(Index& idx);
-
+	Index operator --(Index& idx, int);
+	Index& operator--(Index& idx);
 	using IndexList = std::vector<Index>;
 
 	bool operator==(Index const& a, Index const& b);
@@ -153,5 +154,90 @@ namespace N_Core
 		}
 		return rc;
 	}
-	
+
+	template <class Value, typename TableItTy, typename ElementItTy>
+	class Iterator
+		: public boost::iterator_facade< 
+		Iterator<Value, TableItTy, ElementItTy>
+		, Value
+		, boost::forward_traversal_tag
+		>
+	{
+		TableItTy _it_current;
+		TableItTy _it_end;
+		ElementItTy _it_element_current;
+		ElementItTy _it_element_end;
+		bool _done;
+		void init_element_it_from_table_it()
+		{
+			auto const& interpreted_content = _it_current->get_interpreted_content();
+			auto const& symbol_table = std::get<1>(interpreted_content);
+
+			_it_element_current = std::begin(symbol_table);
+			_it_element_end = std::end(symbol_table);
+		}
+	public:
+		explicit Iterator() :
+			_done(true) {};
+
+		explicit Iterator(TableItTy it_begin, TableItTy it_end) :
+			_it_current(it_begin)
+			,_it_end(it_end)
+			,_done(_it_current == _it_end)
+		{
+			if (!_done)
+			{
+				init_element_it_from_table_it();
+
+				//look for first table which contains elements and is not empty
+				while (_it_element_current == _it_element_end && !_done)
+				{
+					increment();
+				}
+			}
+		}
+
+	private:
+		friend class boost::iterator_core_access;
+
+		bool equal(Iterator const& other) const
+		{
+			return _it_element_current == other._it_element_current && _it_current == other._it_current;
+		}
+
+		void increment()
+		{
+			if (_done) return;
+
+			//move to next element in the table.
+			_it_element_current = std::next(_it_element_current);
+			if (_it_element_current != _it_element_end)
+			{
+				return;
+			}
+
+			//table was empty; go to next table
+			_it_current = std::next(_it_current);
+
+			//out of tables & elements.
+			if (_it_element_current == _it_element_end)
+			{
+				_done = true; 
+				return;
+			}
+
+			//grab a hold of first & last elements in the new table.
+			init_element_it_from_table_it();
+		}
+
+		Value& dereference() const
+		{
+			return (*_it_element_current);
+		}
+	};
 };
+//
+//using Iterator = node_iterator;
+//using ConstIterator = 
+//typedef impl::Iterator<node_base> node_iterator;
+//typedef impl::Iterator<node_base const> node_const_iterator;

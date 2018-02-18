@@ -15,11 +15,10 @@ namespace N_Core
 		class Table
 		{
 		private:
-			std::reference_wrapper<const C> _container;
+			C const& _container;
 			void build_table(BinaryBlob blob)
 			{
 				auto number_of_entries = blob.size() / sizeof(T);
-				_symbols.reserve(number_of_entries);
 
 				for (auto i = 0; i < number_of_entries; i++)
 				{
@@ -36,19 +35,23 @@ namespace N_Core
 			C const& get_parent()const { return _container; }
 			using SymbolTy = typename Symbol<T, Table>;
 			SymbolTy static create_symbol(BinaryBlob header, BinaryBlob content) { SymbolTy(header, content); }
-			using InternalStorageTy = std::vector<SymbolTy>;
+			using InternalStorageTy = std::list<SymbolTy>;
+			using Iterator = typename InternalStorageTy::iterator;
+			using ConstIterator = typename InternalStorageTy::const_iterator;
 			InternalStorageTy _symbols; ///< list of sections assigned to this table.
 
-			typename InternalStorageTy::iterator begin() { return _symbols.begin(); }
-			typename InternalStorageTy::iterator end() { return _symbols.end(); }
-			typename InternalStorageTy::const_iterator begin() const { return _symbols.begin(); }
-			typename InternalStorageTy::const_iterator end() const { return _symbols.end(); }
+			Iterator begin() { return _symbols.begin(); }
+			Iterator end() { return _symbols.end(); }
+			ConstIterator begin() const { return _symbols.begin(); }
+			ConstIterator end() const { return _symbols.end(); }
 
 			Table(C const& container, BinaryBlob blob):
 				_container(container)
 			{
 				build_table(blob);
 			}
+			Table(Table const&) = delete;
+		    Table(Table&&) = delete;
 		};
 		template <typename T, typename C>
 		std::ostream& operator<<(std::ostream& stream, Table<T, C> const& table)

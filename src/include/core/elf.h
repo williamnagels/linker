@@ -49,6 +49,7 @@ namespace N_Core
 		// it will be nullptr if an elf is created using custom (not on disk) structs.
 		// When moving an elf the region will be moved.
 		// When copying an elf the region will be shared.
+		boost::interprocess::file_mapping _file;
 		std::shared_ptr<boost::interprocess::mapped_region> _region;
 
 		constexpr bool is_64bit()
@@ -91,11 +92,10 @@ namespace N_Core
 		}
 
 		// @brief Construct an elf from memory mapped region and a file name.
-		// You probably do not want to use directly but instead use the free functions: create_elf
-		//
-		template <typename T, std::enable_if_t<std::is_same_v<std::shared_ptr<boost::interprocess::mapped_region>, std::decay_t<T>>, int> a = 0>
-		explicit Elf(T&& mapped_region) :
-			_region(std::forward<T>(mapped_region))
+		template <typename T, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0 >
+		explicit Elf(T&& path):
+			_file(path, boost::interprocess::read_only)
+			, _region(std::make_shared<boost::interprocess::mapped_region>(_file, boost::interprocess::read_only))
 			, _header(get_memory_mapped_region())
 			, _section_table(_header, get_memory_mapped_region())
 		{
@@ -133,14 +133,14 @@ namespace N_Core
 	//
 	// @returns elf as stored in the file.
 	//
-	template <typename V, typename T, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0 >
+	/*template <typename V, typename T, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0 >
 	N_Core::Elf<V> create_elf(T&& path)
 	{
 		boost::interprocess::file_mapping m_file(path, boost::interprocess::read_only);
 		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
 
 		return N_Core::Elf<V>(std::move(memory_region));
-	}
+	}*/
 
 	// @brief write an elf to a file.
 	// 
