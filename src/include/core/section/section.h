@@ -96,6 +96,7 @@ namespace N_Core
 			uint64_t get_entry_size()const  { return  get(_header_entry, &T::sh_entsize); }
 			uint64_t get_size_in_file() const  { return (get_type() != SHT_NOBITS) ? get_size() : 0; }
 			InterpretedContentTy const& get_interpreted_content() const { return _interpreted_content; }
+			InterpretedContentTy & get_interpreted_content() { return _interpreted_content; }
 			C const& get_parent()const { return _container; }
 			template <typename T, typename C>
 			friend std::ostream& operator<<(std::ostream& stream, Section<T, C> const& section);

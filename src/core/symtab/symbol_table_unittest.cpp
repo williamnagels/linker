@@ -4,36 +4,35 @@
 #include <utility>
 BOOST_AUTO_TEST_SUITE(symbol_table)
 
-
-BOOST_AUTO_TEST_CASE(single_symbol_table_parse)
-{
-	N_Core::Elf<N_Core::Bit64> elf("testfiles/data_empty_bss_global_and_local_symbol");
-
-	auto symbol_table_iterator = elf._section_table.begin_symbol_table();
-
-	for (; symbol_table_iterator != elf._section_table.end_symbol_table(); symbol_table_iterator++)
-	{
-		auto const& interpreted_content = symbol_table_iterator->get_interpreted_content();
-		auto const& symbol_table = std::get <1>(interpreted_content);
-
-		auto symbol_iterator = std::begin(symbol_table);
-		for (; symbol_iterator != std::end(symbol_table); symbol_iterator++)
-		{
-			auto name = *symbol_iterator->get_name_as_string();
-			auto i = 0;
-		}
-	}
-}
-
-
+// data_empty_bss_global_and_local_symbol only contains 1 symbol table
+// 
+// 5th symbol: 'local_symbol'
+// 7th symbol: 'global_symbol'
+//10th symbol: 'Log'
+//11th symbol: 'Log2'
+//
 BOOST_AUTO_TEST_CASE(single_symbol_table_parse_renewed)
 {
 	N_Core::Elf<N_Core::Bit64> elf("testfiles/data_empty_bss_global_and_local_symbol");
 
-	auto symbol_iterator = elf._section_table.begin_symbol();
+	auto iterator = std::find_if(elf._section_table.begin_symbol()
+		, elf._section_table.end_symbol()
+		, [](auto const& i) {return i.get_name_as_string()=="local_symbol"; });
+	BOOST_CHECK_EQUAL(std::distance(elf._section_table.begin_symbol(), iterator), 5);
 
-	for (; symbol_iterator != elf._section_table.end_symbol(); symbol_iterator++)
-	{
-	}
+	iterator = std::find_if(elf._section_table.begin_symbol()
+		, elf._section_table.end_symbol()
+		, [](auto const& i) {return i.get_name_as_string() == "global_symbol"; });
+	BOOST_CHECK_EQUAL(std::distance(elf._section_table.begin_symbol(), iterator), 9);
+
+	iterator = std::find_if(elf._section_table.begin_symbol()
+		, elf._section_table.end_symbol()
+		, [](auto const& i) {return i.get_name_as_string() == "Log"; });
+	BOOST_CHECK_EQUAL(std::distance(elf._section_table.begin_symbol(), iterator), 10);
+
+	iterator = std::find_if(elf._section_table.begin_symbol()
+		, elf._section_table.end_symbol()
+		, [](auto const& i) {return i.get_name_as_string() == "Log2"; });
+	BOOST_CHECK_EQUAL(std::distance(elf._section_table.begin_symbol(), iterator), 11);
 }
 BOOST_AUTO_TEST_SUITE_END()

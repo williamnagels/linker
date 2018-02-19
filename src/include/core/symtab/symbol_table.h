@@ -1,10 +1,11 @@
 #pragma once
 #include "src/include/core/symtab/symbol.h"
+#include "src/include/core/symtab/symbol_member_types.h"
 #include <vector>
 #include <memory>
 #include <optional>
 #include <functional>
-#include "src/include/core/symtab/symbol_member_types.h"
+
 
 
 namespace N_Core

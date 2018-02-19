@@ -155,45 +155,42 @@ namespace N_Core
 		return rc;
 	}
 
-	template <class Value, typename TableItTy, typename ElementItTy>
+	template <typename ContainerIteratorTy, typename ElementIteratorTy, typename Value= typename std::iterator_traits<ElementIteratorTy>::value_type>
 	class Iterator
-		: public boost::iterator_facade< 
-		Iterator<Value, TableItTy, ElementItTy>
+		: public boost::iterator_facade<Iterator<Value, ContainerIteratorTy, ElementIteratorTy>
 		, Value
-		, boost::forward_traversal_tag
-		>
+		, boost::bidirectional_traversal_tag>
 	{
-		TableItTy _it_current;
-		TableItTy _it_end;
-		ElementItTy _it_element_current;
-		ElementItTy _it_element_end;
-		bool _done;
-		void init_element_it_from_table_it()
-		{
-			auto const& interpreted_content = _it_current->get_interpreted_content();
-			auto const& symbol_table = std::get<1>(interpreted_content);
-
-			_it_element_current = std::begin(symbol_table);
-			_it_element_end = std::end(symbol_table);
-		}
 	public:
-		explicit Iterator() :
-			_done(true) {};
 
-		explicit Iterator(TableItTy it_begin, TableItTy it_end) :
-			_it_current(it_begin)
-			,_it_end(it_end)
-			,_done(_it_current == _it_end)
+		//@brief create iterator at last container; last element.
+		//
+		//@param it_end past end iterator of last container.
+		//
+		explicit Iterator(ContainerIteratorTy it_end) :
+			_it_container_current(std::prev(it_end))
+			, _it_container_end(it_end)
 		{
-			if (!_done)
-			{
-				init_element_it_from_table_it();
+			init_element_it_from_table_it();
+			_it_element_current = std::prev(_it_element_end);
+		};
 
-				//look for first table which contains elements and is not empty
-				while (_it_element_current == _it_element_end && !_done)
-				{
-					increment();
-				}
+
+		//@brief create iterator to loop over range of contains.
+		//
+		//@param it_begin iterator to first valid container.
+		//@param it_end past end iterator of last container.
+		//
+		explicit Iterator(ContainerIteratorTy it_begin, ContainerIteratorTy it_end) :
+			_it_container_current(it_begin)
+			,_it_container_end(it_end)
+		{
+			init_element_it_from_table_it();
+
+			//look for first table which contains elements and is not empty
+			while (_it_element_current == _it_element_end && _it_container_current != _it_container_end)
+			{
+				increment();
 			}
 		}
 
@@ -202,12 +199,11 @@ namespace N_Core
 
 		bool equal(Iterator const& other) const
 		{
-			return _it_element_current == other._it_element_current && _it_current == other._it_current;
+			return _it_element_current == other._it_element_current && _it_container_current == other._it_container_current;
 		}
 
 		void increment()
 		{
-			if (_done) return;
 
 			//move to next element in the table.
 			_it_element_current = std::next(_it_element_current);
@@ -217,12 +213,11 @@ namespace N_Core
 			}
 
 			//table was empty; go to next table
-			_it_current = std::next(_it_current);
+			_it_container_current = std::next(_it_container_current);
 
 			//out of tables & elements.
 			if (_it_element_current == _it_element_end)
 			{
-				_done = true; 
 				return;
 			}
 
@@ -234,6 +229,20 @@ namespace N_Core
 		{
 			return (*_it_element_current);
 		}
+
+		void init_element_it_from_table_it()
+		{
+			auto& interpreted_content = _it_container_current->get_interpreted_content();
+			auto& symbol_table = std::get<1>(interpreted_content);
+
+			_it_element_current = std::begin(symbol_table);
+			_it_element_end = std::end(symbol_table);
+		}
+
+		ContainerIteratorTy _it_container_current;
+		ContainerIteratorTy _it_container_end;
+		ElementIteratorTy _it_element_current;
+		ElementIteratorTy _it_element_end;
 	};
 };
 //
