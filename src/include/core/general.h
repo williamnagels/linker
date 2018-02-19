@@ -157,7 +157,8 @@ namespace N_Core
 
 	template <typename ContainerIteratorTy, typename ElementIteratorTy, typename Value= typename std::iterator_traits<ElementIteratorTy>::value_type>
 	class Iterator
-		: public boost::iterator_facade<Iterator<Value, ContainerIteratorTy, ElementIteratorTy>
+		: public boost::iterator_facade<
+		  Iterator<ContainerIteratorTy, ElementIteratorTy, Value>
 		, Value
 		, boost::bidirectional_traversal_tag>
 	{
