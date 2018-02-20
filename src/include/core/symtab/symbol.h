@@ -32,7 +32,8 @@ namespace N_Core
 
 				if (index)
 				{
-					auto const& linked_content = get_parent().get_parent().get_parent()[index];
+					
+					auto const& linked_content = get_parent().get_parent().get_parent().get_section_at(index);
 					
 					uint8_t const* base = &(*std::get<0>(linked_content.get_interpreted_content()).begin());
 					return std::string(reinterpret_cast<char const*>(base+get_name()));

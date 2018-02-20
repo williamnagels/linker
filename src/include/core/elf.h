@@ -1,11 +1,12 @@
 #pragma once
-#include "src/include/core/section/section_table.h"
+
 #include "src/include/core/header/header.h"
 #include "src/include/core/section/section.h"
 #include "src/include/core/general.h"
 
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
+#include <boost/iterator/filter_iterator.hpp>
 
 #include <string>
 #include <fstream>
@@ -42,7 +43,36 @@ namespace N_Core
 	{
 	private:
 		using HeaderTy = N_Header::Header<V>;
-		using SectionTableTy = N_Section::Table<V>;
+		using SectionTy = N_Section::Section<V, Elf>;
+		using SectionTableTy = std::list<typename SectionTy>;
+		struct CodeSectionIdentifier
+		{
+			bool operator()(SectionTy const& section)
+			{
+				return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && section.get_flags().SHF_EXECINSTR;
+			}
+		};
+		struct DataSectionIdentifier
+		{
+			bool operator()(SectionTy const& section)
+			{
+				return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && !section.get_flags().SHF_EXECINSTR;
+			}
+		};
+		struct SymbolTableIdentifier
+		{
+			bool operator()(SectionTy const& section)
+			{
+				return section.get_type() == N_Section::Type::SHT_SYMTAB;
+			}
+		};
+		using ConstCodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename SectionTableTy::const_iterator>;
+		using ConstDataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename SectionTableTy::const_iterator>;
+		using CodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename SectionTableTy::iterator>;
+		using DataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename SectionTableTy::iterator>;
+		using ConstSymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename SectionTableTy::const_iterator>;
+		using SymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename SectionTableTy::iterator>;
+		using SymbolIterator = Iterator<typename SymbolTableIterator, typename SectionTy::SymbolTableTy::Iterator>;
 		// This shared ptr keeps the memory mapped elf in memory until
 		// it is destructed (and other elfs sharing the counter).
 		// This pointer is only set when elf is sourced by an elf on disk.
@@ -57,8 +87,30 @@ namespace N_Core
 			return std::is_same_v<V, Bit64>;
 		}
 	public:
+		typename SectionTableTy::iterator begin() { return _section_table.begin(); }
+		typename SectionTableTy::iterator end() { return _section_table.end(); }
+		typename SectionTableTy::const_iterator begin() const { return _sections.begin(); }
+		typename SectionTableTy::const_iterator end() const { return _sections.end(); }
+
+		ConstCodeSectionIterator begin_code() const { return ConstCodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
+		ConstCodeSectionIterator end_code() const { return ConstCodeSectionIterator(CodeSectionIdentifier{}, end(), end()); }
+		CodeSectionIterator begin_code() { return CodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
+		CodeSectionIterator end_code() { return CodeSectionIterator(CodeSectionIdentifier{}, end(), end()); }
+		ConstDataSectionIterator begin_data() const { return ConstDataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
+		ConstDataSectionIterator end_data() const { return ConstDataSectionIterator(DataSectionIdentifier{}, end(), end()); }
+		DataSectionIterator begin_data() { return DataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
+		DataSectionIterator end_data() { return DataSectionIterator(DataSectionIdentifier{}, end(), end()); }
+
+		ConstSymbolTableIterator begin_symbol_table() const { return ConstSymbolTableIterator(SymbolTableIdentifier{}, begin(), end()); }
+		ConstSymbolTableIterator end_symbol_table() const { return ConstSymbolTableIterator(SymbolTableIdentifier{}, end(), end()); }
+		SymbolTableIterator begin_symbol_table() { return SymbolTableIterator(SymbolTableIdentifier{}, begin(), end()); }
+		SymbolTableIterator end_symbol_table() { return SymbolTableIterator(SymbolTableIdentifier{}, end(), end()); }
+
+		SymbolIterator begin_symbol() { return SymbolIterator(begin_symbol_table(), end_symbol_table()); }
+		SymbolIterator end_symbol() { return SymbolIterator(end_symbol_table()); }
 		HeaderTy _header;
-        SectionTableTy _section_table;
+		SectionTableTy _section_table; ///< list of sections assigned to this table.	
+        //SectionTableTy _section_table;
 
 		// @brief Returns true if the elf is loaded from disk
 		//
@@ -97,8 +149,20 @@ namespace N_Core
 			_file(path, boost::interprocess::read_only)
 			, _region(std::make_shared<boost::interprocess::mapped_region>(_file, boost::interprocess::read_only))
 			, _header(get_memory_mapped_region())
-			, _section_table(_header, get_memory_mapped_region())
+			, _section_table()
 		{
+			auto number_of_entries = _header.get_section_header_number_of_entries();
+			auto start_of_table = _header.get_section_header_offset();
+			auto size_of_entry = _header.get_section_header_entry_size();
+
+			for (auto i = 0; i < number_of_entries; i++)
+			{
+				auto header_of_section_entry = start_of_table + size_of_entry * i;
+				auto begin_header = get_memory_mapped_region().begin() + header_of_section_entry;
+				auto end_header = begin_header + size_of_entry;
+
+				_section_table.emplace_back(*this, BinaryBlob(begin_header, end_header), get_memory_mapped_region());
+			}
 		}
 
 		// @brief Construct an elf from an existing elf and write to file on disk.
@@ -110,6 +174,43 @@ namespace N_Core
 			, _section_table(std::forward<T>(elf)._section_table)
 		{
 
+		}
+
+		SectionTy const& get_section_at(int index) const
+		{
+			return const_cast<Elf*>(this)->get_section_at(index);
+		}
+		SectionTy& get_section_at(int index)
+		{
+			auto it = std::begin(_section_table);
+			std::advance(it, index);
+			return *it;
+		}
+
+		// @brief Helper function to dump elfs to an output stream.
+		// 
+		// @param stream	Output stream to dump elf to.
+		// @param elf		The elf to write to output stream.
+		// 
+		template <typename V>
+		friend std::ostream& operator<<(std::ostream& stream, N_Core::Elf<V> const& elf)
+		{
+			//dump header at offset 0
+			stream << elf._header;
+
+			// dump sections; step 1 section entry header size back since first step 
+			// is increasing stream pos by its size.
+			stream.seekp(elf._header.get_section_header_offset()- sizeof(N_Core::Elf<V>::SectionTy::T));
+			std::streampos start_of_section_table = stream.tellp();
+
+			for (auto const& section : elf._section_table)
+			{
+				stream.seekp(std::streamoff(sizeof(N_Core::Elf<V>::SectionTy::T)), std::ios::cur);
+				std::streampos current_table_entry_position = stream.tellp();
+				stream << section;
+				stream.seekp(current_table_entry_position, std::ios::beg);
+			}
+			return stream;
 		}
 	};
 
@@ -124,23 +225,6 @@ namespace N_Core
 	{
 		return N_Core::Elf(std::forward<T>(existing_elf));
 	}
-
-	// @brief create elf from a file on disk.
-	// 
-	// @param path	Location of the elf on disk.
-	//
-	// @throws boost::interprocess::interprocess_exception if file not found
-	//
-	// @returns elf as stored in the file.
-	//
-	/*template <typename V, typename T, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0 >
-	N_Core::Elf<V> create_elf(T&& path)
-	{
-		boost::interprocess::file_mapping m_file(path, boost::interprocess::read_only);
-		auto&& memory_region = std::make_shared<boost::interprocess::mapped_region>(m_file, boost::interprocess::read_only);
-
-		return N_Core::Elf<V>(std::move(memory_region));
-	}*/
 
 	// @brief write an elf to a file.
 	// 
@@ -159,19 +243,6 @@ namespace N_Core
 		output_file.close();
 	}
 
-	// @brief Helper function to dump elfs to an output stream.
-	// 
-	// @param stream	Output stream to dump elf to.
-	// @param elf		The elf to write to output stream.
-	// 
-	template <typename V>
-	std::ostream& operator<<(std::ostream& stream, N_Core::Elf<V> const& elf)
-	{
-		stream << elf._header;
-		stream.seekp(elf._header.get_section_header_offset());
-		stream << elf._section_table;
-		return stream;
-	}
 
 	// @brief Get name of a section
 	// 
