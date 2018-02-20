@@ -66,13 +66,14 @@ namespace N_Core
 				return section.get_type() == N_Section::Type::SHT_SYMTAB;
 			}
 		};
-		using ConstCodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename SectionTableTy::const_iterator>;
-		using ConstDataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename SectionTableTy::const_iterator>;
-		using CodeSectionIterator = boost::filter_iterator<CodeSectionIdentifier, typename SectionTableTy::iterator>;
-		using DataSectionIterator = boost::filter_iterator<DataSectionIdentifier, typename SectionTableTy::iterator>;
-		using ConstSymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename SectionTableTy::const_iterator>;
-		using SymbolTableIterator = boost::filter_iterator<SymbolTableIdentifier, typename SectionTableTy::iterator>;
-		using SymbolIterator = Iterator<typename SymbolTableIterator, typename SectionTy::SymbolTableTy::Iterator>;
+
+		template <typename T>
+		using SectionIterator = boost::filter_iterator<T, typename SectionTableTy::iterator>;
+		template <typename T>
+		using ConstSectionIterator = boost::filter_iterator<T, typename SectionTableTy::const_iterator>;
+
+		using SymbolIterator = Iterator<typename SectionIterator<SymbolTableIdentifier>, typename SectionTy::SymbolTableTy::Iterator>;
+
 		// This shared ptr keeps the memory mapped elf in memory until
 		// it is destructed (and other elfs sharing the counter).
 		// This pointer is only set when elf is sourced by an elf on disk.
@@ -92,25 +93,20 @@ namespace N_Core
 		typename SectionTableTy::const_iterator begin() const { return _sections.begin(); }
 		typename SectionTableTy::const_iterator end() const { return _sections.end(); }
 
-		ConstCodeSectionIterator begin_code() const { return ConstCodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
-		ConstCodeSectionIterator end_code() const { return ConstCodeSectionIterator(CodeSectionIdentifier{}, end(), end()); }
-		CodeSectionIterator begin_code() { return CodeSectionIterator(CodeSectionIdentifier{}, begin(), end()); }
-		CodeSectionIterator end_code() { return CodeSectionIterator(CodeSectionIdentifier{}, end(), end()); }
-		ConstDataSectionIterator begin_data() const { return ConstDataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
-		ConstDataSectionIterator end_data() const { return ConstDataSectionIterator(DataSectionIdentifier{}, end(), end()); }
-		DataSectionIterator begin_data() { return DataSectionIterator(DataSectionIdentifier{}, begin(), end()); }
-		DataSectionIterator end_data() { return DataSectionIterator(DataSectionIdentifier{}, end(), end()); }
+		template <typename FilterType>
+		ConstSectionIterator<FilterType> begin() const { return SectionIterator<FilterType>(FilterType{},begin(), end()); }
+		template <typename FilterType>
+		SectionIterator<FilterType> begin() { return SectionIterator<FilterType>(FilterType{}, begin(), end()); }
+		template <typename FilterType>
+		ConstSectionIterator<FilterType> end() const { return SectionIterator<FilterType>(FilterType{}, end(), end()); }
+		template <typename FilterType>
+		SectionIterator<FilterType> end() { return SectionIterator<FilterType>(FilterType{}, end(), end()); }
 
-		ConstSymbolTableIterator begin_symbol_table() const { return ConstSymbolTableIterator(SymbolTableIdentifier{}, begin(), end()); }
-		ConstSymbolTableIterator end_symbol_table() const { return ConstSymbolTableIterator(SymbolTableIdentifier{}, end(), end()); }
-		SymbolTableIterator begin_symbol_table() { return SymbolTableIterator(SymbolTableIdentifier{}, begin(), end()); }
-		SymbolTableIterator end_symbol_table() { return SymbolTableIterator(SymbolTableIdentifier{}, end(), end()); }
-
-		SymbolIterator begin_symbol() { return SymbolIterator(begin_symbol_table(), end_symbol_table()); }
-		SymbolIterator end_symbol() { return SymbolIterator(end_symbol_table()); }
+		SymbolIterator begin_symbol() { return SymbolIterator(begin<SymbolTableIdentifier>(), end<SymbolTableIdentifier>()); }
+		SymbolIterator end_symbol() { return SymbolIterator(end<SymbolTableIdentifier>()); }
 		HeaderTy _header;
 		SectionTableTy _section_table; ///< list of sections assigned to this table.	
-        //SectionTableTy _section_table;
+
 
 		// @brief Returns true if the elf is loaded from disk
 		//
