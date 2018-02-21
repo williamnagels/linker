@@ -3,7 +3,7 @@
 #include "src/include/core/header/header.h"
 #include "src/include/core/section/section.h"
 #include "src/include/core/general.h"
-
+#include "src/include/core/section/filters.h"
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/iterator/filter_iterator.hpp>
@@ -41,38 +41,42 @@ namespace N_Core
 	template <typename V>
 	class Elf
 	{
-	private:
+	public:
 		using HeaderTy = N_Header::Header<V>;
 		using SectionTy = N_Section::Section<V, Elf>;
 		using SectionTableTy = std::list<typename SectionTy>;
-		struct CodeSectionIdentifier
-		{
-			bool operator()(SectionTy const& section)
-			{
-				return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && section.get_flags().SHF_EXECINSTR;
-			}
-		};
-		struct DataSectionIdentifier
-		{
-			bool operator()(SectionTy const& section)
-			{
-				return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && !section.get_flags().SHF_EXECINSTR;
-			}
-		};
-		struct SymbolTableIdentifier
-		{
-			bool operator()(SectionTy const& section)
-			{
-				return section.get_type() == N_Section::Type::SHT_SYMTAB;
-			}
-		};
+
+		//struct CodeSectionIdentifier
+		//{
+		//	bool operator()(SectionTy const& section)
+		//	{
+		//		return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && section.get_flags().SHF_EXECINSTR;
+		//	}
+		//};
+		//struct DataSectionIdentifier
+		//{
+		//	bool operator()(SectionTy const& section)
+		//	{
+		//		return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && !section.get_flags().SHF_EXECINSTR;
+		//	}
+		//};
+		//struct SymbolTableIdentifier
+		//{
+		//	bool operator()(SectionTy const& section)
+		//	{
+		//		return section.get_type() == N_Section::Type::SHT_SYMTAB;
+		//	}
+		//};
 
 		template <typename T>
 		using SectionIterator = boost::filter_iterator<T, typename SectionTableTy::iterator>;
 		template <typename T>
 		using ConstSectionIterator = boost::filter_iterator<T, typename SectionTableTy::const_iterator>;
 
-		using SymbolIterator = Iterator<typename SectionIterator<SymbolTableIdentifier>, typename SectionTy::SymbolTableTy::Iterator>;
+		using SymbolIterator = Iterator<
+			typename N_Core::N_Section::N_Filters::__Detail__::Filter
+				<Elf, N_Core::N_Section::N_Filters::SymbolTable>, 
+			typename SectionTy::SymbolTableTy::Iterator>;
 
 		// This shared ptr keeps the memory mapped elf in memory until
 		// it is destructed (and other elfs sharing the counter).
@@ -93,17 +97,41 @@ namespace N_Core
 		typename SectionTableTy::const_iterator begin() const { return _sections.begin(); }
 		typename SectionTableTy::const_iterator end() const { return _sections.end(); }
 
-		template <typename FilterType>
-		ConstSectionIterator<FilterType> begin() const { return SectionIterator<FilterType>(FilterType{},begin(), end()); }
-		template <typename FilterType>
-		SectionIterator<FilterType> begin() { return SectionIterator<FilterType>(FilterType{}, begin(), end()); }
-		template <typename FilterType>
-		ConstSectionIterator<FilterType> end() const { return SectionIterator<FilterType>(FilterType{}, end(), end()); }
-		template <typename FilterType>
-		SectionIterator<FilterType> end() { return SectionIterator<FilterType>(FilterType{}, end(), end()); }
+		//template <typename FilterType>
+		//ConstSectionIterator<FilterType> begin() const { return ConstSectionIterator<FilterType>(FilterType{*this},begin(), end()); }
+		//template <typename FilterType>
+		//SectionIterator<FilterType> begin() { return SectionIterator<FilterType>(FilterType{ *this }, begin(), end()); }
+		//template <typename FilterType>
+		//ConstSectionIterator<FilterType> end() const { return ConstSectionIterator<FilterType>(FilterType{ *this }, end(), end()); }
+		//template <typename FilterType>
+		//SectionIterator<FilterType> end() { return SectionIterator<FilterType>(FilterType{ *this }, end(), end()); }
 
-		SymbolIterator begin_symbol() { return SymbolIterator(begin<SymbolTableIdentifier>(), end<SymbolTableIdentifier>()); }
-		SymbolIterator end_symbol() { return SymbolIterator(end<SymbolTableIdentifier>()); }
+		template <typename FilterTag>
+		SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>> begin() {
+			return SectionIterator<
+				N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>
+			>(N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>{}, begin(), end()); }
+		
+		template <typename FilterTag>
+		SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>> end() {
+			return SectionIterator<
+				N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>
+			>(N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>{}, end(), end()); }
+
+		SymbolIterator begin_symbol()
+		{ 
+			return SymbolIterator(
+				begin<N_Section::N_Filters::SymbolTable>(), 
+				end<N_Section::N_Filters::SymbolTable>()
+			); 
+		}
+		SymbolIterator end_symbol()
+		{ 
+			return SymbolIterator(
+				end<N_Section::N_Filters::SymbolTable>()
+			); 
+		}
+		//
 		HeaderTy _header;
 		SectionTableTy _section_table; ///< list of sections assigned to this table.	
 
