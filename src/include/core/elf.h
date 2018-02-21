@@ -74,8 +74,8 @@ namespace N_Core
 		using ConstSectionIterator = boost::filter_iterator<T, typename SectionTableTy::const_iterator>;
 
 		using SymbolIterator = Iterator<
-			typename N_Core::N_Section::N_Filters::__Detail__::Filter
-				<Elf, N_Core::N_Section::N_Filters::SymbolTable>, 
+			typename SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter
+				<Elf, N_Core::N_Section::N_Filters::SymbolTable>>, 
 			typename SectionTy::SymbolTableTy::Iterator>;
 
 		// This shared ptr keeps the memory mapped elf in memory until

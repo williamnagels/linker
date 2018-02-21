@@ -28,7 +28,7 @@ namespace N_Core
 				template <typename ElfTy>
 				struct Filter<ElfTy, SymbolTable>
 				{
-					bool operator()(typename ElfTy::SectionTy) { return section.get_type() == N_Section::Type::SHT_SYMTAB; };
+					bool operator()(typename ElfTy::SectionTy const& section) { return section.get_type() == N_Section::Type::SHT_SYMTAB; };
 				};
 			}
 
