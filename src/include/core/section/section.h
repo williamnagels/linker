@@ -2,6 +2,7 @@
 #include "src/include/core/general.h"
 #include "src/include/core/section/section_member_types.h"
 #include "src/include/core/symtab/symbol_table.h"
+#include "src/include/core/reltab/relocation_table.h"
 #include <variant>
 #include <optional>
 #include <functional>

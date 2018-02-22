@@ -59,7 +59,8 @@ add_executable(linker src/main.cpp)
 
 add_executable(linker_unit_tests 
 	src/unittest_main.cpp
-	src/core/symtab/symbol_table_unittest.cpp	
+	src/core/symtab/symbol_table_unittest.cpp
+	src/core/reltab/relocation_table_unittest.cpp
 	src/core/header/header_unittest.cpp
 	src/core/section/section_unittest.cpp
 
