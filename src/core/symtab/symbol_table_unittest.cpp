@@ -35,4 +35,10 @@ BOOST_AUTO_TEST_CASE(single_symbol_table_parse_renewed)
 		, [](auto const& i) {return i.get_name_as_string() == "Log2"; });
 	BOOST_CHECK_EQUAL(std::distance(elf.begin_symbol(), iterator), 11);
 }
+BOOST_AUTO_TEST_CASE(global_symbols)
+{
+	N_Core::Elf<N_Core::Bit64> elf("testfiles/data_empty_bss_global_and_local_symbol");
+	auto begin_global_symbols = elf.begin<N_filters::Symbol, N_filters::Global>();
+	auto end_global_symbols = elf.end<N_filters::Symbol, N_filters::Global>();
+}
 BOOST_AUTO_TEST_SUITE_END()
