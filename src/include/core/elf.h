@@ -10,7 +10,6 @@
 
 #include <string>
 #include <fstream>
-
 namespace N_Core
 {
 	// @brief Class representing an elf loaded from file or a custom created elf.
@@ -46,28 +45,6 @@ namespace N_Core
 		using SectionTy = N_Section::Section<V, Elf>;
 		using SectionTableTy = std::list<typename SectionTy>;
 
-		//struct CodeSectionIdentifier
-		//{
-		//	bool operator()(SectionTy const& section)
-		//	{
-		//		return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && section.get_flags().SHF_EXECINSTR;
-		//	}
-		//};
-		//struct DataSectionIdentifier
-		//{
-		//	bool operator()(SectionTy const& section)
-		//	{
-		//		return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && !section.get_flags().SHF_EXECINSTR;
-		//	}
-		//};
-		//struct SymbolTableIdentifier
-		//{
-		//	bool operator()(SectionTy const& section)
-		//	{
-		//		return section.get_type() == N_Section::Type::SHT_SYMTAB;
-		//	}
-		//};
-
 		template <typename T>
 		using SectionIterator = boost::filter_iterator<T, typename SectionTableTy::iterator>;
 		template <typename T>
@@ -77,6 +54,9 @@ namespace N_Core
 			typename SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter
 				<Elf, N_Core::N_Section::N_Filters::SymbolTable>>, 
 			typename SectionTy::SymbolTableTy::Iterator>;
+
+		template <typename F>
+		using ConditionedSymbolIterator = boost::filter_iterator<F, typename SymbolIterator>;
 
 		// This shared ptr keeps the memory mapped elf in memory until
 		// it is destructed (and other elfs sharing the counter).
@@ -97,15 +77,6 @@ namespace N_Core
 		typename SectionTableTy::const_iterator begin() const { return _sections.begin(); }
 		typename SectionTableTy::const_iterator end() const { return _sections.end(); }
 
-		//template <typename FilterType>
-		//ConstSectionIterator<FilterType> begin() const { return ConstSectionIterator<FilterType>(FilterType{*this},begin(), end()); }
-		//template <typename FilterType>
-		//SectionIterator<FilterType> begin() { return SectionIterator<FilterType>(FilterType{ *this }, begin(), end()); }
-		//template <typename FilterType>
-		//ConstSectionIterator<FilterType> end() const { return ConstSectionIterator<FilterType>(FilterType{ *this }, end(), end()); }
-		//template <typename FilterType>
-		//SectionIterator<FilterType> end() { return SectionIterator<FilterType>(FilterType{ *this }, end(), end()); }
-
 		template <typename FilterTag>
 		SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>> begin() {
 			return SectionIterator<
@@ -118,6 +89,10 @@ namespace N_Core
 				N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>
 			>(N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>{}, end(), end()); }
 
+		auto range(std::function<bool(typename SectionTy::SymbolTableTy::SymbolTy const&)> f) -> std::pair<ConditionedSymbolIterator<decltype(f)>, ConditionedSymbolIterator<decltype(f)>>
+		{
+			return { ConditionedSymbolIterator<decltype(f)>(f, begin_symbol(), end_symbol()), ConditionedSymbolIterator<decltype(f)>(f, end_symbol(), end_symbol()) };
+		}
 
 		SymbolIterator begin_symbol()
 		{ 
@@ -132,7 +107,7 @@ namespace N_Core
 				end<N_Section::N_Filters::SymbolTable>()
 			); 
 		}
-		//
+
 		HeaderTy _header;
 		SectionTableTy _section_table; ///< list of sections assigned to this table.	
 

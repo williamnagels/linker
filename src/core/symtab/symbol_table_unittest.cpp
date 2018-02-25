@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp> 
 #include "src/include/core/elf.h"
+#include "src/include/core/symtab/filters.h"
 #include <variant>
 #include <utility>
 BOOST_AUTO_TEST_SUITE(symbol_table)
@@ -75,4 +76,16 @@ BOOST_AUTO_TEST_CASE(global_symbols)
 	BOOST_CHECK_EQUAL(std::distance(iterator, elf.end_symbol()), 0);
 }
 
+
+BOOST_AUTO_TEST_CASE(determine_sections_to_link_for_simple_translation_unit)
+{
+	N_Core::Elf<N_Core::Bit64> elf("testfiles/data_empty_bss_global_and_local_symbol");
+
+	auto range = elf.range(N_Core::N_Filters::N_Symbol::Global<decltype(elf)>{});
+
+	int number_of_global_symbols = std::distance(range.first, range.second);
+
+	BOOST_CHECK_EQUAL(number_of_global_symbols, 3);
+
+}
 BOOST_AUTO_TEST_SUITE_END()
