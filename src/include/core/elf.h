@@ -118,6 +118,7 @@ namespace N_Core
 				N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>
 			>(N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>{}, end(), end()); }
 
+
 		SymbolIterator begin_symbol()
 		{ 
 			return SymbolIterator(

@@ -20,7 +20,7 @@ namespace N_Core
 		{
 		public: 
 			using T = std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr >;
-			using SymbolTableTy = N_Symbol::Table< std::conditional_t< std::is_same_v<V, Bit64>, N_Symbol::Elf64_Sym, N_Symbol::Elf32_Sym>, Section>;
+			using SymbolTableTy = N_Symbol::Table<V, Section>;
 			using InterpretedContentTy = std::variant<MMap::Container<uint8_t>, SymbolTableTy>;
 			using ContainerTy = C;
 		private:

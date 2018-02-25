@@ -15,22 +15,6 @@ namespace N_Core
 		template <typename T, typename C>
 		class Table
 		{
-		private:
-			C const& _container;
-			void build_table(BinaryBlob blob)
-			{
-				auto number_of_entries = blob.size() / sizeof(T);
-
-				for (auto i = 0; i < number_of_entries; i++)
-				{
-					uint8_t* begin = blob.begin() + i * sizeof(T);
-					uint8_t* end = begin + sizeof(T);
-
-					_symbols.emplace_back(*this, BinaryBlob(begin, end));
-				}
-			}
-
-
 		public:
 
 			C const& get_parent()const { return _container; }
@@ -53,6 +37,22 @@ namespace N_Core
 			}
 			Table(Table const&) = delete;
 		    Table(Table&&) = delete;
+		private:
+			C const& _container;
+			void build_table(BinaryBlob blob)
+			{
+				auto size_of_one_symbol = sizeof(SymbolTy::T);
+				auto size = blob.size();
+				auto number_of_entries = blob.size() / size_of_one_symbol;
+
+				for (auto i = 0; i < number_of_entries; i++)
+				{
+					uint8_t* begin = blob.begin() + i * sizeof(SymbolTy::T);
+					uint8_t* end = begin + sizeof(SymbolTy::T);
+
+					_symbols.emplace_back(*this, BinaryBlob(begin, end));
+				}
+			}
 		};
 		template <typename T, typename C>
 		std::ostream& operator<<(std::ostream& stream, Table<T, C> const& table)

@@ -160,7 +160,7 @@ namespace N_Core
 		: public boost::iterator_facade<
 		  Iterator<ContainerIteratorTy, ElementIteratorTy, Value>
 		, Value
-		, boost::bidirectional_traversal_tag>
+		, boost::forward_traversal_tag>
 	{
 	public:
 
@@ -173,7 +173,8 @@ namespace N_Core
 			, _it_container_end(it_end)
 		{
 			init_element_it_from_table_it();
-			_it_element_current = std::prev(_it_element_end);
+			_it_element_current = _it_element_end;
+			_it_container_current = _it_container_end;
 		};
 
 
@@ -205,7 +206,6 @@ namespace N_Core
 
 		void increment()
 		{
-
 			//move to next element in the table.
 			_it_element_current = std::next(_it_element_current);
 			if (_it_element_current != _it_element_end)
@@ -217,7 +217,7 @@ namespace N_Core
 			_it_container_current = std::next(_it_container_current);
 
 			//out of tables & elements.
-			if (_it_element_current == _it_element_end)
+			if (_it_container_current == _it_container_end)
 			{
 				return;
 			}
