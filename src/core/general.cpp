@@ -9,7 +9,10 @@ namespace N_Core
 		stream.write(reinterpret_cast<char const*>(blob.begin()), blob.size());
 	}
 
-
+	bool operator<(Index const& a, Index const& b)
+	{
+		return a._value < b._value;
+	}
 	bool operator==(Index const& a, Index const& b)
 	{
 		return a._value == b._value;

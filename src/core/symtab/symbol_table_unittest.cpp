@@ -3,6 +3,7 @@
 #include "src/include/core/symtab/filters.h"
 #include <variant>
 #include <utility>
+#include <set>
 BOOST_AUTO_TEST_SUITE(symbol_table)
 
 // data_empty_bss_global_and_local_symbol only contains 1 symbol table
@@ -87,5 +88,15 @@ BOOST_AUTO_TEST_CASE(determine_sections_to_link_for_simple_translation_unit)
 
 	BOOST_CHECK_EQUAL(number_of_global_symbols, 3);
 
+
+	std::set<N_Core::Index> indices;
+
+	std::transform(range.first, range.second, std::inserter(indices, indices.end()),
+	[&](auto const& symbol)
+	{
+		return symbol.get_section_index();
+	});
+
+	auto i = 0;
 }
 BOOST_AUTO_TEST_SUITE_END()

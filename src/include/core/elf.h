@@ -259,4 +259,13 @@ namespace N_Core
 
 		return std::string(reinterpret_cast<char const*>(&buffer[offset]));
 	}
+
+	template<typename ElfTy>
+	auto convert_symbol_to_related_section(typename ElfTy::SymbolTableTy::SymbolTy const& symbol) -> std::pair<N_Core::Index, typename ElfTy::SectionTy const&>
+	{
+
+		Index index = symbol.get_section_index();
+		return std::make_pair<index, symbol.get_parent().get_parent().get_section_at(index)>;
+
+	}
 }

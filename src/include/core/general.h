@@ -121,6 +121,7 @@ namespace N_Core
 	using IndexList = std::vector<Index>;
 
 	bool operator==(Index const& a, Index const& b);
+	bool operator<(Index const& a, Index const& b);
 	std::ostream& operator<<(std::ostream& os, Index);
 	std::ostream& operator<<(std::ostream& os, IndexList);
 	// @brief Wether or not the index is the wildcard index.
