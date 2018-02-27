@@ -7,6 +7,20 @@ namespace N_Core
 	{
 		namespace N_Filters
 		{
+			template <typename ElfTy>
+			struct RelocationTable
+			{
+				Index _index;
+				RelocationTable(Index index):_index(index){}
+
+				bool operator()(typename ElfTy::SectionTy const& section)
+				{
+					return ((section.get_type() == N_Section::Type::SHT_REL ||
+							section.get_type() == N_Section::Type::SHT_RELA) &&
+							section.get_info() == _index);
+				};
+			};
+
 			//tags to select a filter.
 			struct Code {};
 			struct Data {};

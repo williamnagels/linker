@@ -82,6 +82,9 @@ BOOST_AUTO_TEST_CASE(determine_sections_to_link_for_simple_translation_unit)
 {
 	N_Core::Elf<N_Core::Bit64> elf("testfiles/data_empty_bss_global_and_local_symbol");
 
+	//You should be able to pass 2 lambda's here; one for section 'symtab' next one for symbol.
+	//can be reused for relocations aswell as need to loop over all relocations related to 
+	// some section (info field in section header).
 	auto range = elf.range(N_Core::N_Filters::N_Symbol::Global<decltype(elf)>{});
 
 	int number_of_global_symbols = std::distance(range.first, range.second);
@@ -94,9 +97,31 @@ BOOST_AUTO_TEST_CASE(determine_sections_to_link_for_simple_translation_unit)
 	std::transform(range.first, range.second, std::inserter(indices, indices.end()),
 	[&](auto const& symbol)
 	{
-		return symbol.get_section_index();
+		return N_Core::Index(symbol.get_section_index());
 	});
 
+	std::set<N_Core::Index> symbol_table_indices;
+	for (auto index : indices)
+	{
+		auto range = elf.range(N_Core::N_Section::N_Filters::RelocationTable<decltype(elf)>(index));
+		std::transform(range.first, range.second, std::inserter(symbol_table_indices, symbol_table_indices.end()),
+		[&](auto const& section)
+		{
+			return N_Core::Index(section.get_link());
+		});
+	}
+
+	for (auto index : symbol_table_indices)
+	{
+		auto const& section = elf.get_section_at(index);
+
+		N_Core::Elf<N_Core::Bit64>::SectionTy::SymbolTableTy const&  content = std::get<N_Core::Elf<N_Core::Bit64>::SectionTy::SymbolTableTy>(section.get_interpreted_content());
+
+		std::for_each(std::begin(content), std::end(content), [&](auto const& symbol)
+		{
+			indices.insert(indices.end(), N_Core::Index(symbol.get_section_index()));
+		});
+	}
 	auto i = 0;
 }
 BOOST_AUTO_TEST_SUITE_END()

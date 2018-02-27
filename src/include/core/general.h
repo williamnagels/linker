@@ -111,7 +111,7 @@ namespace N_Core
 		static const T Wildcard = std::numeric_limits<T>::max();
 		operator decltype(_value)(){ return _value; }
 
-			Index(T value) : _value(value) {}
+		explicit Index(T value) : _value(value) {}
 	};
 
 	Index operator ++(Index& idx, int);

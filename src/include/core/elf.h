@@ -57,6 +57,8 @@ namespace N_Core
 
 		template <typename F>
 		using ConditionedSymbolIterator = boost::filter_iterator<F, typename SymbolIterator>;
+		template <typename F>
+		using ConditionedSectionIterator = boost::filter_iterator<F, typename SectionTableTy::iterator>;
 
 		// This shared ptr keeps the memory mapped elf in memory until
 		// it is destructed (and other elfs sharing the counter).
@@ -89,9 +91,14 @@ namespace N_Core
 				N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>
 			>(N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>{}, end(), end()); }
 
+
 		auto range(std::function<bool(typename SectionTy::SymbolTableTy::SymbolTy const&)> f) -> std::pair<ConditionedSymbolIterator<decltype(f)>, ConditionedSymbolIterator<decltype(f)>>
 		{
 			return { ConditionedSymbolIterator<decltype(f)>(f, begin_symbol(), end_symbol()), ConditionedSymbolIterator<decltype(f)>(f, end_symbol(), end_symbol()) };
+		}
+		auto range(std::function<bool(typename SectionTy const&)> f) -> std::pair<ConditionedSectionIterator<decltype(f)>, ConditionedSectionIterator<decltype(f)>>
+		{
+			return { ConditionedSectionIterator<decltype(f)>(f, begin(), end()), ConditionedSectionIterator<decltype(f)>(f, end(), end()) };
 		}
 
 		SymbolIterator begin_symbol()

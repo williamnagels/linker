@@ -34,7 +34,7 @@ namespace N_Core
 
 			std::optional<std::string> get_name_as_string() const 
 			{ 
-				Index index = get_parent().get_parent().get_link();
+				Index index = Index(get_parent().get_parent().get_link());
 
 				if (index)
 				{
