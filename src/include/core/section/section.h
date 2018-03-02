@@ -30,10 +30,10 @@ namespace N_Core
 				switch (get_type())
 				{
 				case N_Section::Type::SHT_SYMTAB:
-					elem.emplace<SymbolTableTy>(*this, content_blob);
+					elem.template emplace<SymbolTableTy>(*this, content_blob);
 					break;
 				default:
-					elem.emplace<MMap::Container<uint8_t>>(content_blob.begin(), content_blob.end());
+					elem.template emplace<MMap::Container<uint8_t>>(content_blob.begin(), content_blob.end());
 				}
 			}
 			InterpretedContentTy create_interpreted_content(BinaryBlob elf_blob)
@@ -99,8 +99,9 @@ namespace N_Core
 			InterpretedContentTy const& get_interpreted_content() const { return _interpreted_content; }
 			InterpretedContentTy & get_interpreted_content() { return _interpreted_content; }
 			C const& get_parent()const { return _container; }
-			template <typename T, typename C>
-			friend std::ostream& operator<<(std::ostream& stream, Section<T, C> const& section);
+
+			template <typename TStream, typename CStream>
+			friend std::ostream& operator<<(std::ostream& stream, Section<TStream, CStream> const& section);
 		};
 
 

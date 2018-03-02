@@ -1,7 +1,7 @@
 #pragma once
 #include "src/include/core/reltab/relocation.h"
 #include "src/include/core/reltab/relocation_member_types.h"
-#include <vector>
+#include <list>
 #include <memory>
 #include <optional>
 #include <functional>
@@ -34,7 +34,7 @@ namespace N_Core
 		public:
 
 			C const& get_parent()const { return _container; }
-			using RelocationTy = typename Relocation<T, Table, A>;
+			using RelocationTy = Relocation<T, Table, A>;
 			using InternalStorageTy = std::list<RelocationTy>;
 			using Iterator = typename InternalStorageTy::iterator;
 			using ConstIterator = typename InternalStorageTy::const_iterator;

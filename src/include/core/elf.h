@@ -4,12 +4,14 @@
 #include "src/include/core/section/section.h"
 #include "src/include/core/general.h"
 #include "src/include/core/section/filters.h"
+
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 
 #include <string>
 #include <fstream>
+#include <list>
 namespace N_Core
 {
 	// @brief Class representing an elf loaded from file or a custom created elf.
@@ -43,7 +45,7 @@ namespace N_Core
 	public:
 		using HeaderTy = N_Header::Header<V>;
 		using SectionTy = N_Section::Section<V, Elf>;
-		using SectionTableTy = std::list<typename SectionTy>;
+		using SectionTableTy = std::list<SectionTy>;
 
 		template <typename T>
 		using SectionIterator = boost::filter_iterator<T, typename SectionTableTy::iterator>;
@@ -51,12 +53,12 @@ namespace N_Core
 		using ConstSectionIterator = boost::filter_iterator<T, typename SectionTableTy::const_iterator>;
 
 		using SymbolIterator = Iterator<
-			typename SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter
+			SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter
 				<Elf, N_Core::N_Section::N_Filters::SymbolTable>>, 
 			typename SectionTy::SymbolTableTy::Iterator>;
 
 		template <typename F>
-		using ConditionedSymbolIterator = boost::filter_iterator<F, typename SymbolIterator>;
+		using ConditionedSymbolIterator = boost::filter_iterator<F, SymbolIterator>;
 		template <typename F>
 		using ConditionedSectionIterator = boost::filter_iterator<F, typename SectionTableTy::iterator>;
 
@@ -76,8 +78,8 @@ namespace N_Core
 	public:
 		typename SectionTableTy::iterator begin() { return _section_table.begin(); }
 		typename SectionTableTy::iterator end() { return _section_table.end(); }
-		typename SectionTableTy::const_iterator begin() const { return _sections.begin(); }
-		typename SectionTableTy::const_iterator end() const { return _sections.end(); }
+		typename SectionTableTy::const_iterator begin() const { return _section_table.begin(); }
+		typename SectionTableTy::const_iterator end() const { return _section_table.end(); }
 
 		template <typename FilterTag>
 		SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>> begin() {
@@ -96,7 +98,7 @@ namespace N_Core
 		{
 			return { ConditionedSymbolIterator<decltype(f)>(f, begin_symbol(), end_symbol()), ConditionedSymbolIterator<decltype(f)>(f, end_symbol(), end_symbol()) };
 		}
-		auto range(std::function<bool(typename SectionTy const&)> f) -> std::pair<ConditionedSectionIterator<decltype(f)>, ConditionedSectionIterator<decltype(f)>>
+		auto range(std::function<bool(SectionTy const&)> f) -> std::pair<ConditionedSectionIterator<decltype(f)>, ConditionedSectionIterator<decltype(f)>>
 		{
 			return { ConditionedSectionIterator<decltype(f)>(f, begin(), end()), ConditionedSectionIterator<decltype(f)>(f, end(), end()) };
 		}
@@ -135,7 +137,7 @@ namespace N_Core
 		{
 			if (!is_memory_mapped())
 			{
-				throw std::exception("Cannot");
+				throw std::invalid_argument("Cannot");
 			}
 			uint8_t* begin_address = reinterpret_cast<uint8_t*>(_region->get_address());
 			return BinaryBlob(begin_address, begin_address + _region->get_size());
@@ -199,20 +201,20 @@ namespace N_Core
 		// @param stream	Output stream to dump elf to.
 		// @param elf		The elf to write to output stream.
 		// 
-		template <typename V>
-		friend std::ostream& operator<<(std::ostream& stream, N_Core::Elf<V> const& elf)
+		template <typename VStream>
+		friend std::ostream& operator<<(std::ostream& stream, N_Core::Elf<VStream> const& elf)
 		{
 			//dump header at offset 0
 			stream << elf._header;
 
 			// dump sections; step 1 section entry header size back since first step 
 			// is increasing stream pos by its size.
-			stream.seekp(elf._header.get_section_header_offset()- sizeof(N_Core::Elf<V>::SectionTy::T));
+			stream.seekp(elf._header.get_section_header_offset()- sizeof(typename N_Core::Elf<V>::SectionTy::T));
 			std::streampos start_of_section_table = stream.tellp();
 
 			for (auto const& section : elf._section_table)
 			{
-				stream.seekp(std::streamoff(sizeof(N_Core::Elf<V>::SectionTy::T)), std::ios::cur);
+				stream.seekp(std::streamoff(sizeof(typename N_Core::Elf<V>::SectionTy::T)), std::ios::cur);
 				std::streampos current_table_entry_position = stream.tellp();
 				stream << section;
 				stream.seekp(current_table_entry_position, std::ios::beg);

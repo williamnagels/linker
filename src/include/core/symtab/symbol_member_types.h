@@ -4,14 +4,14 @@ namespace N_Core
 {
 	namespace N_Symbol
 	{
-		enum Binding :uint8_t
+		enum Binding
 		{
 			STB_LOCAL = 0
 			,STB_GLOBAL = 1
 			,STB_WEAK = 2
 		};
 
-		enum Type :uint8_t
+		enum Type
 		{
 			STT_NOTYPE = 0
 			,STT_OBJECT = 1

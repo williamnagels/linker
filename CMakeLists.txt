@@ -3,16 +3,18 @@ include( CTest )
 include(ExternalProject)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_GENERATOR_PLATFORM x86-64)
-cmake_minimum_required (VERSION 3.9.2)
+cmake_minimum_required (VERSION 3.9.1)
 
-
+set (CMAKE_CXX_STANDARD 17)
 if (WIN32)
 	set (CMAKE_CXX_FLAGS "/std:c++latest /EHsc")
 endif()
-
+if(CMAKE_COMPILER_IS_GNUXX)
+	set(CMAKE_CXX_FLAGS "-std=c++17")
+endif()
 set(Boost_DEBUG ON)
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.65.0 REQUIRED unit_test_framework date_time filesystem) 
+find_package(Boost 1.65.0 REQUIRED unit_test_framework date_time filesystem system) 
 find_package(Git REQUIRED) 
 
 set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
@@ -25,7 +27,7 @@ ExternalProject_Add(
 	CONFIGURE_COMMAND ""
 	UPDATE_COMMAND ${GIT_EXECUTABLE} pull
 	BUILD_IN_SOURCE ON
-	BUILD_ALWAYS OFF
+	BUILD_ALWAYS ON
     )
 
 

@@ -1,6 +1,8 @@
 #pragma once
 #include "src/include/core/general.h"
 #include "src/include/core/symtab/symbol_member_types.h"
+
+#include <variant>
 namespace N_Core
 {
 	namespace N_Symbol
@@ -37,12 +39,12 @@ namespace N_Core
 				Index index = Index(get_parent().get_parent().get_link());
 
 				if (index)
-				{
-					
+				{					
 					auto const& linked_content = get_parent().get_parent().get_parent().get_section_at(index);
-					
-					uint8_t const* base = &(*std::get<0>(linked_content.get_interpreted_content()).begin());
-					return std::string(reinterpret_cast<char const*>(base+get_name()));
+
+					uint8_t const* byte_address = &(*(std::get<0>(linked_content.get_interpreted_content()).begin()));
+
+					return std::string(reinterpret_cast<char const*>(byte_address+get_name()));
 				}
 				
 				return std::optional<std::string>();

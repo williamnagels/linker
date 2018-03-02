@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <optional>
 #include <functional>
+#include <variant>
 namespace N_Core
 {
 	struct Bit64 {};

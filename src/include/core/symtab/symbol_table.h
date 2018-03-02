@@ -1,7 +1,7 @@
 #pragma once
 #include "src/include/core/symtab/symbol.h"
 #include "src/include/core/symtab/symbol_member_types.h"
-#include <vector>
+#include <list>
 #include <memory>
 #include <optional>
 #include <functional>
@@ -18,8 +18,7 @@ namespace N_Core
 		public:
 
 			C const& get_parent()const { return _container; }
-			using SymbolTy = typename Symbol<T, Table>;
-			SymbolTy static create_symbol(BinaryBlob header, BinaryBlob content) { SymbolTy(header, content); }
+			using SymbolTy = Symbol<T, Table>;
 			using InternalStorageTy = std::list<SymbolTy>;
 			using Iterator = typename InternalStorageTy::iterator;
 			using ConstIterator = typename InternalStorageTy::const_iterator;
@@ -41,14 +40,14 @@ namespace N_Core
 			C const& _container;
 			void build_table(BinaryBlob blob)
 			{
-				auto size_of_one_symbol = sizeof(SymbolTy::T);
+				auto size_of_one_symbol = sizeof(typename SymbolTy::T);
 				auto size = blob.size();
 				auto number_of_entries = blob.size() / size_of_one_symbol;
 
 				for (auto i = 0; i < number_of_entries; i++)
 				{
-					uint8_t* begin = blob.begin() + i * sizeof(SymbolTy::T);
-					uint8_t* end = begin + sizeof(SymbolTy::T);
+					uint8_t* begin = blob.begin() + i * sizeof(typename SymbolTy::T);
+					uint8_t* end = begin + sizeof(typename SymbolTy::T);
 
 					_symbols.emplace_back(*this, BinaryBlob(begin, end));
 				}
