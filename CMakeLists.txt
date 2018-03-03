@@ -4,6 +4,7 @@ include(ExternalProject)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_GENERATOR_PLATFORM x86-64)
 cmake_minimum_required (VERSION 3.9.1)
+set(CMAKE_BUILD_TYPE Debug)
 
 set (CMAKE_CXX_STANDARD 17)
 if (WIN32)
@@ -75,7 +76,7 @@ add_custom_command(TARGET linker_unit_tests
 
 target_link_libraries(linker_unit_tests linker_core ${Boost_LIBRARIES})
 target_link_libraries(linker linker_core ${Boost_LIBRARIES})
-add_test( linker linker_unit_tests)
+#add_test( linker linker_unit_tests)
 
 set(directory ${CMAKE_BINARY_DIR}/testfiles)
 file(MAKE_DIRECTORY  ${directory})
