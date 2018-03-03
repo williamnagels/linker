@@ -1,24 +1,21 @@
+cmake_minimum_required (VERSION 3.9.1)
+
 project (Linker)
 include( CTest )
 include(ExternalProject)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_GENERATOR_PLATFORM x86-64)
-cmake_minimum_required (VERSION 3.9.1)
 set(CMAKE_BUILD_TYPE Debug)
-
 set (CMAKE_CXX_STANDARD 17)
+
 if (WIN32)
 	set (CMAKE_CXX_FLAGS "/std:c++latest /EHsc")
 endif()
-if(CMAKE_COMPILER_IS_GNUXX)
-	set(CMAKE_CXX_FLAGS "-std=c++17")
-endif()
+
 set(Boost_DEBUG ON)
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.65.0 REQUIRED unit_test_framework date_time filesystem system) 
 find_package(Git REQUIRED) 
-
-set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
 
 ExternalProject_Add(
     mmcow
@@ -29,19 +26,30 @@ ExternalProject_Add(
 	UPDATE_COMMAND ${GIT_EXECUTABLE} pull
 	BUILD_IN_SOURCE ON
 	BUILD_ALWAYS ON
-    )
+)
 
-
-	
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${Boost_INCLUDE_DIRS})
+ExternalProject_Add(
+    ranges
+    GIT_REPOSITORY https://github.com/ericniebler/range-v3.git
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+	CONFIGURE_COMMAND ""
+	UPDATE_COMMAND ${GIT_EXECUTABLE} checkout
+	BUILD_IN_SOURCE ON
+	BUILD_ALWAYS ON
+	GIT_TAG 0.3.5
+)
 
 ExternalProject_Get_Property(mmcow source_dir)
 set(mmcowIncludeDir ${source_dir}/include)
-
+ExternalProject_Get_Property(ranges source_dir)
+set(rangesIncludeDir ${source_dir}/include)
 
 MESSAGE( STATUS "mmcow header files:" ${mmcowIncludeDir} )
-include_directories(${mmcowIncludeDir})
+MESSAGE( STATUS "ranges header files:" ${rangesIncludeDir} )
+
+
+
 add_library(linker_core STATIC
 	src/core/addressable.cpp
 	src/core/general.cpp
@@ -57,6 +65,18 @@ add_library(linker_core STATIC
 
 	src/core/linker/link_struct.cpp
 )
+target_include_directories(linker_core
+	PUBLIC
+        $<INSTALL_INTERFACE:include>    
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${mmcowIncludeDir}
+		${rangesIncludeDir}
+)
+
+add_dependencies(linker_core mmcow)
+add_dependencies(linker_core ranges)
 
 add_executable(linker src/main.cpp) 
 
@@ -68,8 +88,20 @@ add_executable(linker_unit_tests
 	src/core/section/section_unittest.cpp
 
 ) 
-add_dependencies(linker_unit_tests mmcow)
-add_dependencies(linker mmcow)
+target_include_directories(linker
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${mmcowIncludeDir}
+		${rangesIncludeDir}
+)
+
+target_include_directories(linker_unit_tests
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}
+		${mmcowIncludeDir}
+		${rangesIncludeDir}
+)
+
 add_custom_command(TARGET linker_unit_tests
                    POST_BUILD
                    COMMAND ctest -C $<CONFIGURATION> -VV --output-on-failure)
