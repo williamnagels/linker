@@ -88,13 +88,15 @@ BOOST_AUTO_TEST_CASE(dump)
 
 }
 
-
+//will fail on windows
+//different error is thrown; find workaround.
 BOOST_AUTO_TEST_CASE(non_existing_file)
 {
 	BOOST_CHECK_EXCEPTION(
 		N_Core::Elf<N_Core::Bit64>("testfiles/non_existing_file"),
 		boost::interprocess::interprocess_exception,
-		HAS_MESSAGE("The system cannot find the file specified."));
+		HAS_MESSAGE("No such file or directory")); 
+		
 }
 
 BOOST_AUTO_TEST_CASE(new_elf)

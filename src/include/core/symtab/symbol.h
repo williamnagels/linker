@@ -24,8 +24,8 @@ namespace N_Core
 			MMap::Container<T> const& get_content() const { return _content; }
 			
 			uint64_t get_name()const { return  get(_content, &T::st_name); }
-			Binding get_binding()const { return  get(_content, &T::st_info).binding; }
-			Type get_type()const { return  get(_content, &T::st_info).type; }
+			Binding get_binding()const { return  static_cast<Binding>(get(_content, &T::st_info) >> 4); }
+			Type get_type()const { return  static_cast<Type>(get(_content, &T::st_info)& 0x0f); }
 			uint64_t get_other()const { return  get(_content, &T::st_other); }
 			uint64_t get_section_index()const { return  get(_content, &T::st_shndx); }
 			uint64_t get_value() const { return get(_content, &T::st_value); }

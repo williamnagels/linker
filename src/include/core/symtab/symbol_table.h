@@ -40,14 +40,13 @@ namespace N_Core
 			C const& _container;
 			void build_table(BinaryBlob blob)
 			{
-				auto size_of_one_symbol = sizeof(typename SymbolTy::T);
-				auto size = blob.size();
-				auto number_of_entries = blob.size() / size_of_one_symbol;
+				std::size_t size_of_one_symbol = sizeof(typename SymbolTy::T);
+				std::size_t size_of_symbol_table = blob.size();
 
-				for (auto i = 0; i < number_of_entries; i++)
+				for (auto i = 0; i < size_of_symbol_table; i+=size_of_one_symbol)
 				{
-					uint8_t* begin = blob.begin() + i * sizeof(typename SymbolTy::T);
-					uint8_t* end = begin + sizeof(typename SymbolTy::T);
+					uint8_t* begin = blob.begin() + i;
+					uint8_t* end = begin + size_of_one_symbol;
 
 					_symbols.emplace_back(*this, BinaryBlob(begin, end));
 				}

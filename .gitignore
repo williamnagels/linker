@@ -5,6 +5,7 @@
 
 .vscode/
 build/
+testfiles/
 # User-specific files
 *.suo
 *.user
