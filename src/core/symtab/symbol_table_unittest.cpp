@@ -1,9 +1,13 @@
-#include <boost/test/unit_test.hpp> 
 #include "src/include/core/elf.h"
 #include "src/include/core/symtab/filters.h"
+
+#include <boost/test/unit_test.hpp> 
+#include <range/v3/all.hpp>
+
 #include <variant>
 #include <utility>
 #include <set>
+
 BOOST_AUTO_TEST_SUITE(symbol_table)
 
 // data_empty_bss_global_and_local_symbol only contains 1 symbol table
@@ -80,6 +84,8 @@ BOOST_AUTO_TEST_CASE(global_symbols)
 
 BOOST_AUTO_TEST_CASE(determine_sections_to_link_for_simple_translation_unit)
 {
+
+
 	N_Core::Elf<N_Core::Bit64> elf("testfiles/data_empty_bss_global_and_local_symbol");
 
 	//You should be able to pass 2 lambda's here; one for section 'symtab' next one for symbol.
@@ -123,5 +129,14 @@ BOOST_AUTO_TEST_CASE(determine_sections_to_link_for_simple_translation_unit)
 		});
 	}
 	auto i = 0;
+}
+BOOST_AUTO_TEST_CASE(ranges_simple)
+{
+	N_Core::Elf<N_Core::Bit64> elf("testfiles/data_empty_bss_global_and_local_symbol");	
+
+	auto full_range = ranges::view::all(elf._section_table);
+
+	auto symbol_tables = full_range | ranges::view::filter([](const auto& section){ return section.get_type() == N_Core::N_Section::SHT_SYMTAB;});
+	auto  i =0;
 }
 BOOST_AUTO_TEST_SUITE_END()
