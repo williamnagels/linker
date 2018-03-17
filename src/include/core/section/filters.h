@@ -7,6 +7,10 @@ namespace N_Core
 	{
 		namespace N_Filters
 		{
+			// Functor to filter out all sections that contain a relocation table
+			// if index is not the wildcard; all relocations will be returned. else
+			// Only the relocation tables that apply to the section with specified index
+			// will be returned.
 			template <typename ElfTy>
 			struct RelocationTable
 			{
@@ -15,49 +19,31 @@ namespace N_Core
 
 				bool operator()(typename ElfTy::SectionTy const& section)
 				{
-					return ((section.get_type() == N_Section::Type::SHT_REL ||
-							section.get_type() == N_Section::Type::SHT_RELA) &&
-							section.get_info() == _index);
+					if (section.get_type() == N_Section::Type::SHT_REL || section.get_type() == N_Section::Type::SHT_RELA)
+					{
+						if (is_wildcard(_index))
+						{
+							return true;
+						}	
+
+						return section.get_info() == _index;
+					}
+
+					return false;
 				};
 			};
-
-			//tags to select a filter.
-			struct Code {};
-			struct Data {};
-			struct SymbolTable {};
-
-			namespace __Detail__
-			{
-				template <typename ElfTy, typename TagTy>
-				struct Filter 
-				{
-				};
-
-				template <typename ElfTy>
-				struct Filter<ElfTy, Code>
-				{
-					bool operator()(typename ElfTy::SectionTy const& section) { return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && section.get_flags().SHF_EXECINSTR; };
-				};
-
-				template <typename ElfTy>
-				struct Filter<ElfTy, SymbolTable>
-				{
-					bool operator()(typename ElfTy::SectionTy const& section) { return section.get_type() == N_Section::Type::SHT_SYMTAB; };
-				};
-			}
-
-/*
-			template <typename SectionTy>
-			struct Data
-			{
-				bool operator()(SectionTy const& section) { return section.get_type() == N_Section::Type::SHT_PROGBITS && section.get_flags().SHF_ALLOC && !section.get_flags().SHF_EXECINSTR; };
-			};
-
-			template <typename SectionTy>
+			
+			// Returns all sections that contain a symbol table.
+			template <typename ElfTy>
 			struct SymbolTable
 			{
-				bool operator()(SectionTy const& section) { return section.get_type() == N_Section::Type::SHT_SYMTAB; };
-			};*/
+				SymbolTable(){}
+
+				bool operator()(typename ElfTy::SectionTy const& section)
+				{
+					return (section.get_type() == N_Section::Type::SHT_SYMTAB);
+				};
+			};			
 		}
 	}
 }

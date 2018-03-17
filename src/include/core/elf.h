@@ -47,21 +47,6 @@ namespace N_Core
 		using SectionTy = N_Section::Section<V, Elf>;
 		using SectionTableTy = std::list<SectionTy>;
 
-		template <typename T>
-		using SectionIterator = boost::filter_iterator<T, typename SectionTableTy::iterator>;
-		template <typename T>
-		using ConstSectionIterator = boost::filter_iterator<T, typename SectionTableTy::const_iterator>;
-
-		using SymbolIterator = Iterator<
-			SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter
-				<Elf, N_Core::N_Section::N_Filters::SymbolTable>>, 
-			typename SectionTy::SymbolTableTy::Iterator>;
-
-		template <typename F>
-		using ConditionedSymbolIterator = boost::filter_iterator<F, SymbolIterator>;
-		template <typename F>
-		using ConditionedSectionIterator = boost::filter_iterator<F, typename SectionTableTy::iterator>;
-
 		// This shared ptr keeps the memory mapped elf in memory until
 		// it is destructed (and other elfs sharing the counter).
 		// This pointer is only set when elf is sourced by an elf on disk.
@@ -81,45 +66,8 @@ namespace N_Core
 		typename SectionTableTy::const_iterator begin() const { return _section_table.begin(); }
 		typename SectionTableTy::const_iterator end() const { return _section_table.end(); }
 
-		template <typename FilterTag>
-		SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>> begin() {
-			return SectionIterator<
-				N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>
-			>(N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>{}, begin(), end()); }
-		
-		template <typename FilterTag>
-		SectionIterator<N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>> end() {
-			return SectionIterator<
-				N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>
-			>(N_Core::N_Section::N_Filters::__Detail__::Filter<Elf, FilterTag>{}, end(), end()); }
-
-
-		auto range(std::function<bool(typename SectionTy::SymbolTableTy::SymbolTy const&)> f) -> std::pair<ConditionedSymbolIterator<decltype(f)>, ConditionedSymbolIterator<decltype(f)>>
-		{
-			return { ConditionedSymbolIterator<decltype(f)>(f, begin_symbol(), end_symbol()), ConditionedSymbolIterator<decltype(f)>(f, end_symbol(), end_symbol()) };
-		}
-		auto range(std::function<bool(SectionTy const&)> f) -> std::pair<ConditionedSectionIterator<decltype(f)>, ConditionedSectionIterator<decltype(f)>>
-		{
-			return { ConditionedSectionIterator<decltype(f)>(f, begin(), end()), ConditionedSectionIterator<decltype(f)>(f, end(), end()) };
-		}
-
-		SymbolIterator begin_symbol()
-		{ 
-			return SymbolIterator(
-				begin<N_Section::N_Filters::SymbolTable>(), 
-				end<N_Section::N_Filters::SymbolTable>()
-			); 
-		}
-		SymbolIterator end_symbol()
-		{ 
-			return SymbolIterator(
-				end<N_Section::N_Filters::SymbolTable>()
-			); 
-		}
-
-		HeaderTy _header;
-		SectionTableTy _section_table; ///< list of sections assigned to this table.	
-
+		HeaderTy _header; ///< Header of the elf. 
+		SectionTableTy _section_table; ///< All sections in this elf.	
 
 		// @brief Returns true if the elf is loaded from disk
 		//
