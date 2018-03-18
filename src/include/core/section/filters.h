@@ -34,12 +34,13 @@ namespace N_Core
 			};
 			
 			// Returns all sections that contain a symbol table.
-			template <typename ElfTy>
+			//template <typename ElfTy>
 			struct SymbolTable
 			{
 				SymbolTable(){}
 
-				bool operator()(typename ElfTy::SectionTy const& section)
+				template <typename SectionTy>
+				bool operator()(SectionTy const& section)
 				{
 					return (section.get_type() == N_Section::Type::SHT_SYMTAB);
 				};
