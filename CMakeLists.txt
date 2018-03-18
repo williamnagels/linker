@@ -102,13 +102,21 @@ target_include_directories(linker_unit_tests
 		${rangesIncludeDir}
 )
 
-add_custom_command(TARGET linker_unit_tests
-                   POST_BUILD
-                   COMMAND ctest -C $<CONFIGURATION> -VV --output-on-failure)
-
 target_link_libraries(linker_unit_tests linker_core ${Boost_LIBRARIES})
 target_link_libraries(linker linker_core ${Boost_LIBRARIES})
-#add_test( linker linker_unit_tests)
+
+# creating custom target for the unit test in order for the build to fail but the
+# the test executable to not be deleted by make. The deletion is annoying if the
+# test binary crashed, making the build fail but no debugger can be attached
+# since make deleted the binary
+#https://stackoverflow.com/questions/43885692/build-custom-target-by-default-in-cmake
+#https://stackoverflow.com/questions/39622247/cmake-add-custom-command-failure-target-gets-deleted
+add_custom_target(run_linker_unit_tests ALL
+		COMMAND ctest -C $<CONFIGURATION> -VV --output-on-failure 
+		DEPENDS linker_unit_tests)
+
+add_test( linker_test linker_unit_tests)
+
 
 set(directory ${CMAKE_BINARY_DIR}/testfiles)
 file(MAKE_DIRECTORY  ${directory})
