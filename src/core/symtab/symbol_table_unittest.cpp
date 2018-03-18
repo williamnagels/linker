@@ -1,6 +1,6 @@
 #include "src/include/core/elf.h"
 #include "src/include/core/symtab/filters.h"
-
+#include "src/include/core/section/helpers.h"
 #include <boost/test/unit_test.hpp> 
 #include <range/v3/all.hpp>
 
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(ranges_simple)
 
 	auto symbol_range = elf._section_table 
 		| ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})
-		| ranges::view::transform([](auto const& i){return ranges::view::all(std::get<1>(i.get_interpreted_content())._symbols);}) 
+		| ranges::view::transform(N_Core::N_Section::ConvertSectionToSymbolRange{}) 
 		| ranges::view::join;
 
 	auto number_of_symbols = ranges::distance(symbol_range);
