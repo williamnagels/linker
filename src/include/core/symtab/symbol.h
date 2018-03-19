@@ -33,7 +33,7 @@ namespace N_Core
 			C const& get_parent()const { return _container; }
 
 			bool is_global() const { return get_binding() == Binding::STB_GLOBAL; }
-
+			bool is_defined() const { return get_section_index() != 0; }
 			std::optional<std::string> get_name_as_string() const 
 			{ 
 				Index index = Index(get_parent().get_parent().get_link());

@@ -1,15 +1,23 @@
 namespace N_Core
 {
-	namespace N_Filters
+	namespace N_Symbol
 	{
-		namespace N_Symbol
+		namespace N_Filters
 		{
-			template <typename ElfTy>
 			struct Global
 			{
-				bool operator()(typename ElfTy::SectionTy::SymbolTableTy::SymbolTy const& symbol) 
+				template <typename SymbolTy>
+				bool operator()(SymbolTy const& symbol) 
 				{ 
 					return symbol.is_global();
+				};
+			};
+			struct Defined
+			{
+				template <typename SymbolTy>
+				bool operator()(SymbolTy const& symbol) 
+				{ 
+					return symbol.is_defined();
 				};
 			};
 		}
