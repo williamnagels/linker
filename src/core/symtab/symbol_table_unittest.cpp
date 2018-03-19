@@ -2,14 +2,12 @@
 #include "src/include/core/symtab/filters.h"
 #include "src/include/core/section/helpers.h"
 #include <boost/test/unit_test.hpp> 
-#include <range/v3/all.hpp>
-
+#include <range/v3/view.hpp>
 #include <variant>
 #include <utility>
 #include <set>
 
 BOOST_AUTO_TEST_SUITE(symbol_table)
-
 
 BOOST_AUTO_TEST_CASE(ranges_simple)
 {
@@ -24,4 +22,5 @@ BOOST_AUTO_TEST_CASE(ranges_simple)
 
 	BOOST_CHECK_EQUAL(number_of_symbols, 11);
 }
+
 BOOST_AUTO_TEST_SUITE_END()
