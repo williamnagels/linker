@@ -16,9 +16,9 @@ namespace N_Core
 			ConvertSectionToSymbolRange(){}
 
 			template <typename SectionTy>
-			auto operator()(SectionTy const& section) const
+			auto operator()(SectionTy const& section) const -> typename SectionTy::SymbolTableTy::InternalStorageTy const&
 			{
-				return ranges::view::all(std::get<1>(section.get_interpreted_content())._symbols);
+				return std::get<1>(section.get_interpreted_content())._symbols;
 			}
 		};
 	}

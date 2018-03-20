@@ -81,7 +81,20 @@ namespace N_Core
 			}
 			Section(Section const&) = delete;
 			Section(Section&&) = delete;
+			std::optional<std::string> get_name_as_string() const 
+			{ 
+				Index index = Index(get_parent()._header.get_section_index_that_contains_strings());
 
+				if (index)
+				{					
+					auto const& linked_content = get_parent().get_section_at(index);
+
+					uint8_t const* base = &(*std::get<0>(linked_content.get_interpreted_content()).begin());
+					return std::string(reinterpret_cast<char const*>(base + get_name()));
+				}
+				
+				return std::optional<std::string>();
+			}
 			uint64_t get_name()const  { return  get(_header_entry, &T::sh_name); }
 			void set_name(uint64_t offset) { set(_header_entry, &T::sh_name, offset); };
 			Type get_type() const  { return  get(_header_entry, &T::sh_type); }

@@ -232,13 +232,11 @@ namespace N_Core
 	{
 		ConvertSymbolToSection(){}
 
-		template<typename ElfTy>
-		auto operator()(typename ElfTy::SymbolTableTy::SymbolTy const& symbol) -> int&
+		template<typename T>
+		auto const& operator()(T const& symbol)
 		{
-			//Index index = symbol.get_section_index();
-			int* i = new int();
-			//return symbol.get_parent().get_parent().get_section_at(index);			
-			return *i;
+			Index index = Index(symbol.get_section_index());
+			return symbol.get_parent().get_parent().get_parent().get_section_at(index);			
 		}
 	};	
 }
