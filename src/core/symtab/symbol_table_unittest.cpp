@@ -59,20 +59,20 @@ BOOST_AUTO_TEST_CASE(global_symbols_exposed)
 	BOOST_CHECK_EQUAL(number_of_symbols, 3);
 }
 
-// Each section id that is defined should be exposed
+// Convert sections to symbols tables and then back to sections and finally to section names.
 //
 BOOST_AUTO_TEST_CASE(section_names_from_defined_global_symbols)
 {
 	N_Core::Elf<N_Core::Bit64> elf("testfiles/data_empty_bss_global_and_local_symbol");	
 
 	auto sections = elf._section_table
-		| ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})
-		| ranges::view::transform(N_Core::N_Section::ConvertSectionToSymbolRange{})
-		| ranges::view::join
-		| ranges::view::filter(N_Core::N_Symbol::N_Filters::Global{})
-		| ranges::view::filter(N_Core::N_Symbol::N_Filters::Defined{})
-		| ranges::view::transform(N_Core::ConvertSymbolToSection{})
-		| ranges::view::transform([](auto const& section){return *section.get_name_as_string();});
+		  | ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})
+		  | ranges::view::transform(N_Core::N_Section::ConvertSectionToSymbolRange{})
+		  | ranges::view::join
+		  | ranges::view::filter(N_Core::N_Symbol::N_Filters::Global{})
+		  | ranges::view::filter(N_Core::N_Symbol::N_Filters::Defined{})
+		  | ranges::view::transform(N_Core::ConvertSymbolToSection{})
+		  | ranges::view::transform([](auto const& section){return *section.get_name_as_string();});
 
 	BOOST_CHECK_EQUAL(ranges::equal(sections, {".data",".text",".text"}), true);
 }

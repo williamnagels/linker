@@ -115,8 +115,13 @@ namespace N_Core
 
 			template <typename TStream, typename CStream>
 			friend std::ostream& operator<<(std::ostream& stream, Section<TStream, CStream> const& section);
-		};
 
+			bool operator==(Section const& section) const{return this == &section;}
+			bool operator!=(Section const& section) const{return !(section == *this);}
+
+			bool is_code_section() const {return true;}
+
+		};
 
 		namespace
 		{

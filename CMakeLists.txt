@@ -62,8 +62,6 @@ add_library(linker_core STATIC
 
 	#section
 	src/core/section/helpers.cpp
-
-	src/core/linker/link_struct.cpp
 )
 target_include_directories(linker_core
 	PUBLIC
@@ -86,7 +84,7 @@ add_executable(linker_unit_tests
 	src/core/reltab/relocation_table_unittest.cpp
 	src/core/header/header_unittest.cpp
 	src/core/section/section_unittest.cpp
-
+	src/core/linker/link_struct_unittest.cpp
 ) 
 target_include_directories(linker
 	PRIVATE

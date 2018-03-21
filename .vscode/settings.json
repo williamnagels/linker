@@ -54,6 +54,10 @@
         "valarray": "cpp",
         "*.ipp": "cpp",
         "*.md": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "*.js": "cpp",
+        "*.png": "cpp",
+        "linker": "cpp",
+        "*.css": "cpp"
     }
 }
