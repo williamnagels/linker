@@ -11,22 +11,19 @@ namespace N_Core
 			// if index is not the wildcard; all relocations will be returned. else
 			// Only the relocation tables that apply to the section with specified index
 			// will be returned.
-			template <typename ElfTy>
+
 			struct RelocationTable
 			{
-				Index _index;
-				RelocationTable(Index index):_index(index){}
+				IndexList _indices;
+				RelocationTable(IndexList indices):_indices(indices){}
 
-				bool operator()(typename ElfTy::SectionTy const& section)
+				template <typename SectionTy>
+				bool operator()(SectionTy const& section)
 				{
 					if (section.get_type() == N_Section::Type::SHT_REL || section.get_type() == N_Section::Type::SHT_RELA)
 					{
-						if (is_wildcard(_index))
-						{
-							return true;
-						}	
 
-						return section.get_info() == _index;
+						return std::find(_indices.begin(), _indices.end(), _index) != _indices.end();
 					}
 
 					return false;
