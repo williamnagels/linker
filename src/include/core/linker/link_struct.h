@@ -5,6 +5,7 @@ namespace N_Core
 {
 	namespace N_Linker
 	{
+
 		// This class represents a section that is in progress of
 		// being linked.
 		//

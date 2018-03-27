@@ -4,12 +4,15 @@
 #include <boost/range.hpp>
 #include <utility>
 #include <vector>
+#include <set>
 #include <cstdint>
 #include <optional>
 #include <functional>
 #include <variant>
 namespace N_Core
 {
+	struct EmptyMeta{};
+
 	struct Bit64 {};
 	struct Bit32 {};
 
@@ -119,7 +122,7 @@ namespace N_Core
 	Index& operator++(Index& idx);
 	Index operator --(Index& idx, int);
 	Index& operator--(Index& idx);
-	using IndexList = std::vector<Index>;
+	using IndexList = std::set<Index>;
 
 	bool operator==(Index const& a, Index const& b);
 	bool operator<(Index const& a, Index const& b);

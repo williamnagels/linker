@@ -16,30 +16,8 @@ namespace N_Core
 {
 	// @brief Class representing an elf loaded from file or a custom created elf.
 	//
-	// 0. Creating an elf.
-	// ================================================================================================
-	// The 'create_elf(...)' free functions are prefered instead of using the ctors directly.
-	// Following overloads are available to create elfs:
-	//  1. file path
-	//  2. class type (create elf without existing file. class=32-bit or 64-bit)
-	//  3. elf instance (duplicate functionality).
-	//
-	// 1. 32-bit vs 64-bit.
-	// ================================================================================================
-	// This class can be used to represent 32-bit and 64-bit elfs. The difference
-	// is detected when the header object is created in the elf constructor.
-	// At that point different parsing implementations are initialized using the pimpl idiom.
-	// The memory layout for most entities (section,segment, symbol....) differs between 32-bit and 
-	// 64-bit elfs.
-	//
-	// 2. R-value support
-	// ===============================================================================================
-	// If copying of an elf is required try using move semantics. Because of the
-	// nature of the pimpl idiom, elfs are more efficiently moved instead of copied.
-	// Copying requires a deep copy of the allocated pointer while
-	// moving can move the implementation pointer from one elf to another.
-	//
-	template <typename V>
+	// 
+	template <typename V, typename M=EmptyMeta>
 	class Elf
 	{
 	public:
@@ -55,11 +33,7 @@ namespace N_Core
 		// When copying an elf the region will be shared.
 		boost::interprocess::file_mapping _file;
 		std::shared_ptr<boost::interprocess::mapped_region> _region;
-
-		constexpr bool is_64bit()
-		{
-			return std::is_same_v<V, Bit64>;
-		}
+		M _meta_data;
 	public:
 		typename SectionTableTy::iterator begin() { return _section_table.begin(); }
 		typename SectionTableTy::iterator end() { return _section_table.end(); }
