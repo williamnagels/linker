@@ -15,7 +15,7 @@ namespace N_Core
 
         //@brief Extract all sections that export a global symbol.
         template <typename T>
-        auto build_principal_sections(T const& elf, uint64_t const& code, uint64_t const& code_offset, uint64_t const& data, uint64_t const& data_offset)
+        auto build_principal_sections(T& elf, uint64_t const& code, uint64_t const& code_offset, uint64_t const& data, uint64_t const& data_offset)
         {
             std::set<N_Core::N_Linker::Section<typename T::SectionTy>> sections = elf._section_table
                 | ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})

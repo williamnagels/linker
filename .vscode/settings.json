@@ -58,6 +58,7 @@
         "*.js": "cpp",
         "*.png": "cpp",
         "linker": "cpp",
-        "*.css": "cpp"
+        "*.css": "cpp",
+        "vector": "cpp"
     }
 }
