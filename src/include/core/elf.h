@@ -17,7 +17,7 @@ namespace N_Core
 	// @brief Class representing an elf loaded from file or a custom created elf.
 	//
 	// 
-	template <typename V, typename M=EmptyMeta>
+	template <typename V>
 	class Elf
 	{
 	public:
@@ -33,7 +33,6 @@ namespace N_Core
 		// When copying an elf the region will be shared.
 		boost::interprocess::file_mapping _file;
 		std::shared_ptr<boost::interprocess::mapped_region> _region;
-		M _meta_data;
 	public:
 		typename SectionTableTy::iterator begin() { return _section_table.begin(); }
 		typename SectionTableTy::iterator end() { return _section_table.end(); }
@@ -50,6 +49,10 @@ namespace N_Core
 			return _region.get(); 
 		};
 
+		uint64_t search_for_symbol(std::string const& name)
+		{
+			return 0;
+		}
 		// @brief Returns the region in memory to which the elf is mapped
 		// 
 		// @throws std::exception if the elf is not memory mapped
@@ -75,9 +78,8 @@ namespace N_Core
 		}
 
 		// @brief Construct an elf from memory mapped region and a file name.
-		template <typename T, std::enable_if_t< std::is_convertible_v<T, char const*const>, int> a = 0 >
-		explicit Elf(T&& path):
-			_file(path, boost::interprocess::read_only)
+		explicit Elf(std::string path):
+			_file(path.c_str(), boost::interprocess::read_only)
 			, _region(std::make_shared<boost::interprocess::mapped_region>(_file, boost::interprocess::read_only))
 			, _header(get_memory_mapped_region())
 			, _section_table()

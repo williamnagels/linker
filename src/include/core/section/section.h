@@ -64,6 +64,7 @@ namespace N_Core
 			InterpretedContentTy _interpreted_content;
 
 		public:
+			bool _is_in_segment;
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
@@ -76,6 +77,7 @@ namespace N_Core
 				_container(container)
 				,_header_entry(header.begin())
 				, _interpreted_content()
+				, _is_in_segment(false)
 			{
 				create_interpreted_content(_interpreted_content, elf_blob);
 			}
