@@ -102,6 +102,8 @@ namespace N_Core
 			Type get_type() const  { return  get(_header_entry, &T::sh_type); }
 			Flags get_flags()const { auto i = get(_header_entry, &T::sh_flags); return *reinterpret_cast<Flags*>(&i); }
 			uint64_t get_address()const  { return  get(_header_entry, &T::sh_addr); }
+			void set_address(uint64_t address){set(_header_entry, &T::sh_addr, address); }
+			
 			uint64_t get_offset()const  { return  get(_header_entry, &T::sh_offset); }
 			void set_offset(uint64_t offset)  { return  set(_header_entry, &T::sh_offset, offset); };
 			uint64_t get_size() const  { return  get(_header_entry, &T::sh_size); }

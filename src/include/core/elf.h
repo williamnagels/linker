@@ -2,6 +2,7 @@
 
 #include "src/include/core/header/header.h"
 #include "src/include/core/section/section.h"
+#include "src/include/core/segment/segment.h"
 #include "src/include/core/general.h"
 #include "src/include/core/section/filters.h"
 
@@ -23,8 +24,9 @@ namespace N_Core
 	public:
 		using HeaderTy = N_Header::Header<V>;
 		using SectionTy = N_Section::Section<V, Elf>;
+		using SegmentTy = N_Segment::Segment<V, Elf>;
 		using SectionTableTy = std::list<SectionTy>;
-
+		using SegmentTableTy = std::list<SegmentTy>;
 		// This shared ptr keeps the memory mapped elf in memory until
 		// it is destructed (and other elfs sharing the counter).
 		// This pointer is only set when elf is sourced by an elf on disk.
@@ -41,6 +43,14 @@ namespace N_Core
 
 		HeaderTy _header; ///< Header of the elf. 
 		SectionTableTy _section_table; ///< All sections in this elf.	
+		SegmentTableTy _segment_table; ///< All segments in this elf.
+
+
+		SegmentTy& create_new_segment(uint64_t virtual_address, uint64_t offset)
+		{
+			_segment_table.emplace_back(virtual_address, offset);
+			return _segment_table.back();
+		}
 
 		// @brief Returns true if the elf is loaded from disk
 		//

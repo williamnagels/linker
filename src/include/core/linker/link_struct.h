@@ -42,19 +42,33 @@ namespace N_Core
 
 			void operator()(auto& section)
 			{
-				_segment._segment._sections.push_back(section);
-				//section._is_in_segment = true;
-				//section.set_virtual_address = _segment._base_virtual_address;
-				//_segment._base_virtual_address += section.get_size();
+				_segment._segment._sections.emplace_back(section);
+				section._is_in_segment = true; //should this be ptr to segment that contains this section? Not a ref cause not all sections in segment
+				section.set_address(_segment._base_virtual_address);
+				section.set_offset(_segment.calculate_offset(section.get_address())); //this should probably include alignment
+				_segment._running_virtual_address += section.get_size();
 			}
 		};
 
 		template <typename V, typename C>
 		struct SegmentBuilder
 		{
+			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address):
+				_segment(segment)
+				,_rule(rule)
+				,_running_virtual_address(virtual_address)
+				,_base_virtual_address(virtual_address)
+			{
+
+			}
+			N_Core::N_Segment::Segment<V, C>& _segment; ///< Some segment in the output elf
 			Rule _rule;
-			uint64_t _base_virtual_address;
-			Segment<V, C> _segment;
+			uint64_t _running_virtual_address; ///< Can this be the VA of the segment?
+			const uint64_t _base_virtual_address; 
+			uint64_t calculate_offset(uint64_t address)
+			{
+				return (address - _base_virtual_address) + _segment.get_offset();
+			}
 		};
 
 		template<typename T>
@@ -74,30 +88,44 @@ namespace N_Core
 				}
 			}
 
+			void build_segment_rules()
+			{
+				_segment_builders.emplace_back(_output_elf.create_new_segment(0, 0), ".text", 100000);
+				_segment_builders.emplace_back(_output_elf.create_new_segment(0, 0), ".data", 100000);
+			}
+
 
 			void collect_sections(auto& segment_builder)
 			{
-				for (auto const& elf : _input_elfs)
+				for (auto& elf : _input_elfs)
 				{
 					auto range = elf._section_table 
 						| ranges::view::filter(segment_builder._rule);
 
 					ranges::v3::for_each(range,SegmentFunctor{segment_builder});
-
-					//
 				}
 			} 
+
+			void update_segment_builder(auto& segment_builder, uint64_t offset, uint64_t size)
+			{
+				
+			}
 			void collect_sections()
 			{
 				for (auto& segment_builder: _segment_builders)
 				{
 					collect_sections(segment_builder);
+					//update_segment_builder(segment_builder, offset, size);
 				}
 			}
 
 			void do_link()
 			{
+				build_segment_rules();
 				collect_sections();
+				//do relocations here 
+				//get entry point (add to parse_link_script) 
+				//create header in output elf
 			}
 
 		};
