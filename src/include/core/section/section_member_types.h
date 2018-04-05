@@ -4,24 +4,6 @@ namespace N_Core
 {
 	namespace N_Section
 	{
-		enum SectionRemovalPolicy
-		{
-			/*
-			When removing a section a gap is created. Offsets of following
-			sections/entities (e.g. section table) are not corrected and the region
-			that previously contained the section's content will contain zeroes.
-			Size of the elf is only reduced by the size of the section header entry.
-			*/
-			GAP,
-			/*
-			The gap created by removal of a section is collapsed. 
-			all sections following the section have their offset reduced by the size 
-			of the removed section effectively reducing the size of the elf by
-			size of the removed section + section header entry.
-			*/
-			COMPACT
-		};
-
 		struct Flags
 		{
 			uint8_t SHF_WRITE : 1;

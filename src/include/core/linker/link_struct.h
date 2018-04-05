@@ -1,8 +1,11 @@
+#pragma once
+
 #include "src/include/core/general.h"
 #include "src/include/core/segment/segment.h"
 #include "src/include/core/section/section.h"
 #include "src/include/core/elf.h"
-
+#include "src/include/core/section/helpers.h"
+#include "src/include/core/symtab/filters.h"
 #include <cstdint>
 #include <map>
 #include <string>
@@ -53,11 +56,12 @@ namespace N_Core
 		template <typename V, typename C>
 		struct SegmentBuilder
 		{
-			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address):
+			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address, uint64_t offset):
 				_segment(segment)
 				,_rule(rule)
 				,_running_virtual_address(virtual_address)
 				,_base_virtual_address(virtual_address)
+				,_offset(offset)
 			{
 
 			}
@@ -65,6 +69,7 @@ namespace N_Core
 			Rule _rule;
 			uint64_t _running_virtual_address; ///< Can this be the VA of the segment?
 			const uint64_t _base_virtual_address; 
+			uint64_t _offset;
 			uint64_t calculate_offset(uint64_t address)
 			{
 				return (address - _base_virtual_address) + _segment.get_offset();
@@ -76,6 +81,8 @@ namespace N_Core
 		{
 			N_Core::Elf<T> _output_elf;
 
+			std::string _entry_symbol;
+			uint64_t _entry_value;
 			std::vector<SegmentBuilder<T, decltype(_output_elf)> > _segment_builders;
 
 			std::vector<N_Core::Elf<T> > _input_elfs;
@@ -90,8 +97,9 @@ namespace N_Core
 
 			void build_segment_rules()
 			{
-				_segment_builders.emplace_back(_output_elf.create_new_segment(0, 0), ".text", 100000);
-				_segment_builders.emplace_back(_output_elf.create_new_segment(0, 0), ".data", 100000);
+				_entry_symbol = "main";
+				_segment_builders.emplace_back(_output_elf.create_new_segment(0, 0), ".text", 100000, 0);
+				_segment_builders.emplace_back(_output_elf.create_new_segment(0, 0), ".data", 100000, 100);
 			}
 
 
@@ -110,12 +118,45 @@ namespace N_Core
 			{
 				
 			}
+			std::optional<uint64_t> get_value_of_entry_symbol(auto& elf)
+			{
+				auto symbol_range = elf._section_table
+					| ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})
+					| ranges::view::transform(N_Core::N_Section::ConvertSectionToSymbolRange{})
+					| ranges::view::join
+					| ranges::view::filter(N_Core::N_Symbol::N_Filters::HasName{_entry_symbol})
+					| ranges::view::filter(N_Core::N_Symbol::N_Filters::Defined{})
+					| ranges::view::transform(N_Core::ConvertSymbolToSection{})
+					| ranges::view::transform([](auto const& section){return section.get_address();});
+
+				if (ranges::distance(symbol_range) == 1)
+				{
+					return *symbol_range.begin();
+				}
+			}
+			std::optional<uint64_t> get_value_of_entry_symbol()
+			{
+				for (auto& elf : _input_elfs)
+				{
+					auto value = get_value_of_entry_symbol(elf);
+
+					if(value)
+					{
+						return value;
+					}
+				}	
+			}
+
+
 			void collect_sections()
 			{
+				uint64_t prev_offset = 0;
 				for (auto& segment_builder: _segment_builders)
 				{
 					collect_sections(segment_builder);
-					//update_segment_builder(segment_builder, offset, size);
+					prev_offset+= segment_builder._segment.get_offset();
+					segment_builder._segment.set_offset(prev_offset);
+					prev_offset+= segment_builder._segment.get_size();
 				}
 			}
 
@@ -123,8 +164,8 @@ namespace N_Core
 			{
 				build_segment_rules();
 				collect_sections();
-				//do relocations here 
-				//get entry point (add to parse_link_script) 
+				//do relocations here
+				_entry_value = *get_value_of_entry_symbol(); //check is in segment bool???
 				//create header in output elf
 			}
 

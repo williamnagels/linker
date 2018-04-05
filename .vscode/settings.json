@@ -59,6 +59,7 @@
         "*.png": "cpp",
         "linker": "cpp",
         "*.css": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "*.html": "cpp"
     }
 }

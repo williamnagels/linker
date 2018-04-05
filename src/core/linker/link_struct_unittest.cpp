@@ -28,4 +28,23 @@ BOOST_AUTO_TEST_CASE(convert_to_link_structs_simple)
 	BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.begin()->get().get_name_as_string() == ".data", true);
 }
 
+
+// Each section id that is defined should be exposed
+//
+BOOST_AUTO_TEST_CASE(convert_to_link_structs_simpler)
+{
+	N_Core::N_Linker::Linker<N_Core::Bit64> linker("", {"testfiles/simple_main_no_data"});
+
+	linker.do_link();
+
+	BOOST_CHECK_EQUAL(linker._input_elfs.size(), 1);
+	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.size(), 1);
+	BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.size(), 1); // this data is actually empty
+	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_name_as_string() == ".text", true);
+	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_address(), 100000);
+
+	
+	BOOST_CHECK_EQUAL(linker._entry_value, 100000);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
