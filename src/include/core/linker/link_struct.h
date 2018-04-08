@@ -156,7 +156,7 @@ namespace N_Core
 					collect_sections(segment_builder);
 					prev_offset+= segment_builder._segment.get_offset();
 					segment_builder._segment.set_offset(prev_offset);
-					prev_offset+= segment_builder._segment.get_size();
+					prev_offset+= segment_builder._segment.get_file_size();
 				}
 			}
 

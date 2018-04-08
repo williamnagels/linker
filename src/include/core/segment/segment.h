@@ -18,10 +18,10 @@ namespace N_Core
             Segment(uint64_t virtual_address, uint64_t offset){}
             std::list<std::reference_wrapper<N_Core::N_Section::Section<V, C>>> _sections;
 
-            uint64_t get_offset()const  { return  get(_header_entry, &T::p_offset); }
+            uint64_t get_offset() const { return  get(_header_entry, &T::p_offset); }
             Type get_type() const{return  get(_header_entry, &T::p_type); }
             uint64_t get_virtual_address() const{return  get(_header_entry, &T::p_vaddr);}
-            uint64_t get_physical() const{return  get(_header_entry, &T::p_paddr);}           
+            uint64_t get_physical_address() const{return  get(_header_entry, &T::p_paddr);}           
             uint64_t get_file_size() const{return  get(_header_entry, &T::p_filesz);}           
             uint64_t get_memory_size() const{return  get(_header_entry, &T::p_memsz);}    
             Flags get_flags() const{return  get(_header_entry, &T::p_flags);}    
