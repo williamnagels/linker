@@ -47,7 +47,7 @@ namespace N_Core
 			{
 				_segment._segment._sections.emplace_back(section);
 				section._is_in_segment = true; //should this be ptr to segment that contains this section? Not a ref cause not all sections in segment
-				section.set_address(_segment._base_virtual_address);
+				section.set_address(_segment._running_virtual_address);
 				section.set_offset(_segment.calculate_offset(section.get_address())); //this should probably include alignment
 				_segment._running_virtual_address += section.get_size();
 			}
@@ -56,10 +56,10 @@ namespace N_Core
 		template <typename V, typename C>
 		struct SegmentBuilder
 		{
-			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address, uint64_t offset):
+			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address, uint64_t offset, uint64_t internal_offset):
 				_segment(segment)
 				,_rule(rule)
-				,_running_virtual_address(virtual_address)
+				,_running_virtual_address(virtual_address+internal_offset)
 				,_base_virtual_address(virtual_address)
 				,_offset(offset)
 			{
@@ -67,7 +67,7 @@ namespace N_Core
 			}
 			N_Core::N_Segment::Segment<V, C>& _segment; ///< Some segment in the output elf
 			Rule _rule;
-			uint64_t _running_virtual_address; ///< Can this be the VA of the segment?
+			uint64_t _running_virtual_address;
 			const uint64_t _base_virtual_address; 
 			uint64_t _offset;
 			uint64_t calculate_offset(uint64_t address)
@@ -82,7 +82,6 @@ namespace N_Core
 			N_Core::Elf<T> _output_elf;
 
 			std::string _entry_symbol;
-			uint64_t _entry_value;
 			std::vector<SegmentBuilder<T, decltype(_output_elf)> > _segment_builders;
 
 			std::vector<N_Core::Elf<T> > _input_elfs;
@@ -97,9 +96,19 @@ namespace N_Core
 
 			void build_segment_rules()
 			{
+				uint64_t virtual_address = 0x400000;
 				_entry_symbol = "main";
-				_segment_builders.emplace_back(_output_elf.create_new_segment(0, 0), ".text", 100000, 0);
-				_segment_builders.emplace_back(_output_elf.create_new_segment(0, 0), ".data", 100000, 100);
+				auto& text_segment = _output_elf.create_new_segment(64);
+				//auto& data_segment = _output_elf.create_new_segment(0);
+				text_segment.set_offset(0);
+				text_segment.set_type(N_Core::N_Segment::PT_LOAD);
+				text_segment.set_flags(N_Core::N_Segment::Flags{1,0,1});
+				text_segment.set_alignment(boost::interprocess::mapped_region::get_page_size());
+				text_segment.set_virtual_address(virtual_address);
+				text_segment.set_physical_address(virtual_address);
+				_segment_builders.emplace_back(text_segment, ".text", virtual_address, 0, 64);
+				//_segment_builders.emplace_back(data_segment, ".data", virtual_address, 100, 0);
+
 			}
 
 
@@ -156,16 +165,27 @@ namespace N_Core
 					collect_sections(segment_builder);
 					prev_offset+= segment_builder._segment.get_offset();
 					segment_builder._segment.set_offset(prev_offset);
+					segment_builder._segment.calculate_sizes_based_on_sizes_of_sections();
 					prev_offset+= segment_builder._segment.get_file_size();
 				}
 			}
 
-			void do_link()
+			void do_link(std::string path)
 			{
 				build_segment_rules();
 				collect_sections();
+				
 				//do relocations here
-				_entry_value = *get_value_of_entry_symbol(); //check is in segment bool???
+				_output_elf._header.set_entry(*get_value_of_entry_symbol());
+				_output_elf._header.set_type(N_Core::N_Header::ET_EXEC);
+				_output_elf._header.set_data(1);
+				_output_elf._header.set_file_version(1);
+				_output_elf._header.set_machine(N_Core::N_Header::EM_X86_64);
+				_output_elf._header.set_version(N_Core::N_Header::EV_CURRENT);
+				_output_elf._header.set_program_header_number_of_entries(_output_elf._segment_table.size());
+				_output_elf._header.set_program_header_entry_size(sizeof(typename decltype(_output_elf)::SegmentTy::T));
+				_output_elf._header.set_program_header_offset(_output_elf._header.get_elf_header_size());
+				dump_to_file(path, _output_elf);
 				//create header in output elf
 			}
 

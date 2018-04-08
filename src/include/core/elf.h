@@ -46,9 +46,9 @@ namespace N_Core
 		SegmentTableTy _segment_table; ///< All segments in this elf.
 
 
-		SegmentTy& create_new_segment(uint64_t virtual_address, uint64_t offset)
+		SegmentTy& create_new_segment(uint64_t internal_offset)
 		{
-			_segment_table.emplace_back(virtual_address, offset);
+			_segment_table.emplace_back(internal_offset);
 			return _segment_table.back();
 		}
 
@@ -143,14 +143,24 @@ namespace N_Core
 
 			// dump sections; step 1 section entry header size back since first step 
 			// is increasing stream pos by its size.
-			stream.seekp(elf._header.get_section_header_offset()- sizeof(typename N_Core::Elf<V>::SectionTy::T));
-			std::streampos start_of_section_table = stream.tellp();
+			// stream.seekp(elf._header.get_section_header_offset()- sizeof(typename N_Core::Elf<V>::SectionTy::T));
 
-			for (auto const& section : elf._section_table)
-			{
-				stream.seekp(std::streamoff(sizeof(typename N_Core::Elf<V>::SectionTy::T)), std::ios::cur);
+			// stream << "out";
+			// for (auto const& section : elf._section_table)
+			// {
+			// 	stream.seekp(std::streamoff(sizeof(typename N_Core::Elf<V>::SectionTy::T)), std::ios::cur);
+			// 	std::streampos current_table_entry_position = stream.tellp();
+			// 	stream << section;
+			// 	stream.seekp(current_table_entry_position, std::ios::beg);
+			// }
+
+			// dump segments
+			stream.seekp(elf._header.get_program_header_offset()- sizeof(typename N_Core::Elf<V>::SegmentTy::T));
+			for (auto const& segment : elf._segment_table)
+			{				
+				stream.seekp(std::streamoff(sizeof(typename N_Core::Elf<V>::SegmentTy::T)), std::ios::cur);
 				std::streampos current_table_entry_position = stream.tellp();
-				stream << section;
+				stream << segment;
 				stream.seekp(current_table_entry_position, std::ios::beg);
 			}
 			return stream;

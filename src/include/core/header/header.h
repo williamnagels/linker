@@ -63,6 +63,7 @@ namespace N_Core
 				set_magic_byte_1('E');
 				set_magic_byte_2('L');
 				set_magic_byte_3('F');
+				set_elf_header_size(sizeof(T));
 			}
 
 		public:		
