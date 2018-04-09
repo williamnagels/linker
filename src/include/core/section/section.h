@@ -152,7 +152,7 @@ namespace N_Core
 		template <typename T, typename C>
 		std::ostream& operator<<(std::ostream& stream, Section<T, C> const& section)
 		{
-			stream << section._header_entry;
+			//stream << section._header_entry;
 			if (section.get_size_in_file())
 			{
 				stream.seekp(section.get_offset());

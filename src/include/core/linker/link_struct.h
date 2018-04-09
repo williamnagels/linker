@@ -56,10 +56,10 @@ namespace N_Core
 		template <typename V, typename C>
 		struct SegmentBuilder
 		{
-			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address, uint64_t offset, uint64_t internal_offset):
+			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address, uint64_t offset):
 				_segment(segment)
 				,_rule(rule)
-				,_running_virtual_address(virtual_address+internal_offset)
+				,_running_virtual_address(virtual_address+segment._internal_offset)
 				,_base_virtual_address(virtual_address)
 				,_offset(offset)
 			{
@@ -98,15 +98,15 @@ namespace N_Core
 			{
 				uint64_t virtual_address = 0x400000;
 				_entry_symbol = "main";
-				auto& text_segment = _output_elf.create_new_segment(64);
+				auto& text_segment = _output_elf.create_new_segment(64+56);
 				//auto& data_segment = _output_elf.create_new_segment(0);
 				text_segment.set_offset(0);
 				text_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				text_segment.set_flags(N_Core::N_Segment::Flags{1,0,1});
-				text_segment.set_alignment(boost::interprocess::mapped_region::get_page_size());
+				text_segment.set_alignment(0x200000/*boost::interprocess::mapped_region::get_page_size()*/);
 				text_segment.set_virtual_address(virtual_address);
 				text_segment.set_physical_address(virtual_address);
-				_segment_builders.emplace_back(text_segment, ".text", virtual_address, 0, 64);
+				_segment_builders.emplace_back(text_segment, ".text", virtual_address, 0);
 				//_segment_builders.emplace_back(data_segment, ".data", virtual_address, 100, 0);
 
 			}

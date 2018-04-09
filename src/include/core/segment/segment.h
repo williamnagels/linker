@@ -67,13 +67,13 @@ namespace N_Core
 		std::ostream& operator<<(std::ostream& stream, Segment<T, C> const& segment)
 		{
 			stream << segment._header_entry;
-			// if (section.get_size_in_file())
-			// {
-			// 	stream.seekp(section.get_offset());
 
-			// 	ostream_visitor<T, C> visitor(stream);
-			// 	std::visit(visitor, section._interpreted_content);
-			// }
+            for (N_Section::Section<T,C> const& section:segment._sections)
+            {
+                std::streampos current_table_entry_position = stream.tellp();
+                stream << section;
+                stream.seekp(current_table_entry_position, std::ios::beg);
+            }
 
 			return stream;
 		}
