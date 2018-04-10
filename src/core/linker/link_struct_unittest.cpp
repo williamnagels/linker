@@ -23,9 +23,9 @@ BOOST_AUTO_TEST_CASE(convert_to_link_structs_simple)
 
 	BOOST_CHECK_EQUAL(linker._input_elfs.size(), 1);
 	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.size(), 1);
-	//BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.size(), 1);
+	BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.size(), 1);
 	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_name_as_string() == ".text", true);
-	//BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.begin()->get().get_name_as_string() == ".data", true);
+	BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.begin()->get().get_name_as_string() == ".data", true);
 }
 
 
@@ -39,12 +39,12 @@ BOOST_AUTO_TEST_CASE(convert_to_link_structs_simpler)
 
 	BOOST_CHECK_EQUAL(linker._input_elfs.size(), 1);
 	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.size(), 1);
-	//BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.size(), 1); // this data is actually empty
+	BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.size(), 1); // this data is actually empty
 	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_name_as_string() == ".text", true);
-	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_address(), 100064);
+	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_address(), 0x400078);
 
 	
-	BOOST_CHECK_EQUAL(linker._output_elf._header.get_entry(), 100064);
+	BOOST_CHECK_EQUAL(linker._output_elf._header.get_entry(), 0x400078);
 
 }
 

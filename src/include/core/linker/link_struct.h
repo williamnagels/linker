@@ -98,17 +98,23 @@ namespace N_Core
 			{
 				uint64_t virtual_address = 0x400000;
 				_entry_symbol = "main";
+
 				auto& text_segment = _output_elf.create_new_segment(64+56);
-				//auto& data_segment = _output_elf.create_new_segment(0);
-				text_segment.set_offset(0);
 				text_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				text_segment.set_flags(N_Core::N_Segment::Flags{1,0,1});
-				text_segment.set_alignment(0x200000/*boost::interprocess::mapped_region::get_page_size()*/);
-				text_segment.set_virtual_address(virtual_address);
-				text_segment.set_physical_address(virtual_address);
-				_segment_builders.emplace_back(text_segment, ".text", virtual_address, 0);
-				//_segment_builders.emplace_back(data_segment, ".data", virtual_address, 100, 0);
+				text_segment.set_alignment(0x200000);
 
+
+				auto& data_segment = _output_elf.create_new_segment(0);
+				data_segment.set_type(N_Core::N_Segment::PT_LOAD);
+				data_segment.set_flags(N_Core::N_Segment::Flags{0,1,1});
+				data_segment.set_alignment(0x200000);
+				
+				
+				
+
+				_segment_builders.emplace_back(text_segment, ".text", virtual_address, 0);
+				_segment_builders.emplace_back(data_segment, ".data", 0, 0);
 			}
 
 
@@ -159,14 +165,32 @@ namespace N_Core
 
 			void collect_sections()
 			{
-				uint64_t prev_offset = 0;
+				uint64_t offset = 0;
+				uint64_t running_virtual_address = 0;
+				uint64_t prev_size_in_file = 0;
 				for (auto& segment_builder: _segment_builders)
 				{
+
+					segment_builder._segment.set_offset(offset);
+
+					if (segment_builder._base_virtual_address)
+					{
+						running_virtual_address = segment_builder._base_virtual_address;
+					}
+					else
+					{
+						running_virtual_address += prev_size_in_file;
+					}
+
+					segment_builder._segment.set_virtual_address(running_virtual_address);
+					segment_builder._segment.set_physical_address(running_virtual_address);
+
 					collect_sections(segment_builder);
-					prev_offset+= segment_builder._segment.get_offset();
-					segment_builder._segment.set_offset(prev_offset);
 					segment_builder._segment.calculate_sizes_based_on_sizes_of_sections();
-					prev_offset+= segment_builder._segment.get_file_size();
+
+					offset+= segment_builder._segment.get_file_size();
+
+					prev_size_in_file = segment_builder._segment.get_file_size();
 				}
 			}
 
