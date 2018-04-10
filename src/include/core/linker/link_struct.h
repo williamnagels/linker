@@ -16,7 +16,23 @@ namespace N_Core
 {
 	namespace N_Linker
 	{
+		namespace
+		{
+			uint64_t calculate_offset(uint64_t size_prev_segment, uint64_t alignment_this_segment)
+			{
+				return size_prev_segment - size_prev_segment % alignment_this_segment;
+			}
 
+			uint64_t round_to_nearest_multiple(uint64_t va, uint64_t alignment)
+			{
+				uint64_t remainder = va % alignment;
+				if (remainder == 0)
+					return va;
+
+
+				return va + alignment - remainder;
+			}
+		}
 		struct Rule
 		{
 			std::string _name;
@@ -99,7 +115,7 @@ namespace N_Core
 				uint64_t virtual_address = 0x400000;
 				_entry_symbol = "main";
 
-				auto& text_segment = _output_elf.create_new_segment(64+56);
+				auto& text_segment = _output_elf.create_new_segment(64+56+56);
 				text_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				text_segment.set_flags(N_Core::N_Segment::Flags{1,0,1});
 				text_segment.set_alignment(0x200000);
@@ -110,9 +126,6 @@ namespace N_Core
 				data_segment.set_flags(N_Core::N_Segment::Flags{0,1,1});
 				data_segment.set_alignment(0x200000);
 				
-				
-				
-
 				_segment_builders.emplace_back(text_segment, ".text", virtual_address, 0);
 				_segment_builders.emplace_back(data_segment, ".data", 0, 0);
 			}
@@ -167,10 +180,10 @@ namespace N_Core
 			{
 				uint64_t offset = 0;
 				uint64_t running_virtual_address = 0;
-				uint64_t prev_size_in_file = 0;
 				for (auto& segment_builder: _segment_builders)
 				{
-
+					//this offset is wrong; is zero when data has content.
+					offset = calculate_offset(offset, segment_builder._segment.get_alignment());
 					segment_builder._segment.set_offset(offset);
 
 					if (segment_builder._base_virtual_address)
@@ -179,7 +192,7 @@ namespace N_Core
 					}
 					else
 					{
-						running_virtual_address += prev_size_in_file;
+						running_virtual_address= round_to_nearest_multiple(running_virtual_address, segment_builder._segment.get_alignment());
 					}
 
 					segment_builder._segment.set_virtual_address(running_virtual_address);
@@ -190,7 +203,7 @@ namespace N_Core
 
 					offset+= segment_builder._segment.get_file_size();
 
-					prev_size_in_file = segment_builder._segment.get_file_size();
+					running_virtual_address += segment_builder._segment.get_file_size();
 				}
 			}
 

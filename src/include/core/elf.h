@@ -156,8 +156,9 @@ namespace N_Core
 
 			// dump segments
 			stream.seekp(elf._header.get_program_header_offset()- sizeof(typename N_Core::Elf<V>::SegmentTy::T));
+			
 			for (auto const& segment : elf._segment_table)
-			{				
+			{		
 				stream.seekp(std::streamoff(sizeof(typename N_Core::Elf<V>::SegmentTy::T)), std::ios::cur);
 				std::streampos current_table_entry_position = stream.tellp();
 				stream << segment;
