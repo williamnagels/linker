@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 #include <range/v3/all.hpp>
-
+#include <iostream>
 namespace N_Core
 {
 	namespace N_Linker
@@ -75,20 +75,24 @@ namespace N_Core
 			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address, uint64_t offset):
 				_segment(segment)
 				,_rule(rule)
-				,_running_virtual_address(virtual_address+segment._internal_offset)
-				,_base_virtual_address(virtual_address)
+				,_running_virtual_address(virtual_address)
 				,_offset(offset)
 			{
 
 			}
+
+			void update_internal_offset(uint64_t new_value)
+			{
+				_segment._internal_offset += new_value;
+				_running_virtual_address = _segment.get_virtual_address() + _segment._internal_offset;
+			}
 			N_Core::N_Segment::Segment<V, C>& _segment; ///< Some segment in the output elf
 			Rule _rule;
 			uint64_t _running_virtual_address;
-			const uint64_t _base_virtual_address; 
 			uint64_t _offset;
 			uint64_t calculate_offset(uint64_t address)
 			{
-				return (address - _base_virtual_address) + _segment.get_offset();
+				return (address - _segment.get_virtual_address()) + _segment.get_offset();
 			}
 		};
 
@@ -178,32 +182,49 @@ namespace N_Core
 
 			void collect_sections()
 			{
-				uint64_t offset = 0;
-				uint64_t running_virtual_address = 0;
+				uint64_t next_offset = 0;
+				uint64_t previous_virtual_address = 0;
 				for (auto& segment_builder: _segment_builders)
 				{
-					//this offset is wrong; is zero when data has content.
-					offset = calculate_offset(offset, segment_builder._segment.get_alignment());
-					segment_builder._segment.set_offset(offset);
+					auto& segment = segment_builder._segment;
 
-					if (segment_builder._base_virtual_address)
+					uint64_t address = segment_builder._running_virtual_address;
+					if (!address)
 					{
-						running_virtual_address = segment_builder._base_virtual_address;
+						address= round_to_nearest_multiple(previous_virtual_address, segment.get_alignment());
 					}
-					else
-					{
-						running_virtual_address= round_to_nearest_multiple(running_virtual_address, segment_builder._segment.get_alignment());
-					}
+					segment.set_virtual_address(address);
+					segment.set_physical_address(address);
+					segment_builder._running_virtual_address = address;
 
-					segment_builder._segment.set_virtual_address(running_virtual_address);
-					segment_builder._segment.set_physical_address(running_virtual_address);
+					uint64_t offset = next_offset;
+					uint64_t delta_offset = offset % segment.get_alignment();
+
+					if (delta_offset)
+					{
+						offset -= delta_offset;
+					}
+				
+
+
+					segment.set_offset(offset);
+					segment_builder.update_internal_offset(delta_offset);
+
+					std::cout << "offset= 0x" <<std::hex<< offset<<std::endl;
+					std::cout << "virtual_address= 0x" <<std::hex<<  address<<std::endl;
+					std::cout << "internal_offset= 0x"<<std::hex<<segment._internal_offset<<std::endl;
 
 					collect_sections(segment_builder);
+
 					segment_builder._segment.calculate_sizes_based_on_sizes_of_sections();
+					next_offset = offset + segment_builder._segment.get_file_size();
+					previous_virtual_address = address + segment_builder._segment.get_file_size();
 
-					offset+= segment_builder._segment.get_file_size();
-
-					running_virtual_address += segment_builder._segment.get_file_size();
+					for (auto const& section:segment._sections)
+					{
+						std::cout << "section offset= 0x" <<std::hex<< section.get().get_offset()<<std::endl;
+						std::cout << "section VA = 0x" <<std::hex<< section.get().get_address()<<std::endl;
+					}
 				}
 			}
 
