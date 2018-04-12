@@ -21,7 +21,8 @@ namespace N_Core
 		public: 
 			using T = std::conditional_t<std::is_same_v<V, Bit64>, N_Section::Elf64_Shdr, N_Section::Elf32_Shdr >;
 			using SymbolTableTy = N_Symbol::Table<V, Section>;
-			using InterpretedContentTy = std::variant<MMap::Container<uint8_t>, SymbolTableTy>;
+			using RelocationTableTy = N_Relocation::Table<V, Section>;
+			using InterpretedContentTy = std::variant<MMap::Container<uint8_t>, SymbolTableTy, RelocationTableTy>;
 			using ContainerTy = C;
 		private:
 			void create_interpreted_content(InterpretedContentTy &elem, BinaryBlob elf_blob)
@@ -32,6 +33,10 @@ namespace N_Core
 				case N_Section::Type::SHT_SYMTAB:
 					elem.template emplace<SymbolTableTy>(*this, content_blob);
 					break;
+				case N_Section::Type::SHT_RELA:
+					elem.template emplace<RelocationTableTy>(*this, content_blob);
+					break;
+				
 				default:
 					elem.template emplace<MMap::Container<uint8_t>>(content_blob.begin(), content_blob.end());
 				}
@@ -42,7 +47,9 @@ namespace N_Core
 				switch (get_type())
 				{
 				case N_Section::Type::SHT_SYMTAB:
-					return SymbolTableTy(*this, content_blob);					
+					return SymbolTableTy(*this, content_blob);	
+				case N_Section::Type::SHT_RELA:
+					return RelocationTableTy(*this, content_blob);				
 				default:
 					return MMap::Container<uint8_t>(content_blob.begin(), content_blob.end());
 				}
@@ -65,6 +72,8 @@ namespace N_Core
 
 		public:
 			bool _is_in_segment;
+			Index _index;
+			Index get_index() const{return _index;}
 			// @brief Create a section for a memory mapped elf.
 			// 
 			// @param header	address range where the header entry of this section is loaded into memory.
@@ -73,11 +82,12 @@ namespace N_Core
 			// The full memory range of the elf is required because the content may be stored anywhere
 			// in the address range and is unknown until the header has been parsed.
 			//
-			explicit Section(ContainerTy const& container, N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
+			explicit Section(Index index, ContainerTy const& container, N_Core::BinaryBlob header, N_Core::BinaryBlob elf_blob) :
 				_container(container)
 				,_header_entry(header.begin())
 				, _interpreted_content()
 				, _is_in_segment(false)
+				, _index(index)
 			{
 				create_interpreted_content(_interpreted_content, elf_blob);
 			}
@@ -133,6 +143,7 @@ namespace N_Core
 				ostream_visitor(std::ostream& stream) :_stream(stream) {}
 				void operator()(MMap::Container<uint8_t> const& content) const { _stream << content; }
 				void operator()(typename Section<T, C>::SymbolTableTy const& symbol_table) const { _stream << symbol_table;}
+				void operator()(typename Section<T, C>::RelocationTableTy const& relocation_table) const {}
 			};
 		}
 

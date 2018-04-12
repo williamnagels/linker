@@ -104,7 +104,7 @@ namespace N_Core
 				auto begin_header = get_memory_mapped_region().begin() + header_of_section_entry;
 				auto end_header = begin_header + size_of_entry;
 
-				_section_table.emplace_back(*this, BinaryBlob(begin_header, end_header), get_memory_mapped_region());
+				_section_table.emplace_back(Index(i), *this, BinaryBlob(begin_header, end_header), get_memory_mapped_region());
 			}
 		}
 

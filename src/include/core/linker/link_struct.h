@@ -179,7 +179,22 @@ namespace N_Core
 				}	
 			}
 
+			void perform_local_relocations()
+			{
+				for (auto& segment_builder: _segment_builders)
+				{
+					auto& segment = segment_builder._segment;
 
+					for (auto const& section:segment._sections)
+					{
+
+						auto sections = section.get().get_parent()._section_table
+							| ranges::view::filter(N_Core::N_Section::N_Filters::RelocationTable{N_Core::IndexList{section.get().get_index()}})
+							| ranges::view::transform(N_Core::N_Section::ConvertSectionToRelocationRange{});
+					}
+				}
+		
+			}
 			void collect_sections()
 			{
 				uint64_t next_offset = 0;
@@ -243,6 +258,8 @@ namespace N_Core
 				_output_elf._header.set_program_header_number_of_entries(_output_elf._segment_table.size());
 				_output_elf._header.set_program_header_entry_size(sizeof(typename decltype(_output_elf)::SegmentTy::T));
 				_output_elf._header.set_program_header_offset(_output_elf._header.get_elf_header_size());
+				
+				perform_local_relocations();
 				dump_to_file(path, _output_elf);
 				//create header in output elf
 			}

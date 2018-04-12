@@ -23,7 +23,7 @@ namespace N_Core
 					if (section.get_type() == N_Section::Type::SHT_REL || section.get_type() == N_Section::Type::SHT_RELA)
 					{
 
-						//return std::find(_indices.begin(), _indices.end(), _index) != _indices.end();
+						return std::find(_indices.begin(), _indices.end(), section.get_index()) != _indices.end();
 					}
 
 					return false;

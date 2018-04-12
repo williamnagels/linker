@@ -12,7 +12,7 @@ namespace N_Core
 {
 	namespace N_Relocation
 	{
-		template <typename T, typename C, typename A>
+		template <typename T, typename C>
 		class Table
 		{
 		private:
@@ -34,7 +34,7 @@ namespace N_Core
 		public:
 
 			C const& get_parent()const { return _container; }
-			using RelocationTy = Relocation<T, Table, A>;
+			using RelocationTy = Relocation<T, Table>;
 			using InternalStorageTy = std::list<RelocationTy>;
 			using Iterator = typename InternalStorageTy::iterator;
 			using ConstIterator = typename InternalStorageTy::const_iterator;
@@ -53,8 +53,8 @@ namespace N_Core
 			Table(Table const&) = delete;
 			Table(Table&&) = delete;
 		};
-		template <typename T, typename C, typename A>
-		std::ostream& operator<<(std::ostream& stream, Table<T, C, A> const& table)
+		template <typename T, typename C>
+		std::ostream& operator<<(std::ostream& stream, Table<T, C> const& table)
 		{
 			std::for_each(table.begin(), table.end(), [&](auto const& relocation) {stream << relocation; });
 			return stream;
