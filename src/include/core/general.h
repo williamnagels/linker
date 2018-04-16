@@ -113,8 +113,7 @@ namespace N_Core
 		using T = uint16_t;
 		T _value;
 		static const T Wildcard = std::numeric_limits<T>::max();
-		operator decltype(_value)(){ return _value; }
-
+		operator decltype(_value)() const{ return _value; }
 		explicit Index(T value) : _value(value) {}
 	};
 

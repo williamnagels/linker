@@ -5,6 +5,14 @@ namespace N_Core
 	namespace N_Relocation
 	{
 
+		enum Type : uint32_t
+		{
+			R_X86_64_NONE = 0,
+			R_X86_64_64=1, //S + A
+			R_X86_64_PC32=2, //S + A - P
+		};
+
+
 		struct Elf32_Rel
 		{
 			uint32_t r_offset;

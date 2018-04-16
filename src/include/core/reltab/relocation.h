@@ -26,6 +26,9 @@ namespace N_Core
 
 			uint64_t get_offset()const { return  get(_content, &T::r_offset); }
 			uint64_t get_info()const { return  get(_content, &T::r_info); }
+			uint32_t get_symbol_index()const { return  static_cast<uint32_t>(get(_content, &T::r_info) >> 32); }
+			Type get_type()const { return  static_cast<Type>(get(_content, &T::r_info) & 0xffff); }
+
 			int64_t get_addend()const 
 			{
 				if constexpr(std::is_same_v<V, Elf64_Rela> || std::is_same_v<V, Elf32_Rela>)

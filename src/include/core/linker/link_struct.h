@@ -179,18 +179,60 @@ namespace N_Core
 				}	
 			}
 
+
+			template <typename a, typename b, typename c, typename d>
+			void perform_local_relocations(
+				N_Core::N_Section::Section<a, b> const& section_to_relocate, 
+				N_Core::N_Relocation::Relocation<c, d> const& relocation_entry, 
+				uint64_t symbol_value)
+			{
+				std::cout << "Going to apply relocation with type:"<<relocation_entry.get_type()<<std::endl;
+				std::cout << "Going to apply relocation got value:"<<symbol_value<<std::endl;
+			}
+
+			template <typename V, typename C, typename a, typename b>
+			void perform_local_relocations(N_Core::N_Section::Section<a, b> const& section_to_relocate, N_Core::N_Relocation::Table<V, C> const& relocation_table, auto const& symbol_table)
+			{
+
+				for (auto const& relocation_entry:relocation_table)
+				{
+					auto symbol_index = relocation_entry.get_symbol_index();
+					auto it = std::begin(symbol_table);
+					std::advance(it, symbol_index);
+					auto const& symbol = *it;
+
+					auto section_index = symbol.get_section_index();
+
+					auto value = section_to_relocate.get_parent().get_section_at(section_index).get_address();
+					//perform_local_relocations(section_to_relocate, relocation_entry, value);
+				}
+				
+			}
+
 			void perform_local_relocations()
 			{
 				for (auto& segment_builder: _segment_builders)
 				{
 					auto& segment = segment_builder._segment;
 
-					for (auto const& section:segment._sections)
+					for (auto const& section_to_relocate:segment._sections)
 					{
 
-						auto sections = section.get().get_parent()._section_table
-							| ranges::view::filter(N_Core::N_Section::N_Filters::RelocationTable{N_Core::IndexList{section.get().get_index()}})
-							| ranges::view::transform(N_Core::N_Section::ConvertSectionToRelocationRange{});
+						auto sections = section_to_relocate.get().get_parent()._section_table
+							| ranges::view::filter(N_Core::N_Section::N_Filters::RelocationTable{N_Core::IndexList{section_to_relocate.get().get_index()}});
+						
+						//std::cout<<"got nr sections: "<< ranges::v3::distance(sections)<<std::endl;
+						for (auto const& relocation_table_section:sections)
+						{
+							auto symbol_table_section_index = relocation_table_section.get_link();	
+
+							auto const& symbol_table_section = relocation_table_section.get_parent().get_section_at(symbol_table_section_index);
+
+							auto const& relocation_table =  std::get<2>(relocation_table_section.get_interpreted_content());
+							auto const& symbol_table = std::get<1>(symbol_table_section.get_interpreted_content());
+
+							//perform_local_relocations(section_to_relocate.get(), relocation_table, symbol_table);
+						}							
 					}
 				}
 		
