@@ -8,14 +8,14 @@ namespace N_Core
 		template <typename V, typename C>
 		class Relocation
 		{
-		private:
+		public:
 			C const& _container;
 			using T = std::conditional_t<
 				std::is_same_v<V, Bit64>, Elf64_Rela, Elf32_Rela
-			>;//add non rela here
-
+			>;
+			
 			MMap::Container<T> _content;
-		public:
+
 			Relocation(C const& container, BinaryBlob range) :_container(container), _content(range.begin()) {}
 			Relocation(Relocation&&) = delete;
 			Relocation(Relocation const&) = delete;
@@ -26,8 +26,8 @@ namespace N_Core
 
 			uint64_t get_offset()const { return  get(_content, &T::r_offset); }
 			uint64_t get_info()const { return  get(_content, &T::r_info); }
-			uint32_t get_symbol_index()const { return  static_cast<uint32_t>(get(_content, &T::r_info) >> 32); }
-			Type get_type()const { return  static_cast<Type>(get(_content, &T::r_info) & 0xffff); }
+			uint32_t get_symbol_index()const { return  static_cast<uint32_t>( get_info() >> 32); }
+			Type get_type()const { return  static_cast<Type>(get_info() & 0xffff); }
 
 			int64_t get_addend()const 
 			{

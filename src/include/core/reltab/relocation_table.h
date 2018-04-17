@@ -12,19 +12,19 @@ namespace N_Core
 {
 	namespace N_Relocation
 	{
-		template <typename T, typename C>
+		template <typename V, typename C>
 		class Table
 		{
 		private:
 			C const& _container;
 			void build_table(BinaryBlob blob)
 			{
-				auto number_of_entries = blob.size() / sizeof(T);
+				auto number_of_entries = blob.size() / sizeof(typename RelocationTy::T);
 
 				for (auto i = 0; i < number_of_entries; i++)
 				{
-					uint8_t* begin = blob.begin() + i * sizeof(T);
-					uint8_t* end = begin + sizeof(T);
+					uint8_t* begin = blob.begin() + i * sizeof(typename RelocationTy::T);
+					uint8_t* end = begin + sizeof(typename RelocationTy::T);
 
 					_relocations.emplace_back(*this, BinaryBlob(begin, end));
 				}
@@ -34,7 +34,7 @@ namespace N_Core
 		public:
 
 			C const& get_parent()const { return _container; }
-			using RelocationTy = Relocation<T, Table>;
+			using RelocationTy = Relocation<V, Table>;
 			using InternalStorageTy = std::list<RelocationTy>;
 			using Iterator = typename InternalStorageTy::iterator;
 			using ConstIterator = typename InternalStorageTy::const_iterator;

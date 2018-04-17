@@ -5,6 +5,9 @@ namespace N_Core
 	namespace N_Relocation
 	{
 
+		// S = symbol value
+		// A = addend
+		// P = offset
 		enum Type : uint32_t
 		{
 			R_X86_64_NONE = 0,

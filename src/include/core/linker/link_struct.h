@@ -186,8 +186,24 @@ namespace N_Core
 				N_Core::N_Relocation::Relocation<c, d> const& relocation_entry, 
 				uint64_t symbol_value)
 			{
+				uint64_t value_to_apply = 0;
+				switch(relocation_entry.get_type())
+				{
+					case N_Core::N_Relocation::Type::R_X86_64_NONE:
+					break;
+					case N_Core::N_Relocation::Type::R_X86_64_64:
+					break;
+					case N_Core::N_Relocation::Type::R_X86_64_PC32:
+						value_to_apply=symbol_value + relocation_entry.get_addend() - relocation_entry.get_offset();
+					break;
+					default:
+					break;
+				}
 				std::cout << "Going to apply relocation with type:"<<relocation_entry.get_type()<<std::endl;
-				std::cout << "Going to apply relocation got value:"<<symbol_value<<std::endl;
+				std::cout << "value:"<<symbol_value<<std::endl;
+				std::cout << "offset:"<<relocation_entry.get_offset()<<std::endl;
+				std::cout << "addend:"<<relocation_entry.get_addend()<<std::endl;
+				std::cout << "final:"<<value_to_apply<<std::endl;
 			}
 
 			template <typename V, typename C, typename a, typename b>
@@ -204,7 +220,7 @@ namespace N_Core
 					auto section_index = symbol.get_section_index();
 
 					auto value = section_to_relocate.get_parent().get_section_at(section_index).get_address();
-					//perform_local_relocations(section_to_relocate, relocation_entry, value);
+					perform_local_relocations(section_to_relocate, relocation_entry, value);
 				}
 				
 			}
@@ -231,7 +247,7 @@ namespace N_Core
 							auto const& relocation_table =  std::get<2>(relocation_table_section.get_interpreted_content());
 							auto const& symbol_table = std::get<1>(symbol_table_section.get_interpreted_content());
 
-							//perform_local_relocations(section_to_relocate.get(), relocation_table, symbol_table);
+							perform_local_relocations(section_to_relocate.get(), relocation_table, symbol_table);
 						}							
 					}
 				}
