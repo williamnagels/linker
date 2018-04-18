@@ -182,11 +182,12 @@ namespace N_Core
 
 			template <typename a, typename b, typename c, typename d>
 			void perform_local_relocations(
-				N_Core::N_Section::Section<a, b> const& section_to_relocate, 
+				N_Core::N_Section::Section<a, b>& section_to_relocate, 
 				N_Core::N_Relocation::Relocation<c, d> const& relocation_entry, 
 				uint64_t symbol_value)
 			{
 				uint64_t value_to_apply = 0;
+				uint64_t VA_of_reloc = section_to_relocate.get_address() + relocation_entry.get_offset();
 				switch(relocation_entry.get_type())
 				{
 					case N_Core::N_Relocation::Type::R_X86_64_NONE:
@@ -194,7 +195,20 @@ namespace N_Core
 					case N_Core::N_Relocation::Type::R_X86_64_64:
 					break;
 					case N_Core::N_Relocation::Type::R_X86_64_PC32:
-						value_to_apply=symbol_value + relocation_entry.get_addend() - relocation_entry.get_offset();
+					{
+						int64_t first = (int64_t)symbol_value + relocation_entry.get_addend();
+						int64_t second = (int64_t)(VA_of_reloc);
+						int32_t val = (int32_t)(first - second );
+
+						//section_to_relocate.g
+						//uint8_t const* base = ;
+
+						auto& cont = std::get<0>(section_to_relocate.get_interpreted_content());
+						cont.resize(cont.get_size());
+						uint8_t* base = &(*cont.begin());
+						base += relocation_entry.get_offset();
+						std::memcpy(base, &val, 4);
+					}
 					break;
 					default:
 					break;
@@ -207,7 +221,7 @@ namespace N_Core
 			}
 
 			template <typename V, typename C, typename a, typename b>
-			void perform_local_relocations(N_Core::N_Section::Section<a, b> const& section_to_relocate, N_Core::N_Relocation::Table<V, C> const& relocation_table, auto const& symbol_table)
+			void perform_local_relocations(N_Core::N_Section::Section<a, b>& section_to_relocate, N_Core::N_Relocation::Table<V, C> const& relocation_table, auto const& symbol_table)
 			{
 
 				for (auto const& relocation_entry:relocation_table)
@@ -231,7 +245,7 @@ namespace N_Core
 				{
 					auto& segment = segment_builder._segment;
 
-					for (auto const& section_to_relocate:segment._sections)
+					for (auto& section_to_relocate:segment._sections)
 					{
 
 						auto sections = section_to_relocate.get().get_parent()._section_table
