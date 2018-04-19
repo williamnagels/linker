@@ -31,7 +31,7 @@ namespace N_Core
 
 			int64_t get_addend()const 
 			{
-				if constexpr(std::is_same_v<V, Elf64_Rela> || std::is_same_v<V, Elf32_Rela>)
+				if constexpr(std::is_same_v<T, Elf64_Rela> || std::is_same_v<T, Elf32_Rela>)
 				{
 					return  get(_content, &T::r_addend); 	
 				} 

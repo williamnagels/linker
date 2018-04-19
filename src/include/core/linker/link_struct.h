@@ -63,6 +63,16 @@ namespace N_Core
 			{
 				_segment._segment._sections.emplace_back(section);
 				section._is_in_segment = true; //should this be ptr to segment that contains this section? Not a ref cause not all sections in segment
+		
+				auto alignment = section.get_address_alignment();
+
+				auto wrong = _segment._running_virtual_address % alignment;
+				
+				if (wrong)
+				{
+					auto to_offset = alignment-wrong;
+					_segment._running_virtual_address+= to_offset;
+				}
 				section.set_address(_segment._running_virtual_address);
 				section.set_offset(_segment.calculate_offset(section.get_address())); //this should probably include alignment
 				_segment._running_virtual_address += section.get_size();
@@ -200,24 +210,24 @@ namespace N_Core
 						int64_t second = (int64_t)(VA_of_reloc);
 						int32_t val = (int32_t)(first - second );
 
-						//section_to_relocate.g
-						//uint8_t const* base = ;
-
 						auto& cont = std::get<0>(section_to_relocate.get_interpreted_content());
 						cont.resize(cont.get_size());
 						uint8_t* base = &(*cont.begin());
 						base += relocation_entry.get_offset();
 						std::memcpy(base, &val, 4);
-					}
+
+						std::cout << "Going to apply relocation with type:"<<relocation_entry.get_type()<<std::endl;
+						std::cout << "value of symbol:0x"<<first<<std::endl;
+						std::cout << "VA of reloc:0x"<<second<<std::endl;
+						std::cout << "Program counter offset:0x"<<val<<std::endl;
+						std::cout << "VA;0x"<<second+val<<std::endl;
+
+					};
 					break;
 					default:
 					break;
 				}
-				std::cout << "Going to apply relocation with type:"<<relocation_entry.get_type()<<std::endl;
-				std::cout << "value:"<<symbol_value<<std::endl;
-				std::cout << "offset:"<<relocation_entry.get_offset()<<std::endl;
-				std::cout << "addend:"<<relocation_entry.get_addend()<<std::endl;
-				std::cout << "final:"<<value_to_apply<<std::endl;
+
 			}
 
 			template <typename V, typename C, typename a, typename b>
@@ -234,6 +244,7 @@ namespace N_Core
 					auto section_index = symbol.get_section_index();
 
 					auto value = section_to_relocate.get_parent().get_section_at(section_index).get_address();
+				
 					perform_local_relocations(section_to_relocate, relocation_entry, value);
 				}
 				

@@ -20,11 +20,8 @@ namespace N_Core
 				template <typename SectionTy>
 				bool operator()(SectionTy const& section)
 				{
-					std::cout << "got type:"<<section.get_type()<<std::endl;
 					if (section.get_type() == N_Section::Type::SHT_REL || section.get_type() == N_Section::Type::SHT_RELA)
 					{
-						std::cout << "got index:" << section.get_index() <<std::endl;
-						std::cout << "searching for index:" << *_indices.begin() <<std::endl;
 						return std::find(_indices.begin(), _indices.end(), section.get_info()) != _indices.end();
 					}
 
