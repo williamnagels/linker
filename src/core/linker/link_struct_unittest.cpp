@@ -48,17 +48,34 @@ BOOST_AUTO_TEST_SUITE(link_struct_unittest)
 
 // }
 
-// Each section id that is defined should be exposed
-//
-BOOST_AUTO_TEST_CASE(simple_main_local_symbol)
+// // Each section id that is defined should be exposed
+// //
+// BOOST_AUTO_TEST_CASE(simple_main_local_symbol)
+// {
+// 	N_Core::N_Linker::Linker<N_Core::Bit64> linker("", {"testfiles/simple_main_local_symbol"});
+
+// 	linker.do_link("testfiles/simple_main_local_symbol_linked");
+
+// 	BOOST_CHECK_EQUAL(linker._input_elfs.size(), 1);
+// 	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.size(), 1);
+// 	BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.size(), 1); // this data is actually empty
+// 	//BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_name_as_string() == ".text", true);
+// 	//BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_address(), 0x400078+56);
+
+	
+// 	//BOOST_CHECK_EQUAL(linker._output_elf._header.get_entry(), 0x400078+56);
+
+// }
+
+BOOST_AUTO_TEST_CASE(simple_main_global_symbol)
 {
-	N_Core::N_Linker::Linker<N_Core::Bit64> linker("", {"testfiles/simple_main_local_symbol"});
+	N_Core::N_Linker::Linker<N_Core::Bit64> linker("", {"testfiles/global_main","testfiles/global_ext"}); 
 
-	linker.do_link("testfiles/simple_main_local_symbol_linked");
+	linker.do_link("testfiles/simple_main_global_symbol_linked");
 
-	BOOST_CHECK_EQUAL(linker._input_elfs.size(), 1);
-	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.size(), 1);
-	BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.size(), 1); // this data is actually empty
+	BOOST_CHECK_EQUAL(linker._input_elfs.size(), 2);
+	BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.size(), 2);
+	BOOST_CHECK_EQUAL(linker._segment_builders[1]._segment._sections.size(), 2); // this data is actually empty
 	//BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_name_as_string() == ".text", true);
 	//BOOST_CHECK_EQUAL(linker._segment_builders[0]._segment._sections.begin()->get().get_address(), 0x400078+56);
 

@@ -18,6 +18,8 @@ namespace N_Core
 	{
 		namespace
 		{
+			std::map<std::string, uint64_t> _symbols;
+
 			uint64_t calculate_offset(uint64_t size_prev_segment, uint64_t alignment_this_segment)
 			{
 				return size_prev_segment - size_prev_segment % alignment_this_segment;
@@ -76,6 +78,21 @@ namespace N_Core
 				section.set_address(_segment._running_virtual_address);
 				section.set_offset(_segment.calculate_offset(section.get_address())); //this should probably include alignment
 				_segment._running_virtual_address += section.get_size();
+
+				auto defined_global_symbol = section.get_parent()._section_table
+					| ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})
+					| ranges::view::transform(N_Core::N_Section::ConvertSectionToSymbolRange{})
+					| ranges::view::join
+					| ranges::view::filter(N_Core::N_Symbol::N_Filters::Global{})
+					| ranges::view::filter(N_Core::N_Symbol::N_Filters::Defined{})
+					| ranges::view::filter(N_Core::N_Symbol::N_Filters::HasIndex{section.get_index()});
+
+				for (auto const& symbol:defined_global_symbol)
+				{
+					_symbols[*symbol.get_name_as_string()] = section.get_address();
+					std::cout << "GLOBAL SYM;name="<<*symbol.get_name_as_string()<<"0x"<<section.get_address()<<std::endl;
+				}
+				
 			}
 		};
 
@@ -118,6 +135,7 @@ namespace N_Core
 
 			Linker(std::string _linker_script_path, std::vector<std::string> _input_files)
 			{
+				_input_elfs.reserve(_input_files.size());
 				for(std::string const& path: _input_files)
 				{
 					_input_elfs.emplace_back(path);
@@ -149,6 +167,8 @@ namespace N_Core
 			{
 				for (auto& elf : _input_elfs)
 				{
+					std::cout << "Reading input elf"<<std::endl;
+
 					auto range = elf._section_table 
 						| ranges::view::filter(segment_builder._rule);
 
@@ -243,8 +263,18 @@ namespace N_Core
 
 					auto section_index = symbol.get_section_index();
 
-					auto value = section_to_relocate.get_parent().get_section_at(section_index).get_address();
+					uint64_t value = 0;
 				
+					if (!section_index)
+					{
+						auto symbol_to_find = *symbol.get_name_as_string();
+						value = _symbols[symbol_to_find];
+					}
+					else 
+					{
+						value = section_to_relocate.get_parent().get_section_at(section_index).get_address();
+					}
+
 					perform_local_relocations(section_to_relocate, relocation_entry, value);
 				}
 				

@@ -21,6 +21,15 @@ namespace N_Core
 					return false;
 				};
 			};
+			struct HasIndex
+			{
+				N_Core::Index _index;
+				template <typename SymbolTy>
+				bool operator()(SymbolTy const& symbol) 
+				{ 
+					return _index == symbol.get_section_index();
+				};
+			};
 			struct Global
 			{
 				template <typename SymbolTy>
