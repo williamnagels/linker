@@ -31,8 +31,8 @@ namespace N_Core
 			uint64_t get_value() const { return get(_content, &T::st_value); }
 			uint64_t get_size() const { return get(_content, &T::st_size); }
 			C const& get_parent()const { return _container; }
-
-			bool is_global() const { return get_binding() == Binding::STB_GLOBAL; }
+			bool is_weak() const { return get_binding() == Binding::STB_WEAK; }
+			bool is_global() const { return get_binding() == Binding::STB_GLOBAL || get_binding() == Binding::STB_WEAK; }
 			bool is_defined() const { return get_section_index() != 0; }
 
 			

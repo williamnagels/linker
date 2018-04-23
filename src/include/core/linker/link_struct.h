@@ -18,7 +18,19 @@ namespace N_Core
 	{
 		namespace
 		{
-			std::map<std::string, uint64_t> _symbols;
+			enum struct SymbolPrio
+			{
+				LOCAL,
+				WEAK,
+				GLOBAL
+			};
+
+			struct SymbolDef
+			{
+				uint64_t _value;
+				N_Core::N_Symbol::Binding _binding;
+			};
+			std::map<std::string, SymbolDef> _symbols;
 
 			uint64_t calculate_offset(uint64_t size_prev_segment, uint64_t alignment_this_segment)
 			{
@@ -89,8 +101,34 @@ namespace N_Core
 
 				for (auto const& symbol:defined_global_symbol)
 				{
-					_symbols[*symbol.get_name_as_string()] = section.get_address();
-					std::cout << "GLOBAL SYM;name="<<*symbol.get_name_as_string()<<"0x"<<section.get_address()<<std::endl;
+					auto new_symbol_value = section.get_address() + symbol.get_value();
+					auto it = _symbols.find(*symbol.get_name_as_string());
+
+					if(it != _symbols.end())
+					{
+						//local has prio on global
+						//global has prio on weak
+						//weak symbols cannot be preempted by other weak symbols
+						if (it->second._binding > symbol.get_binding())
+						{
+							std::cout << "*REPLACED* SYM;name="<<*symbol.get_name_as_string()<<" 0x"<<it->second._value<<" with 0x"<<new_symbol_value<<std::endl;
+							
+							it->second._value = new_symbol_value;
+							it->second._binding = symbol.get_binding();
+							//_symbols[*symbol.get_name_as_string()] = {new_symbol_value, symbol.get_binding()};
+						} 
+						else if( (it->second._binding == symbol.get_binding()) && symbol.get_binding() == N_Core::N_Symbol::Binding::STB_GLOBAL)
+						{
+							throw std::runtime_error("Redefined global symbol: " + *symbol.get_name_as_string());
+						}
+					}
+					else
+					{
+						std::cout << "*NEW* SYM;name="<<*symbol.get_name_as_string()<<"0x"<<new_symbol_value<<std::endl;
+						_symbols[*symbol.get_name_as_string()] = {new_symbol_value, symbol.get_binding()};
+					}
+		
+					
 				}
 				
 			}
@@ -182,19 +220,30 @@ namespace N_Core
 			}
 			std::optional<uint64_t> get_value_of_entry_symbol(auto& elf)
 			{
-				auto symbol_range = elf._section_table
-					| ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})
-					| ranges::view::transform(N_Core::N_Section::ConvertSectionToSymbolRange{})
-					| ranges::view::join
-					| ranges::view::filter(N_Core::N_Symbol::N_Filters::HasName{_entry_symbol})
-					| ranges::view::filter(N_Core::N_Symbol::N_Filters::Defined{})
-					| ranges::view::transform(N_Core::ConvertSymbolToSection{})
-					| ranges::view::transform([](auto const& section){return section.get_address();});
-
-				if (ranges::distance(symbol_range) == 1)
+				
+				auto it = _symbols.find(_entry_symbol);
+				auto copy = _symbols;
+				if (it == std::end(_symbols))
 				{
-					return *symbol_range.begin();
+					throw std::runtime_error("entry symbol not found: "+ _entry_symbol);
 				}
+
+				std::cout << "Entry symbol:0x"<<it->second._value<<std::endl;
+				return it->second._value;
+				// std::find(std::begin(_symbols),std::end(_symbols), _entry)
+				// auto symbol_range = elf._section_table
+				// 	| ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})
+				// 	| ranges::view::transform(N_Core::N_Section::ConvertSectionToSymbolRange{})
+				// 	| ranges::view::join
+				// 	| ranges::view::filter(N_Core::N_Symbol::N_Filters::HasName{_entry_symbol})
+				// 	| ranges::view::filter(N_Core::N_Symbol::N_Filters::Defined{})
+				// 	| ranges::view::transform(N_Core::ConvertSymbolToSection{})
+				// 	| ranges::view::transform([](auto const& section){return section.get_address();});
+
+				// if (ranges::distance(symbol_range) == 1)
+				// {
+				// 	return *symbol_range.begin();
+				// }
 			}
 			std::optional<uint64_t> get_value_of_entry_symbol()
 			{
@@ -226,8 +275,8 @@ namespace N_Core
 					break;
 					case N_Core::N_Relocation::Type::R_X86_64_PC32:
 					{
-						int64_t first = (int64_t)symbol_value + relocation_entry.get_addend();
-						int64_t second = (int64_t)(VA_of_reloc);
+						int32_t first = (int32_t)symbol_value + relocation_entry.get_addend();
+						int32_t second = (int32_t)(VA_of_reloc);
 						int32_t val = (int32_t)(first - second );
 
 						auto& cont = std::get<0>(section_to_relocate.get_interpreted_content());
@@ -265,10 +314,10 @@ namespace N_Core
 
 					uint64_t value = 0;
 				
-					if (!section_index)
+					if (!section_index || symbol.is_weak())
 					{
 						auto symbol_to_find = *symbol.get_name_as_string();
-						value = _symbols[symbol_to_find];
+						value = _symbols[symbol_to_find]._value;
 					}
 					else 
 					{
