@@ -16,7 +16,8 @@ set(Boost_DEBUG ON)
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.65.0 REQUIRED unit_test_framework date_time filesystem system) 
 find_package(Git REQUIRED) 
-
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
 ExternalProject_Add(
     mmcow
     GIT_REPOSITORY https://github.com/williamnagels/mmcow.git
@@ -48,7 +49,9 @@ set(rangesIncludeDir ${source_dir}/include)
 MESSAGE( STATUS "mmcow header files:" ${mmcowIncludeDir} )
 MESSAGE( STATUS "ranges header files:" ${rangesIncludeDir} )
 
-
+BISON_TARGET(Parser src/core/script/parser.y  ${CMAKE_BINARY_DIR}/parser.cpp)
+FLEX_TARGET(Lexer src/core/script/lexer.l   ${CMAKE_BINARY_DIR}/lexer.cpp)
+ADD_FLEX_BISON_DEPENDENCY(Lexer Parser)
 
 add_library(linker_core STATIC
 	src/core/addressable.cpp
@@ -62,6 +65,10 @@ add_library(linker_core STATIC
 
 	#section
 	src/core/section/helpers.cpp
+
+	#lexer & parser
+	${BISON_Parser_OUTPUTS}
+    ${FLEX_Lexer_OUTPUTS}
 )
 target_include_directories(linker_core
 	PUBLIC
@@ -76,6 +83,11 @@ target_include_directories(linker_core
 add_dependencies(linker_core mmcow)
 add_dependencies(linker_core ranges)
 
+target_link_libraries(linker_core
+	PRIVATE
+ 		${FLEX_LIBRARIES}
+ )
+
 add_executable(linker src/main.cpp) 
 
 add_executable(linker_unit_tests 
@@ -85,6 +97,7 @@ add_executable(linker_unit_tests
 	src/core/header/header_unittest.cpp
 	src/core/section/section_unittest.cpp
 	src/core/linker/link_struct_unittest.cpp
+	src/core/script/parser_unittest.cpp
 ) 
 target_include_directories(linker
 	PRIVATE
