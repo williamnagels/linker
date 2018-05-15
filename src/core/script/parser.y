@@ -62,7 +62,8 @@ section_name:
 	;
 ENDLS:
 	ENDLS ENDL
-	| ENDL ;
+	| ENDL 
+	| ;
 %%
 
 int N_Core::N_Parser::Parser::parse() 
