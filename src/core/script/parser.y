@@ -28,19 +28,41 @@ void yyerror(const char *s);
 %token <ival> INT
 %token <fval> FLOAT
 %token <sval> STRING
-
+%token END ENDL
+%token SECTION_HEADER 
+%token RIGHT_CURLY_BRACE 
+%token LEFT_CURLY_BRACE
+%token RIGHT_CHEVRON
+%token LEFT_CHEVRON
+%token COLON
 %%
-// this is the actual grammar that bison will parse, but for right now it's just
-// something silly to echo to the screen what bison gets from flex.  We'll
-// make a real one shortly:
-snazzle:
-	INT snazzle      { cout << "bison found an int: " << $1 << endl; }
-	| FLOAT snazzle  { cout << "bison found a float: " << $1 << endl; }
-	| STRING snazzle { cout << "bison found a string: " << $1 << endl; }
-	| INT            { cout << "bison found an int: " << $1 << endl; }
-	| FLOAT          { cout << "bison found a float: " << $1 << endl; }
-	| STRING         { cout << "bison found a string: " << $1 << endl; }
+link_script:
+	sections { cout << "done with a linkerscript!" << endl; }
 	;
+sections:
+	SECTION_HEADER RIGHT_CURLY_BRACE ENDLS section_descriptions ENDLS LEFT_CURLY_BRACE ENDLS
+	;
+section_descriptions:
+	section_descriptions section_description 
+	| section_description
+	;
+section_description:
+	RIGHT_CHEVRON STRING LEFT_CHEVRON COLON RIGHT_CHEVRON INT LEFT_CHEVRON RIGHT_CURLY_BRACE ENDLS section_identifications ENDLS LEFT_CURLY_BRACE { cout << "new section description name=" << $2 << " and aligment=" << $6 << std::endl; }
+	;
+section_identifications:
+	section_identifications section_identification
+	| section_identification
+	;
+section_identification:
+	section_name ENDLS 
+	section_name
+	;
+section_name:
+	STRING { cout << "new section name" << $1 <<std::endl; }
+	;
+ENDLS:
+	ENDLS ENDL
+	| ENDL ;
 %%
 
 int N_Core::N_Parser::Parser::parse() 

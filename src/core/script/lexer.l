@@ -8,6 +8,12 @@ using namespace std;
 
 %}
 %%
+"Sections"   { return SECTION_HEADER; }
+"{" 		 { return RIGHT_CURLY_BRACE;}
+"}" 		 { return LEFT_CURLY_BRACE;}
+"<" 		 { return RIGHT_CHEVRON;}
+">" 		 { return LEFT_CHEVRON;}
+":"		     { return COLON;}
 [ \t\n]           ;
 [0-9]+\.[0-9]+ { yylval.fval = atof(yytext); return FLOAT; }
 [0-9]+            { yylval.ival = atoi(yytext); return INT; }
