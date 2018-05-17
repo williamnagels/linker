@@ -7,6 +7,8 @@ BOOST_AUTO_TEST_CASE(parse_some_script)
 {
     N_Core::N_Parser::Parser Parser;
     Parser.parse();
+
+    auto a = 0;
 }
 
 BOOST_AUTO_TEST_SUITE_END()

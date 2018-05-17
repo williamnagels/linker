@@ -69,6 +69,7 @@ add_library(linker_core STATIC
 	#lexer & parser
 	${BISON_Parser_OUTPUTS}
     ${FLEX_Lexer_OUTPUTS}
+	src/core/script/parser.cpp
 )
 target_include_directories(linker_core
 	PUBLIC

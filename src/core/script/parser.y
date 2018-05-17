@@ -6,11 +6,11 @@ using namespace std;
 
 // stuff from flex that bison needs to know about:
 extern "C" int yylex();
-extern "C" int yyparse();
+extern "C" int yyparse(void* parser);
 extern "C" FILE *yyin;
- 
-void yyerror(const char *s);
+void yyerror(void* parser, const char *s);
 %}
+%parse-param {void* parser}
 
 // Bison fundamentally works by asking flex to get the next token, which it
 // returns as an object of type "yystype".  But tokens could be of any
@@ -36,6 +36,7 @@ void yyerror(const char *s);
 %token LEFT_CHEVRON
 %token COLON
 %token ADDRESS_IDENTIFIER
+
 //RIGHT_CURLY_BRACE ENDLS section_descriptions ENDLS LEFT_CURLY_BRACE ENDLS
 //RIGHT_CHEVRON STRING LEFT_CHEVRON COLON RIGHT_CHEVRON INT LEFT_CHEVRON RIGHT_CURLY_BRACE ENDLS section_identifications ENDLS LEFT_CURLY_BRACE { cout << "new section description name=" << $2 << " and aligment=" << $6 << std::endl; }
 %%
@@ -50,15 +51,15 @@ section_descriptions:
 	| section_description
 	;
 section_description:
-	ADDRESS_IDENTIFIER STRING  { cout << "new section name" << $2 <<std::endl;  }
-	| STRING COLON RIGHT_CURLY_BRACE section_identifications LEFT_CURLY_BRACE { cout << "whiskey" << $1 <<std::endl;  }
+	ADDRESS_IDENTIFIER STRING  { ((N_Core::N_Parser::Parser*)parser)->set_base_address($2);cout << "new base address: " << $2 <<std::endl;  }
+	| STRING COLON RIGHT_CURLY_BRACE section_identifications LEFT_CURLY_BRACE { ((N_Core::N_Parser::Parser*)parser)->set_segment_name($1);cout << "segment name: " << $1 <<std::endl;  }
 	;
 section_identifications:
 	section_identifications section_identification
 	| section_identification
 	;
 section_identification:
-	 STRING { cout << "new section description" << $1 <<std::endl;  }
+	 STRING { ((N_Core::N_Parser::Parser*)parser)->add_filter($1); cout << "to filter wildcard: " << $1 <<std::endl;  }
 	;
 ENDLS:
 	ENDLS ENDL
@@ -80,12 +81,11 @@ int N_Core::N_Parser::Parser::parse()
 	
 	// parse through the input until there is no more:
 	do {
-		yyparse();
+		yyparse(this);
 	} while (!feof(yyin));
-	
 }
 
-void yyerror(const char *s) {
+void yyerror(void* parser, char const*s) {
 	cout << "EEK, parse error!  Message: " << s << endl;
 	// might as well halt now:
 	exit(-1);
