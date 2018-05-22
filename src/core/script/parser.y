@@ -67,7 +67,7 @@ ENDLS:
 	| ;
 %%
 
-int N_Core::N_Parser::Parser::parse() 
+int N_Core::N_Parser::Parser::parse(std::string const& path) 
 {
 	// open a file handle to a particular file:
 	FILE *myfile = fopen("testfiles/simple_script", "r");
