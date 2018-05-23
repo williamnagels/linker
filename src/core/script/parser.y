@@ -37,8 +37,6 @@ void yyerror(void* parser, const char *s);
 %token COLON
 %token ADDRESS_IDENTIFIER
 
-//RIGHT_CURLY_BRACE ENDLS section_descriptions ENDLS LEFT_CURLY_BRACE ENDLS
-//RIGHT_CHEVRON STRING LEFT_CHEVRON COLON RIGHT_CHEVRON INT LEFT_CHEVRON RIGHT_CURLY_BRACE ENDLS section_identifications ENDLS LEFT_CURLY_BRACE { cout << "new section description name=" << $2 << " and aligment=" << $6 << std::endl; }
 %%
 link_script:
 	sections { cout << "done with a linkerscript!" << endl; }
