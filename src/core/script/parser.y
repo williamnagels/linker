@@ -28,6 +28,7 @@ void yyerror(void* parser, const char *s);
 %token <ival> INT
 %token <fval> FLOAT
 %token <sval> STRING
+%token <sval> WILDCARD_STRING
 %token END ENDL
 %token SECTION_HEADER 
 %token RIGHT_CURLY_BRACE 
@@ -57,7 +58,7 @@ section_identifications:
 	| section_identification
 	;
 section_identification:
-	 STRING { ((N_Core::N_Parser::Parser*)parser)->add_filter($1); cout << "to filter wildcard: " << $1 <<std::endl;  }
+	WILDCARD_STRING { ((N_Core::N_Parser::Parser*)parser)->add_filter($1); cout << "to filter wildcard: " << $1 <<std::endl;  }
 	;
 ENDLS:
 	ENDLS ENDL
