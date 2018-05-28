@@ -20,7 +20,7 @@ void yyerror(void* parser, const char *s);
 %union {
 	int ival;
 	float fval;
-	char *sval;
+	char* sval;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS

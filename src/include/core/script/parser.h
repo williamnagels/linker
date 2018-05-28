@@ -2,12 +2,15 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <regex>
 extern "C" { int yyparse(void* parser);}
 namespace N_Core
 {
     namespace N_Parser
     {
-        using SegmentContainerTy = std::vector<std::string>;
+        using SegmentContainerTy = std::vector<std::regex>;
+
+        
         struct Segment
         {
             std::string _name;
@@ -21,6 +24,8 @@ namespace N_Core
             std::optional<uint64_t> _address;
         };
         
+        bool is_valid(std::string const& name, Segment const& segment);
+
         using ContainerTy = std::vector<Segment>;
         class Parser
         {
@@ -42,7 +47,7 @@ namespace N_Core
                 // is a friend;
                 int parse(std::string const& path);
                 void set_segment_name(std::string const& name);
-                void add_filter(std::string const& filter_name);
+                void add_filter(std::string filter_name);
                 void set_base_address(std::string const& base_address);
         };
 

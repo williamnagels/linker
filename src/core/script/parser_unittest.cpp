@@ -12,13 +12,18 @@ BOOST_AUTO_TEST_CASE(parse_some_script)
     BOOST_CHECK_EQUAL(parser[0]._name, ".text");
     BOOST_CHECK_EQUAL(parser[1]._name, ".data");
     BOOST_CHECK_EQUAL(parser[2]._name, ".bss");
-    BOOST_CHECK_EQUAL(std::distance(std::begin(parser[0]._filters), std::end(parser[0]._filters)), 1);
-    BOOST_CHECK_EQUAL(std::distance(std::begin(parser[1]._filters), std::end(parser[1]._filters)), 1);
-    BOOST_CHECK_EQUAL(std::distance(std::begin(parser[2]._filters), std::end(parser[2]._filters)), 1);
+    BOOST_CHECK(N_Core::N_Parser::is_valid("front.text",parser[0]));
+    BOOST_CHECK(not N_Core::N_Parser::is_valid(".text.duh",parser[0]));
+    BOOST_CHECK(not N_Core::N_Parser::is_valid("front.text.duh",parser[0]));
+    BOOST_CHECK(N_Core::N_Parser::is_valid(".text",parser[0]));
 
-    BOOST_CHECK_EQUAL(parser[0]._filters[0], "*(.text)");
-    BOOST_CHECK_EQUAL(parser[1]._filters[0], "*(.data)");
-    BOOST_CHECK_EQUAL(parser[2]._filters[0], "*(.bss)");
+    BOOST_CHECK(N_Core::N_Parser::is_valid(".data.back",parser[1]));
+    BOOST_CHECK(not N_Core::N_Parser::is_valid(".back.data",parser[1]));
+    BOOST_CHECK(not N_Core::N_Parser::is_valid(".dat",parser[1]));
+    BOOST_CHECK(N_Core::N_Parser::is_valid(".data",parser[1]));
+
+    BOOST_CHECK(N_Core::N_Parser::is_valid("front.bssback",parser[2]));
+    BOOST_CHECK(N_Core::N_Parser::is_valid(".bss",parser[2]));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
