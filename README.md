@@ -7,7 +7,8 @@ It includes a 'somewhat' working AT&T linkscript syntax parser which is created 
  3. The bss segment: must have '.bss' as name
 
 Example link script:
-```
+
+```c++
 SECTIONS
 {
   . = 0x10000;
