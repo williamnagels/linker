@@ -5,6 +5,7 @@
 #include "src/include/core/section/section.h"
 #include "src/include/core/elf.h"
 #include "src/include/core/section/helpers.h"
+#include "src/include/core/script/parser.h"
 #include "src/include/core/symtab/filters.h"
 #include <cstdint>
 #include <map>
@@ -49,16 +50,15 @@ namespace N_Core
 		}
 		struct Rule
 		{
-			std::string _name;
-			Rule(std::string name):_name(name){}
+			N_Core::N_Parser::Parser::const_iterator _it;
+			Rule(N_Core::N_Parser::Parser::const_iterator it):_it(it){}
 			template<typename T, typename C>
 			bool operator()(N_Core::N_Section::Section<T, C> const& section)
 			{
 				if (section.get_name_as_string())
 				{
-					return _name == section.get_name_as_string();
+					return is_valid(*section.get_name_as_string(),*_it);
 				}
-
 				return false;
 			}
 		};
@@ -137,28 +137,33 @@ namespace N_Core
 		template <typename V, typename C>
 		struct SegmentBuilder
 		{
-			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, std::string rule, uint64_t virtual_address, uint64_t offset):
+			SegmentBuilder(N_Core::N_Segment::Segment<V, C>& segment, N_Core::N_Parser::Parser::const_iterator it):
 				_segment(segment)
-				,_rule(rule)
-				,_running_virtual_address(virtual_address)
-				,_offset(offset)
+				,_rule(it)
+				,_running_virtual_address( (it->_address)?*it->_address:0)
+				,_it(it)
 			{
 
 			}
 
+			bool should_include_section(std::string section_name)
+			{
+				return is_valid(section_name, *_it);
+			}
 			void update_internal_offset(uint64_t new_value)
 			{
 				_segment._internal_offset += new_value;
 				_running_virtual_address = _segment.get_virtual_address() + _segment._internal_offset;
 			}
-			N_Core::N_Segment::Segment<V, C>& _segment; ///< Some segment in the output elf
-			Rule _rule;
-			uint64_t _running_virtual_address;
-			uint64_t _offset;
 			uint64_t calculate_offset(uint64_t address)
 			{
 				return (address - _segment.get_virtual_address()) + _segment.get_offset();
 			}
+			N_Core::N_Segment::Segment<V, C>& _segment; ///< Some segment in the output elf
+			Rule _rule;
+			uint64_t _running_virtual_address;
+			N_Core::N_Parser::Parser::const_iterator _it;
+
 		};
 
 		template<typename T>
@@ -170,8 +175,9 @@ namespace N_Core
 			std::vector<SegmentBuilder<T, decltype(_output_elf)> > _segment_builders;
 
 			std::vector<N_Core::Elf<T> > _input_elfs;
-
-			Linker(std::string _linker_script_path, std::vector<std::string> _input_files)
+    		N_Core::N_Parser::Parser _parser;
+			Linker(std::string _linker_script_path, std::vector<std::string> _input_files):
+				_parser(_linker_script_path)
 			{
 				_input_elfs.reserve(_input_files.size());
 				for(std::string const& path: _input_files)
@@ -185,6 +191,11 @@ namespace N_Core
 				uint64_t virtual_address = 0x400000;
 				_entry_symbol = "main";
 
+
+				auto text_segment_it = std::find_if(std::begin(_parser), std::end(_parser), [](auto const& segment){return segment._name == ".text";});
+				auto data_segment_it = std::find_if(std::begin(_parser), std::end(_parser), [](auto const& segment){return segment._name == ".data";});
+
+
 				auto& text_segment = _output_elf.create_new_segment(64+56+56);
 				text_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				text_segment.set_flags(N_Core::N_Segment::Flags{1,0,1});
@@ -196,8 +207,8 @@ namespace N_Core
 				data_segment.set_flags(N_Core::N_Segment::Flags{0,1,1});
 				data_segment.set_alignment(0x200000);
 				
-				_segment_builders.emplace_back(text_segment, ".text", virtual_address, 0);
-				_segment_builders.emplace_back(data_segment, ".data", 0, 0);
+				_segment_builders.emplace_back(text_segment, text_segment_it);
+				_segment_builders.emplace_back(data_segment, data_segment_it);
 			}
 
 

@@ -15,7 +15,6 @@ using namespace std;
 ">" 		 { return LEFT_CHEVRON;}
 ":"		     { return COLON;}
 
-
 [ \t\n]+             ;
 [\. =]+              { return ADDRESS_IDENTIFIER;}
 [0-9]+\.[0-9]+       { yylval.fval = atof(yytext); return FLOAT; }

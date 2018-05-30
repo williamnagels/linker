@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_SUITE(link_struct_unittest)
 
 BOOST_AUTO_TEST_CASE(simple_main_global_symbol)
 {
-	N_Core::N_Linker::Linker<N_Core::Bit64> linker("", {"testfiles/weak_advanced_main","testfiles/weak_advanced_ext"}); 
+	N_Core::N_Linker::Linker<N_Core::Bit64> linker("testfiles/simple_script", {"testfiles/weak_advanced_main","testfiles/weak_advanced_ext"}); 
 
 	linker.do_link("testfiles/simple_main_weak_advanced_symbol_linked");
 }

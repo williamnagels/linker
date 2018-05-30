@@ -66,24 +66,23 @@ ENDLS:
 	| ;
 %%
 
-int N_Core::N_Parser::Parser::parse(std::string const& path) 
+void N_Core::N_Parser::Parser::parse(std::string const& path) 
 {
-	// open a file handle to a particular file:
-	FILE *myfile = fopen("testfiles/simple_script", "r");
-	// make sure it is valid:
-	if (!myfile) {
-		cout << "Cannot find the file" << endl;
-		return -1;
+	FILE *myfile = fopen(path.c_str(), "r");
+	if (!myfile) 
+  	{
+    	throw std::invalid_argument("Cannot find the file");
 	}
-	// set flex to read from it instead of defaulting to STDIN:
-	yyin = myfile;
 	
-	// parse through the input until there is no more:
-	do {
+	yyin = myfile; // set flex to read from it instead of defaulting to STDIN:
+	
+	do 
+  	{
 		yyparse(this);
-	} while (!feof(yyin));
-}
+	} 
+  	while (!feof(yyin));
 
+}
 void yyerror(void* parser, char const*s) {
 	cout << "EEK, parse error!  Message: " << s << endl;
 	// might as well halt now:
