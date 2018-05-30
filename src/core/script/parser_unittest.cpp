@@ -12,6 +12,7 @@ BOOST_AUTO_TEST_CASE(parse_some_script)
     BOOST_CHECK_EQUAL(parser[0]._name, ".text");
     BOOST_CHECK_EQUAL(parser[1]._name, ".data");
     BOOST_CHECK_EQUAL(parser[2]._name, ".bss");
+    BOOST_CHECK_EQUAL(*parser._entry_point, "main");
     BOOST_CHECK(N_Core::N_Parser::is_valid("front.text",parser[0]));
     BOOST_CHECK(not N_Core::N_Parser::is_valid(".text.duh",parser[0]));
     BOOST_CHECK(not N_Core::N_Parser::is_valid("front.text.duh",parser[0]));

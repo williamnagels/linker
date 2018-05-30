@@ -35,6 +35,7 @@ namespace N_Core
                 using const_iterator = ContainerTy::const_iterator;
                 using value_type = ContainerTy::value_type;
                 Parser(std::string const& script_name);
+                std::optional<std::string> _entry_point;
                 const_iterator begin() const;
                 const_iterator end() const;
                 iterator begin();
@@ -47,6 +48,7 @@ namespace N_Core
                 ContainerTy _segments;
                 std::optional<uint64_t> _base_address;
                 
+                
                 friend int ::yyparse(void* parser);
                 // called by script parser; reason why this method
                 // is a friend;
@@ -54,6 +56,7 @@ namespace N_Core
                 void set_segment_name(std::string const& name);
                 void add_filter(std::string filter_name);
                 void set_base_address(std::string const& base_address);
+                void set_entry_point(std::string const& base_address);
         };
 
     }

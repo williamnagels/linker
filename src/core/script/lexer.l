@@ -8,18 +8,21 @@ using namespace std;
 
 %}
 %%
-(?i:sections)   { return SECTION_HEADER; }
-"{" 		 { return RIGHT_CURLY_BRACE;}
-"}" 		 { return LEFT_CURLY_BRACE;}
-"<" 		 { return RIGHT_CHEVRON;}
-">" 		 { return LEFT_CHEVRON;}
-":"		     { return COLON;}
+(?i:sections) { return SECTION_HEADER; }
+(?i:ENTRY)    { return ENTRY_POINT_IDENTIFIER; }
+"{" 		  { return RIGHT_CURLY_BRACE;}
+"}" 		  { return LEFT_CURLY_BRACE;}
+"("           { return RIGHT_PARANTHESE;}
+")"           { return LEFT_PARANTHESE;}
+"<" 		  { return RIGHT_CHEVRON;}
+">" 		  { return LEFT_CHEVRON;}
+":"		      { return COLON;}
+"*"           { return ASTERIX;}
 
 [ \t\n]+             ;
-[\. =]+              { return ADDRESS_IDENTIFIER;}
+[. =]+               { return ADDRESS_IDENTIFIER;}
 [0-9]+\.[0-9]+       { yylval.fval = atof(yytext); return FLOAT; }
 [0-9]+               { yylval.ival = atoi(yytext); return INT; }
-"*"?"("[.a-zA-Z0-9]+")""*"? { yylval.sval = strdup(yytext); return WILDCARD_STRING;}
-[.a-zA-Z0-9]+        { yylval.sval = strdup(yytext); return STRING;}
+[_.a-zA-Z0-9]+       { yylval.sval = strdup(yytext); return STRING;}
 .                    ;
 %%

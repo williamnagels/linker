@@ -189,7 +189,17 @@ namespace N_Core
 			void build_segment_rules()
 			{
 				uint64_t virtual_address = 0x400000;
-				_entry_symbol = "main";
+
+				if (_parser._entry_point)
+				{
+					_entry_symbol = *_parser._entry_point;
+				}
+				else
+				{
+					_entry_symbol = "main";
+				}
+
+				
 
 
 				auto text_segment_it = std::find_if(std::begin(_parser), std::end(_parser), [](auto const& segment){return segment._name == ".text";});

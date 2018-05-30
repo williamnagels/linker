@@ -28,42 +28,53 @@ void yyerror(void* parser, const char *s);
 %token <ival> INT
 %token <fval> FLOAT
 %token <sval> STRING
-%token <sval> WILDCARD_STRING
 %token END ENDL
 %token SECTION_HEADER 
+%token ENTRY_POINT_IDENTIFIER;
 %token RIGHT_CURLY_BRACE 
 %token LEFT_CURLY_BRACE
 %token RIGHT_CHEVRON
 %token LEFT_CHEVRON
 %token COLON
 %token ADDRESS_IDENTIFIER
+%token RIGHT_PARANTHESE
+%token LEFT_PARANTHESE
+%token ASTERIX
 
 %%
 link_script:
-	sections { cout << "done with a linkerscript!" << endl; }
+	header sections
 	;
+
+header:
+	ENTRY_POINT_IDENTIFIER RIGHT_PARANTHESE STRING LEFT_PARANTHESE  {  ((N_Core::N_Parser::Parser*)parser)->set_entry_point($3);}
+	;
+
 sections:
-	SECTION_HEADER RIGHT_CURLY_BRACE section_descriptions LEFT_CURLY_BRACE
+	SECTION_HEADER RIGHT_CURLY_BRACE section_descriptions LEFT_CURLY_BRACE { cout << "done with a linkerscript!" << endl; }
 	;
+
 section_descriptions:
 	section_descriptions section_description 
 	| section_description
 	;
+
 section_description:
 	ADDRESS_IDENTIFIER STRING  { ((N_Core::N_Parser::Parser*)parser)->set_base_address($2);cout << "new base address: " << $2 <<std::endl;  }
 	| STRING COLON RIGHT_CURLY_BRACE section_identifications LEFT_CURLY_BRACE { ((N_Core::N_Parser::Parser*)parser)->set_segment_name($1);cout << "segment name: " << $1 <<std::endl;  }
 	;
+
 section_identifications:
 	section_identifications section_identification
 	| section_identification
 	;
+
 section_identification:
-	WILDCARD_STRING { ((N_Core::N_Parser::Parser*)parser)->add_filter($1); cout << "to filter wildcard: " << $1 <<std::endl;  }
+	ASTERIX RIGHT_PARANTHESE STRING LEFT_PARANTHESE ASTERIX { ((N_Core::N_Parser::Parser*)parser)->add_filter(std::string("*(")+$3+std::string(")*"));}
+    | ASTERIX RIGHT_PARANTHESE STRING LEFT_PARANTHESE{ ((N_Core::N_Parser::Parser*)parser)->add_filter(std::string("*(")+$3+std::string(")"));}
+	| RIGHT_PARANTHESE STRING LEFT_PARANTHESE ASTERIX { ((N_Core::N_Parser::Parser*)parser)->add_filter(std::string("(")+$2+std::string(")*"));}
+    | STRING { ((N_Core::N_Parser::Parser*)parser)->add_filter($1);}
 	;
-ENDLS:
-	ENDLS ENDL
-	| ENDL 
-	| ;
 %%
 
 void N_Core::N_Parser::Parser::parse(std::string const& path) 

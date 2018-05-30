@@ -87,3 +87,7 @@ void N_Core::N_Parser::Parser::set_base_address(std::string const& name)
 {
     _base_address = std::stoul(name, nullptr, 16);
 }
+void N_Core::N_Parser::Parser::set_entry_point(std::string const& entry_point)
+{
+    _entry_point = entry_point;
+}
