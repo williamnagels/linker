@@ -16,7 +16,8 @@ namespace N_Core
             using T = std::conditional_t<std::is_same_v<V, Bit64>, N_Segment::Elf64_Phdr, N_Segment::Elf32_Phdr >;
             MMap::Container<T> _header_entry;
             uint64_t _internal_offset;
-            Segment(uint64_t internal_offset):_internal_offset(internal_offset){}
+            bool _ignore_size_in_file;
+            Segment(uint64_t internal_offset, bool ignore_size_in_file):_internal_offset(internal_offset),_ignore_size_in_file(ignore_size_in_file){}
             std::list<std::reference_wrapper<N_Core::N_Section::Section<V, C>>> _sections;
 
             void calculate_sizes_based_on_sizes_of_sections()
@@ -28,8 +29,7 @@ namespace N_Core
                     size_in_file += section.get().get_size_in_file();
                     size_in_memory += section.get().get_size();
                 }
-
-                set_file_size(size_in_file);
+                set_file_size((_ignore_size_in_file)?0:size_in_file);
                 set_memory_size(size_in_memory);
             }
 

@@ -46,9 +46,9 @@ namespace N_Core
 		SegmentTableTy _segment_table; ///< All segments in this elf.
 
 
-		SegmentTy& create_new_segment(uint64_t internal_offset)
+		SegmentTy& create_new_segment(uint64_t internal_offset, bool ignore_size_in_file)
 		{
-			_segment_table.emplace_back(internal_offset);
+			_segment_table.emplace_back(internal_offset, ignore_size_in_file);
 			return _segment_table.back();
 		}
 

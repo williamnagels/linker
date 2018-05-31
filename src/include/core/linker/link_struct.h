@@ -111,7 +111,7 @@ namespace N_Core
 						//weak symbols cannot be preempted by other weak symbols
 						if (it->second._binding > symbol.get_binding())
 						{
-							std::cout << "*REPLACED* SYM;name="<<*symbol.get_name_as_string()<<" 0x"<<it->second._value<<" with 0x"<<new_symbol_value<<std::endl;
+							std::cout << "Replaced symbol name=\""<<*symbol.get_name_as_string()<<"\" VA=\"0x"<<it->second._value<<"\" with 0x"<<new_symbol_value<<std::endl;
 							
 							it->second._value = new_symbol_value;
 							it->second._binding = symbol.get_binding();
@@ -124,7 +124,7 @@ namespace N_Core
 					}
 					else
 					{
-						std::cout << "*NEW* SYM;name="<<*symbol.get_name_as_string()<<"0x"<<new_symbol_value<<std::endl;
+						std::cout << "Found symbol name=\""<<*symbol.get_name_as_string()<<"\" VA=\"0x"<<new_symbol_value<<"\""<<std::endl;
 						_symbols[*symbol.get_name_as_string()] = {new_symbol_value, symbol.get_binding()};
 					}
 		
@@ -152,6 +152,10 @@ namespace N_Core
 			}
 			void update_internal_offset(uint64_t new_value)
 			{
+				if (_segment._ignore_size_in_file)
+				{
+					return;
+				}
 				_segment._internal_offset += new_value;
 				_running_virtual_address = _segment.get_virtual_address() + _segment._internal_offset;
 			}
@@ -188,8 +192,6 @@ namespace N_Core
 
 			void build_segment_rules()
 			{
-				uint64_t virtual_address = 0x400000;
-
 				if (_parser._entry_point)
 				{
 					_entry_symbol = *_parser._entry_point;
@@ -199,26 +201,30 @@ namespace N_Core
 					_entry_symbol = "main";
 				}
 
-				
-
-
 				auto text_segment_it = std::find_if(std::begin(_parser), std::end(_parser), [](auto const& segment){return segment._name == ".text";});
 				auto data_segment_it = std::find_if(std::begin(_parser), std::end(_parser), [](auto const& segment){return segment._name == ".data";});
+				auto bss_segment_it = std::find_if(std::begin(_parser), std::end(_parser), [](auto const& segment){return segment._name == ".bss";});
 
 
-				auto& text_segment = _output_elf.create_new_segment(64+56+56);
+				auto& text_segment = _output_elf.create_new_segment(64+56+56+56, false);
 				text_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				text_segment.set_flags(N_Core::N_Segment::Flags{1,0,1});
 				text_segment.set_alignment(0x200000);
 
 
-				auto& data_segment = _output_elf.create_new_segment(0);
+				auto& data_segment = _output_elf.create_new_segment(0, false);
 				data_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				data_segment.set_flags(N_Core::N_Segment::Flags{0,1,1});
 				data_segment.set_alignment(0x200000);
+
+				auto& bss_segment = _output_elf.create_new_segment(0, true);
+				bss_segment.set_type(N_Core::N_Segment::PT_LOAD);
+				bss_segment.set_flags(N_Core::N_Segment::Flags{0,1,1});
+				bss_segment.set_alignment(0x200000);
 				
 				_segment_builders.emplace_back(text_segment, text_segment_it);
 				_segment_builders.emplace_back(data_segment, data_segment_it);
+				_segment_builders.emplace_back(bss_segment, bss_segment_it);
 			}
 
 
@@ -226,8 +232,6 @@ namespace N_Core
 			{
 				for (auto& elf : _input_elfs)
 				{
-					std::cout << "Reading input elf"<<std::endl;
-
 					auto range = elf._section_table 
 						| ranges::view::filter(segment_builder._rule);
 
@@ -408,9 +412,10 @@ namespace N_Core
 					segment.set_offset(offset);
 					segment_builder.update_internal_offset(delta_offset);
 
-					std::cout << "offset= 0x" <<std::hex<< offset<<std::endl;
-					std::cout << "virtual_address= 0x" <<std::hex<<  address<<std::endl;
-					std::cout << "internal_offset= 0x"<<std::hex<<segment._internal_offset<<std::endl;
+					std::cout << "====BUILDING SEGMENT===="<< std::endl;
+					std::cout << "starts in file at offset= \"0x" <<std::hex<< offset<<"\""<<std::endl;
+					std::cout << "loaded at virtual_address= \"0x" <<std::hex<<  address<<"\""<<std::endl;
+					std::cout << "padding at start= \"0x"<<std::hex<<segment._internal_offset<<"\""<<std::endl;
 
 					collect_sections(segment_builder);
 
@@ -418,10 +423,11 @@ namespace N_Core
 					next_offset = offset + segment_builder._segment.get_file_size();
 					previous_virtual_address = address + segment_builder._segment.get_file_size();
 
+					std::cout << "Contains ("<<segment._sections.size()<<") sections:"<<std::endl;
 					for (auto const& section:segment._sections)
 					{
-						std::cout << "section offset= 0x" <<std::hex<< section.get().get_offset()<<std::endl;
-						std::cout << "section VA = 0x" <<std::hex<< section.get().get_address()<<std::endl;
+						std::cout << "\tsection starts in file at offset= \"0x" <<std::hex<< section.get().get_offset()<<"\""<<std::endl;
+						std::cout << "\tsection VA = \"0x" <<std::hex<< section.get().get_address()<<"\""<<std::endl<<std::endl;
 					}
 				}
 			}
@@ -444,7 +450,7 @@ namespace N_Core
 				
 				perform_local_relocations();
 				dump_to_file(path, _output_elf);
-				//create header in output elf
+				_symbols.clear();
 			}
 
 		};

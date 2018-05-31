@@ -13,10 +13,18 @@
 #include <vector>
 BOOST_AUTO_TEST_SUITE(link_struct_unittest)
 
-BOOST_AUTO_TEST_CASE(simple_main_global_symbol)
-{
-	N_Core::N_Linker::Linker<N_Core::Bit64> linker("testfiles/simple_script", {"testfiles/weak_advanced_main","testfiles/weak_advanced_ext"}); 
+// BOOST_AUTO_TEST_CASE(simple_main_global_symbol)
+// {
+// 	N_Core::N_Linker::Linker<N_Core::Bit64> linker("testfiles/simple_script", {"testfiles/weak_advanced_main","testfiles/weak_advanced_ext"}); 
 
-	linker.do_link("testfiles/simple_main_weak_advanced_symbol_linked");
+// 	linker.do_link("testfiles/simple_main_weak_advanced_symbol_linked");
+// }
+BOOST_AUTO_TEST_CASE(simple_bss)
+{
+	N_Core::N_Linker::Linker<N_Core::Bit64> linker("testfiles/simple_script", {"testfiles/main_bss_simple"}); 
+
+	linker.do_link("testfiles/main_bss_simple_linked");
 }
+
+
 BOOST_AUTO_TEST_SUITE_END()
