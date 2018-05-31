@@ -28,10 +28,10 @@ SECTIONS
 
 To build ELinker following libraries are required:
 
-* [Boost] - header files and compiled: unit_test_framework and date_time 
-* [CMake] - build script
-* [Flex] - Used to parse the linkscript
-* [Bison] - Used to parse the linkscript
+* [Boost] - Header files and compiled: unit_test_framework and date_time.
+* [CMake] - Build script.
+* [Flex] - Used to generate code which is used when parsing the linkscript.
+* [Bison] - Used to generate code which is used when parsing the linkscript.
 
 License
 ----
