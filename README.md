@@ -1,14 +1,15 @@
 # ELinker: An elf linker in C++
 
 ELinker is a linker implementation which turns relocatable elf binaries into executable elf binaries.
-It includes a 'somewhat' working AT&T linkscript syntax parser which is created in Bison and Flex. The linker supports the 3 major traditional types (.text, .data and .bss) of segments and when parsing the linkscript the following is assumed:
- 1. The code segment will have '.text' as name.
- 2. The data segment will have '.data' as name.
- 3. The bss segment: must have '.bss' as name
+It includes a 'somewhat' working AT&T linkscript syntax parser which is created in Bison and Flex. The linker supports the 3 major traditional segment types (.text, .data and .bss) . Some assumptions are made when parsing the linkscript:
+ 1. The code segment must have name '.text'.
+ 2. The data segment must have name '.data'.
+ 3. The bss segment must have name '.bss'.
 
 Example link script:
 
 ```c++
+ENTRY(_main)
 SECTIONS
 {
   . = 0x10000;
