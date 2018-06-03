@@ -311,10 +311,12 @@ namespace N_Core
 						std::memcpy(base, &val, 4);
 
 						std::cout << "Going to apply relocation with type:"<<relocation_entry.get_type()<<std::endl;
-						std::cout << "value of symbol:0x"<<first<<std::endl;
-						std::cout << "VA of reloc:0x"<<second<<std::endl;
-						std::cout << "Program counter offset:0x"<<val<<std::endl;
-						std::cout << "VA;0x"<<second+val<<std::endl;
+						std::cout << "\tValue of symbol:0x"<<symbol_value<<std::endl;
+						std::cout << "\tAddend:0x"<<relocation_entry.get_addend()<<std::endl;
+						std::cout << "\tAddend + symbol value:0x"<<first<<std::endl;
+						std::cout << "\tVA of relocation:0x"<<second<<std::endl;
+						std::cout << "\t(symbol value + addend) - VA of relocation:0x"<<val<<std::endl;
+						//std::cout << "VA;0x"<<second+val<<std::endl;
 
 					};
 					break;
