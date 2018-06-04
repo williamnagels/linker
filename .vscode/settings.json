@@ -61,6 +61,8 @@
         "*.css": "cpp",
         "vector": "cpp",
         "*.html": "cpp",
-        "*.o": "cpp"
+        "*.o": "cpp",
+        "deque": "cpp",
+        "unordered_map": "cpp"
     }
 }

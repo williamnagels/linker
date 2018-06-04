@@ -88,7 +88,7 @@ namespace N_Core
 					_segment._running_virtual_address+= to_offset;
 				}
 				section.set_address(_segment._running_virtual_address);
-				section.set_offset(_segment.calculate_offset(section.get_address())); //this should probably include alignment
+				section.set_offset(_segment.calculate_offset(section.get_address()));
 				_segment._running_virtual_address += section.get_size();
 
 				auto defined_global_symbol = section.get_parent()._section_table
@@ -225,6 +225,8 @@ namespace N_Core
 				_segment_builders.emplace_back(text_segment, text_segment_it);
 				_segment_builders.emplace_back(data_segment, data_segment_it);
 				_segment_builders.emplace_back(bss_segment, bss_segment_it);
+
+				
 			}
 
 
@@ -397,6 +399,7 @@ namespace N_Core
 					{
 						address= round_to_nearest_multiple(previous_virtual_address, segment.get_alignment());
 					}
+
 					segment.set_virtual_address(address);
 					segment.set_physical_address(address);
 					segment_builder._running_virtual_address = address;
@@ -415,9 +418,9 @@ namespace N_Core
 					segment_builder.update_internal_offset(delta_offset);
 
 					std::cout << "====BUILDING SEGMENT===="<< std::endl;
-					std::cout << "starts in file at offset= \"0x" <<std::hex<< offset<<"\""<<std::endl;
-					std::cout << "loaded at virtual_address= \"0x" <<std::hex<<  address<<"\""<<std::endl;
-					std::cout << "padding at start= \"0x"<<std::hex<<segment._internal_offset<<"\""<<std::endl;
+					std::cout << "Starts in file at offset= \"0x" <<std::hex<< offset<<"\""<<std::endl;
+					std::cout << "Loaded at virtual_address= \"0x" <<std::hex<<  address<<"\""<<std::endl;
+					std::cout << "Padding at start= \"0x"<<std::hex<<segment._internal_offset<<"\""<<std::endl;
 
 					collect_sections(segment_builder);
 

@@ -72,6 +72,8 @@ void N_Core::N_Parser::Parser::set_segment_name(std::string const& name)
     _segment_under_construction._name = name;
     _segments.push_back(_segment_under_construction);
     _segment_under_construction._filters.clear();
+    _segment_under_construction._address = 0;
+    _segment_under_construction._name = std::string();
 }
 
 void N_Core::N_Parser::Parser::add_filter(std::string filter)
