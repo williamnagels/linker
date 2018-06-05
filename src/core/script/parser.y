@@ -40,6 +40,7 @@ void yyerror(void* parser, const char *s);
 %token RIGHT_PARANTHESE
 %token LEFT_PARANTHESE
 %token ASTERIX
+%token ALIGN_KEYWORD
 
 %%
 link_script:
@@ -61,7 +62,9 @@ section_descriptions:
 
 section_description:
 	ADDRESS_IDENTIFIER STRING  { ((N_Core::N_Parser::Parser*)parser)->set_base_address($2);cout << "new base address: " << $2 <<std::endl;  }
+	| STRING COLON ALIGN_KEYWORD RIGHT_PARANTHESE STRING LEFT_PARANTHESE RIGHT_CURLY_BRACE section_identifications LEFT_CURLY_BRACE { ((N_Core::N_Parser::Parser*)parser)->set_alignment($5); ((N_Core::N_Parser::Parser*)parser)->set_segment_name($1); cout << "segment name: " << $1 << " with alignment: "<< $5 << std::endl;  }
 	| STRING COLON RIGHT_CURLY_BRACE section_identifications LEFT_CURLY_BRACE { ((N_Core::N_Parser::Parser*)parser)->set_segment_name($1);cout << "segment name: " << $1 <<std::endl;  }
+	
 	;
 
 section_identifications:

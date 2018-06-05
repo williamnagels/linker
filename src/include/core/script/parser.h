@@ -22,6 +22,7 @@ namespace N_Core
             SegmentContainerTy::value_type & operator[](std::size_t idx);
             SegmentContainerTy::value_type const& operator[](std::size_t idx) const;
             std::optional<uint64_t> _address;
+            uint64_t _alignment =1;
         };
 
         
@@ -47,15 +48,17 @@ namespace N_Core
                 Segment _segment_under_construction;
                 ContainerTy _segments;
                 std::optional<uint64_t> _base_address;
-                
+                uint64_t _alignment = 1;
                 
                 friend int ::yyparse(void* parser);
+                
                 // called by script parser; reason why this method
                 // is a friend;
                 void parse(std::string const& path);
                 void set_segment_name(std::string const& name);
                 void add_filter(std::string filter_name);
                 void set_base_address(std::string const& base_address);
+                void set_alignment(std::string const& alignment);
                 void set_entry_point(std::string const& base_address);
         };
 

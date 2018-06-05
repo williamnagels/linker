@@ -63,17 +63,19 @@ N_Core::N_Parser::SegmentContainerTy::value_type const& N_Core::N_Parser::Segmen
 void N_Core::N_Parser::Parser::set_segment_name(std::string const& name)
 {
     _segment_under_construction._name = name;
+    _segment_under_construction._alignment = _alignment;
 
     if (_base_address.has_value())
     {
         _segment_under_construction._address = *_base_address;
-        _base_address.reset();
     }
-    _segment_under_construction._name = name;
+
+    _alignment = 1;
     _segments.push_back(_segment_under_construction);
     _segment_under_construction._filters.clear();
     _segment_under_construction._address = 0;
     _segment_under_construction._name = std::string();
+    _segment_under_construction._alignment = 1;
 }
 
 void N_Core::N_Parser::Parser::add_filter(std::string filter)
@@ -92,4 +94,9 @@ void N_Core::N_Parser::Parser::set_base_address(std::string const& name)
 void N_Core::N_Parser::Parser::set_entry_point(std::string const& entry_point)
 {
     _entry_point = entry_point;
+}
+
+void N_Core::N_Parser::Parser::set_alignment(std::string const& alignment)
+{
+    _alignment =  std::stoul(alignment, nullptr, 16);
 }

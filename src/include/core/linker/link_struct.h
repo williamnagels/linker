@@ -47,6 +47,18 @@ namespace N_Core
 
 				return va + alignment - remainder;
 			}
+
+			uint64_t round_up_to_nearest_multiple(uint64_t numToRound, uint64_t multiple)
+			{
+				if (multiple == 0)
+					return numToRound;
+
+				uint64_t remainder = numToRound % multiple;
+				if (remainder == 0)
+					return numToRound;
+
+				return numToRound + multiple - remainder;
+			}
 		}
 		struct Rule
 		{
@@ -209,19 +221,18 @@ namespace N_Core
 				auto& text_segment = _output_elf.create_new_segment(64+56+56+56, false);
 				text_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				text_segment.set_flags(N_Core::N_Segment::Flags{1,0,1});
-				text_segment.set_alignment(0x200000);
+				text_segment.set_alignment(text_segment_it->_alignment);
 
 
 				auto& data_segment = _output_elf.create_new_segment(0, false);
 				data_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				data_segment.set_flags(N_Core::N_Segment::Flags{0,1,1});
-				data_segment.set_alignment(0x200000);
+				data_segment.set_alignment(data_segment_it->_alignment);
 
 				auto& bss_segment = _output_elf.create_new_segment(0, true);
 				bss_segment.set_type(N_Core::N_Segment::PT_LOAD);
 				bss_segment.set_flags(N_Core::N_Segment::Flags{0,1,1});
-				bss_segment.set_alignment(0x200000);
-				
+				bss_segment.set_alignment(bss_segment_it->_alignment);
 				_segment_builders.emplace_back(text_segment, text_segment_it);
 				_segment_builders.emplace_back(data_segment, data_segment_it);
 				_segment_builders.emplace_back(bss_segment, bss_segment_it);
@@ -399,7 +410,10 @@ namespace N_Core
 					{
 						address= round_to_nearest_multiple(previous_virtual_address, segment.get_alignment());
 					}
-
+					else
+					{
+						address= round_up_to_nearest_multiple(address, segment.get_alignment());
+					}
 					segment.set_virtual_address(address);
 					segment.set_physical_address(address);
 					segment_builder._running_virtual_address = address;
@@ -420,6 +434,7 @@ namespace N_Core
 					std::cout << "====BUILDING SEGMENT===="<< std::endl;
 					std::cout << "Starts in file at offset= \"0x" <<std::hex<< offset<<"\""<<std::endl;
 					std::cout << "Loaded at virtual_address= \"0x" <<std::hex<<  address<<"\""<<std::endl;
+					std::cout << "Alignment virtual address: \"0x" <<std::hex<< segment.get_alignment()<<"\""<<std::endl;
 					std::cout << "Padding at start= \"0x"<<std::hex<<segment._internal_offset<<"\""<<std::endl;
 
 					collect_sections(segment_builder);

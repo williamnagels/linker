@@ -63,6 +63,11 @@
         "*.html": "cpp",
         "*.o": "cpp",
         "deque": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "list": "cpp",
+        "unordered_set": "cpp",
+        "numeric": "cpp",
+        "cinttypes": "cpp",
+        "typeindex": "cpp"
     }
 }

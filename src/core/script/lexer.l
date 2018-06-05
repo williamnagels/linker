@@ -10,6 +10,7 @@ using namespace std;
 %%
 (?i:sections) { return SECTION_HEADER; }
 (?i:ENTRY)    { return ENTRY_POINT_IDENTIFIER; }
+(?i:ALIGN)    { return ALIGN_KEYWORD; }
 "{" 		  { return RIGHT_CURLY_BRACE;}
 "}" 		  { return LEFT_CURLY_BRACE;}
 "("           { return RIGHT_PARANTHESE;}
