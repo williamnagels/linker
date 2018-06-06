@@ -6,7 +6,7 @@ SECTIONS
   .text : { (.text)* }
   . = 0x9000000;
   .data : { (.data)* }
-  .bss : ALIGN(0x10000000){ *(.bss)* }
+  .bss : ALIGN(0x20000){ *(.bss)* }
 }
 
 

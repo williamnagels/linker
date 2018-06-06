@@ -70,12 +70,11 @@ void N_Core::N_Parser::Parser::set_segment_name(std::string const& name)
         _segment_under_construction._address = *_base_address;
     }
 
-    _alignment = 1;
+    _alignment = boost::interprocess::mapped_region::get_page_size();;
     _segments.push_back(_segment_under_construction);
     _segment_under_construction._filters.clear();
     _segment_under_construction._address = 0;
     _segment_under_construction._name = std::string();
-    _segment_under_construction._alignment = 1;
 }
 
 void N_Core::N_Parser::Parser::add_filter(std::string filter)

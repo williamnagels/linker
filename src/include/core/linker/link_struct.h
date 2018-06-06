@@ -38,7 +38,7 @@ namespace N_Core
 				return size_prev_segment - size_prev_segment % alignment_this_segment;
 			}
 
-			uint64_t round_to_nearest_multiple(uint64_t va, uint64_t alignment)
+			uint64_t round_up_to_nearest_multiple(uint64_t va, uint64_t alignment)
 			{
 				uint64_t remainder = va % alignment;
 				if (remainder == 0)
@@ -48,17 +48,16 @@ namespace N_Core
 				return va + alignment - remainder;
 			}
 
-			uint64_t round_up_to_nearest_multiple(uint64_t numToRound, uint64_t multiple)
+			uint64_t round_down_to_nearest_multiple(uint64_t va, uint64_t alignment)
 			{
-				if (multiple == 0)
-					return numToRound;
-
-				uint64_t remainder = numToRound % multiple;
+				uint64_t remainder = va % alignment;
 				if (remainder == 0)
-					return numToRound;
+					return va;
 
-				return numToRound + multiple - remainder;
+
+				return va - remainder;
 			}
+
 		}
 		struct Rule
 		{
@@ -268,20 +267,6 @@ namespace N_Core
 
 				std::cout << "Entry symbol:0x"<<it->second._value<<std::endl;
 				return it->second._value;
-				// std::find(std::begin(_symbols),std::end(_symbols), _entry)
-				// auto symbol_range = elf._section_table
-				// 	| ranges::view::filter(N_Core::N_Section::N_Filters::SymbolTable{})
-				// 	| ranges::view::transform(N_Core::N_Section::ConvertSectionToSymbolRange{})
-				// 	| ranges::view::join
-				// 	| ranges::view::filter(N_Core::N_Symbol::N_Filters::HasName{_entry_symbol})
-				// 	| ranges::view::filter(N_Core::N_Symbol::N_Filters::Defined{})
-				// 	| ranges::view::transform(N_Core::ConvertSymbolToSection{})
-				// 	| ranges::view::transform([](auto const& section){return section.get_address();});
-
-				// if (ranges::distance(symbol_range) == 1)
-				// {
-				// 	return *symbol_range.begin();
-				// }
 			}
 			std::optional<uint64_t> get_value_of_entry_symbol()
 			{
@@ -405,31 +390,43 @@ namespace N_Core
 				{
 					auto& segment = segment_builder._segment;
 
+
+					uint64_t offset = next_offset;
 					uint64_t address = segment_builder._running_virtual_address;
 					if (!address)
-					{
-						address= round_to_nearest_multiple(previous_virtual_address, segment.get_alignment());
+					{			
+						address = previous_virtual_address;
 					}
-					else
+
+					uint64_t offset_mismatch = offset % segment.get_alignment();
+					uint64_t va_mismatch = address % segment.get_alignment();
+
+					// This part makes sure that offset % alignment ==  VA % alignment
+					if (offset_mismatch != va_mismatch)
 					{
-						address= round_up_to_nearest_multiple(address, segment.get_alignment());
+
+						//enough buffer in offset; to make sure == is true;
+						if (offset >= offset_mismatch + va_mismatch)
+						{
+							offset -= (offset_mismatch + va_mismatch);
+						}
+						//It was chosen to keep the file as small as possible.
+						//couldve also increased the offset here; make it an option?
+						else
+						{
+							offset = round_down_to_nearest_multiple(offset, segment.get_alignment());
+							address = round_up_to_nearest_multiple(address, segment.get_alignment());
+						}
+						offset_mismatch = offset % segment.get_alignment();
 					}
 					segment.set_virtual_address(address);
 					segment.set_physical_address(address);
 					segment_builder._running_virtual_address = address;
 
-					uint64_t offset = next_offset;
-					uint64_t delta_offset = offset % segment.get_alignment();
-
-					if (delta_offset)
-					{
-						offset -= delta_offset;
-					}
-				
-
-
 					segment.set_offset(offset);
-					segment_builder.update_internal_offset(delta_offset);
+					segment_builder.update_internal_offset(offset_mismatch);
+
+
 
 					std::cout << "====BUILDING SEGMENT===="<< std::endl;
 					std::cout << "Starts in file at offset= \"0x" <<std::hex<< offset<<"\""<<std::endl;

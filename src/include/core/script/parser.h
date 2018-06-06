@@ -3,6 +3,7 @@
 #include <vector>
 #include <optional>
 #include <regex>
+#include <boost/interprocess/mapped_region.hpp>
 extern "C" { int yyparse(void* parser);}
 namespace N_Core
 {
@@ -22,7 +23,7 @@ namespace N_Core
             SegmentContainerTy::value_type & operator[](std::size_t idx);
             SegmentContainerTy::value_type const& operator[](std::size_t idx) const;
             std::optional<uint64_t> _address;
-            uint64_t _alignment =1;
+            uint64_t _alignment = boost::interprocess::mapped_region::get_page_size();
         };
 
         
@@ -48,12 +49,11 @@ namespace N_Core
                 Segment _segment_under_construction;
                 ContainerTy _segments;
                 std::optional<uint64_t> _base_address;
-                uint64_t _alignment = 1;
+                uint64_t _alignment = boost::interprocess::mapped_region::get_page_size();
                 
                 friend int ::yyparse(void* parser);
                 
-                // called by script parser; reason why this method
-                // is a friend;
+                // called by script parser; reason why yyparse is friended.
                 void parse(std::string const& path);
                 void set_segment_name(std::string const& name);
                 void add_filter(std::string filter_name);
