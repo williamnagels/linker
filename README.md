@@ -13,7 +13,9 @@ Following statement is always enforced by the linker: address % alignment == off
 1. 'Offset' is the position of the first byte of the segment in the executable elf file. 
 2. 'Address' is the (virtual/physical)address where the first byte of the segment will be memory mapped.
 
-Only if it is not possible to solve this equation by decreasing the offset will the virtual address of the segment be increased. Decreasing the offset is essentially making the segment bigger; it expresses: "this segment actually starts at another offset in the file now". Ofcourse this leads to wasted address space since some data will be mapped twice into memory. If this equation is not satisfied it is possible that the elf cannot be memory mapped and the executable elf file is not runnable.
+Only if it is not possible to solve this equation by decreasing the offset will the virtual address of the segment be increased. Decreasing the offset is essentially making the segment bigger; it expresses: "this segment actually starts at another offset in the file now". Using this technique leads to wasted address space since some data will be mapped twice into memory. The pros outweigh the cons. If this equation is not satisfied it is possible that the elf cannot be memory mapped and the executable elf file is not runnable.
+
+**TL;DR Segments should align to the target device's page size. Use the ALIGN(...) property.**
  
 ## Example linkerscript
 
