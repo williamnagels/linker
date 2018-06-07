@@ -6,10 +6,16 @@ It includes a 'somewhat' working AT&T linkscript syntax parser which is created 
  2. The data segment must have name '.data'.
  3. The bss segment must have name '.bss'.
  
- By default the alignment for all segments is set to the page size of the device which is used to build the executable elf file.
- When building an executable elf for another platform it may be necessary to override this default value. For that purpose the ALIGN property can be added to a segment definition. In the example below this is used to align the .bss segment.
+ ## ALIGN property of segments
+ By default the alignment for each segment will be set to the page size of the device which is used to build the executable elf file.
+ When building an executable elf for another platform it may be necessary to override this default value. The ALIGN property can be added to a segment definition to achieve this. In the example linkerscript below the ALIGN property is used to align the .bss segment. It may be required to add this property if the target platform has a pagesize which is not a multiple of the default alignment.
+Following statement is always enforced by the linker: address % alignment == offset % alignment. 
+1. 'Offset' is the position of the first byte of the segment in the executable elf file. 
+2. 'Address' is the (virtual/physical)address where the first byte of the segment will be memory mapped.
+
+Only if it is not possible to solve this equation by decreasing the offset will the virtual address of the segment be increased. Decreasing the offset is essentially making the segment bigger; it expresses: "this segment actually starts at another offset in the file now". Ofcourse this leads to wasted address space since some data will be mapped twice into memory. If this equation is not satisfied it is possible that the elf cannot be memory mapped and the executable elf file is not runnable.
  
-Example link script:
+## Example linkerscript
 
 ```c++
 ENTRY(_main)
