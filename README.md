@@ -7,7 +7,7 @@ It includes a 'somewhat' working AT&T linkscript syntax parser which is created 
  3. The bss segment must have name '.bss'.
  
  By default the alignment for all segments is set to the page size of the device which is used to build the executable elf file.
- When building an executable elf for another platform it may be necessary to override this default value. For that purpose the ALIGN property can be added to a segment definition. In the example below, this has property has been added to the .bss segment.
+ When building an executable elf for another platform it may be necessary to override this default value. For that purpose the ALIGN property can be added to a segment definition. In the example below this is used to align the .bss segment.
  
 Example link script:
 
